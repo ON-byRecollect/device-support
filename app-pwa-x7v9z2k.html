@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=0">
-    <meta name="robots" content="noindex, nofollow">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>配送追跡</title>
+    <title>秘書ダッシュボード</title>
     
     <link rel="icon" href="del.png" type="image/png">
     <link rel="apple-touch-icon" href="del.png">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 業者別のパステル背景色設定 */
-        .card-post { background-color: #fee2e2 !important; }
-        .card-yamato { background-color: #fef3c7 !important; }
-        .card-sagawa { background-color: #dbeafe !important; }
-        .card-yodobashi { background-color: #e0e7ff !important; }
-        .card-amazon { background-color: #ffedd5 !important; }
-        
+        /* 業者別パステル背景色 */
+        .bg-post { background-color: #fee2e2 !important; }
+        .bg-yamato { background-color: #fef3c7 !important; }
+        .bg-sagawa { background-color: #dbeafe !important; }
+        .bg-yodobashi { background-color: #e0e7ff !important; }
+        .bg-amazon { background-color: #ffedd5 !important; }
+
+        /* セレクトボックス背景 */
         .opt-none { background-color: #f1f5f9; color: #64748b; }
         .opt-post { background-color: #ef4444 !important; color: white !important; }
         .opt-yamato { background-color: #fbbf24 !important; color: #1e293b !important; }
@@ -27,202 +27,380 @@
         .opt-yodobashi { background-color: #a5b4fc !important; color: white !important; }
         .opt-amazon { background-color: #f97316 !important; color: white !important; }
 
-        input::placeholder { color: #94a3b8; font-weight: 400; }
-
-        @media (max-width: 640px) {
-            .row-grid { grid-template-columns: 60px 1fr 65px 65px; gap: 2px; }
-            .row-grid select, .row-grid input { font-size: 10px; height: 34px; padding: 0 4px; }
-        }
-        
         body { overflow-x: hidden; width: 100%; -webkit-font-smoothing: antialiased; }
+        
+        /* モーダル用アニメーション */
+        .modal-enter { animation: slideUp 0.3s ease-out forwards; }
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-2 md:p-4 font-sans text-slate-800 text-[12px] md:text-sm leading-relaxed tracking-tight">
-    <div class="max-w-xl mx-auto">
-        <header class="mb-3 text-center py-1">
-            <h1 class="text-xl font-bold text-slate-800">配送追跡</h1>
+<body class="bg-slate-100 min-h-screen font-sans text-slate-800 pb-24">
+    <div class="max-w-xl mx-auto relative min-h-screen shadow-xl bg-slate-50">
+        
+        <header class="bg-white px-4 py-4 shadow-sm sticky top-0 z-20 flex justify-between items-center rounded-b-[1.5rem]">
+            <button onclick="changeDate(-1)" class="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-full active:bg-slate-200">
+                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <div class="text-center flex flex-col items-center justify-center">
+                <h2 id="displayDate" class="text-xl font-bold text-slate-800 tracking-tight">--月--日(--)</h2>
+                <div class="bg-slate-800 text-white text-[10px] font-bold px-3 py-0.5 rounded-full mt-1 tracking-widest" id="currentTime">--:--</div>
+            </div>
+            <button onclick="changeDate(1)" class="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-full active:bg-slate-200">
+                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+            </button>
         </header>
 
-        <main>
-            <div class="mb-5 bg-white p-3 rounded-[1.25rem] shadow-sm border border-slate-200">
-                <div class="flex justify-end items-center mb-3 px-1">
-                    <div class="flex items-center gap-1">
-                        <span class="text-[10px] font-medium text-slate-400">発送日:</span>
-                        <input type="date" id="commonShipDate" class="bg-slate-100 text-[10px] font-bold p-1 px-2 rounded-[0.75rem] border border-slate-200 outline-none">
-                        <button onclick="clearAllInputs()" class="ml-1 bg-slate-100 text-slate-400 text-[9px] font-bold px-2 py-1.5 rounded-lg active:bg-red-50 active:text-red-500 transition-colors border border-slate-200">一括削除</button>
-                    </div>
+        <main class="p-4 space-y-5" id="dashboardContent">
+            </main>
+
+        <div class="fixed bottom-6 left-0 right-0 px-4 max-w-xl mx-auto z-20">
+            <button onclick="openModal()" class="w-full bg-slate-800 text-white font-bold text-base py-4 rounded-[1.25rem] shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                予定を追加
+            </button>
+        </div>
+
+        <div id="addModal" class="hidden fixed inset-0 bg-slate-900/40 z-30 flex items-end sm:items-center justify-center backdrop-blur-sm">
+            <div class="bg-white w-full sm:max-w-md sm:rounded-[2rem] rounded-t-[2rem] p-5 modal-enter shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-slate-800">予定の登録</h3>
+                    <button onclick="closeModal()" class="bg-slate-100 p-2 rounded-full text-slate-500 active:bg-slate-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                 </div>
                 
-                <div class="space-y-1.5 mb-4">
-                    <script>
-                        const remarkOptionsHtml = `<option value="GEO">GEO</option><option value="2nd">2nd</option><option value="オフモール">オフモール</option><option value="Nojima">Nojima</option><option value="じゃんぱら">じゃんぱら</option><option value="ELECOM">ELECOM</option><option value="Amazon">Amazon</option><option value="ヨドバシ">ヨドバシ</option><option value="AliExpress">AliExpress</option><option value="プライベート">個人</option>`;
-                        const timeOptionsHtml = `<option value="なし">なし</option><option value="8-12">8-12</option><option value="14-16">14-16</option><option value="16-18">16-18</option><option value="18-20">18-20</option><option value="19-21">19-21</option>`;
-                        
-                        function updateCarrierColor(el) { 
-                            el.className = 'carrier-sel font-bold rounded-[0.75rem] border border-slate-200 outline-none text-[9px] opt-' + el.value; 
-                        }
-
-                        for(let i=0; i<5; i++) {
-                            document.write(`
-                            <div class="grid grid-cols-[60px_1fr_65px_65px] gap-1 row-entry items-center row-grid">
-                                <select class="carrier-sel font-bold rounded-[0.75rem] border border-slate-200 outline-none opt-none" onchange="updateCarrierColor(this)">
-                                    <option value="none" selected>-</option>
-                                    <option value="yamato">ヤマト</option><option value="sagawa">佐川</option><option value="post">JP</option><option value="amazon">Amazon</option><option value="yodobashi">ヨドバシ</option>
-                                </select>
-                                <input type="text" placeholder="番号/メモ" class="num-input bg-slate-50 rounded-[0.75rem] border border-slate-200 outline-none font-bold">
-                                <select class="row-time-sel bg-slate-50 font-bold rounded-[0.75rem] border border-slate-200 outline-none">${timeOptionsHtml}</select>
-                                <select class="remark-sel bg-slate-50 font-bold rounded-[0.75rem] border border-slate-200 outline-none">
-                                    <option value="選択" disabled selected>選択</option>
-                                    ${remarkOptionsHtml}
-                                </select>
-                            </div>
-                            `);
-                        }
-                    </script>
+                <div class="flex gap-2 mb-4 bg-slate-100 p-1 rounded-xl">
+                    <button onclick="switchTab('delivery')" id="tab-delivery" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white shadow-sm text-slate-800 transition-all">荷物</button>
+                    <button onclick="switchTab('anime')" id="tab-anime" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 transition-all">アニメ</button>
+                    <button onclick="switchTab('baseball')" id="tab-baseball" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 transition-all">プロ野球</button>
                 </div>
 
-                <div class="grid grid-cols-1 gap-2 pt-3 border-t border-slate-100">
-                    <div class="grid grid-cols-3 gap-1">
-                        <div class="bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-                            <select id="commonCarrier" onchange="syncCarriers(this.value)" class="w-full bg-transparent text-[10px] font-bold outline-none text-slate-800 text-center">
-                                <option value="none" disabled selected>業者一括</option>
-                                <option value="yamato">ヤマト</option><option value="sagawa">佐川</option><option value="post">JP</option><option value="amazon">Amazon</option><option value="yodobashi">ヨドバシ</option>
-                            </select>
-                        </div>
-                        <div class="bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-                            <select id="commonTimeSlot" onchange="syncTimeSlots(this.value)" class="w-full bg-transparent text-[10px] font-bold outline-none text-slate-800 text-center">
-                                <option value="" disabled selected>時間一括</option>
-                                <option value="なし">なし</option><option value="8-12">8-12</option><option value="14-16">14-16</option><option value="16-18">16-18</option><option value="18-20">18-20</option><option value="19-21">19-21</option>
-                            </select>
-                        </div>
-                        <div class="bg-slate-100 p-1.5 rounded-xl border border-slate-200">
-                            <select id="commonRemark" onchange="syncRemarks(this.value)" class="w-full bg-transparent text-[10px] font-bold outline-none text-slate-800 text-center">
-                                <option value="選択" disabled selected>備考一括</option>
-                                <script>document.write(remarkOptionsHtml);</script>
-                            </select>
-                        </div>
-                    </div>
-                    <button onclick="addAll()" class="bg-slate-800 text-white font-bold py-3.5 rounded-[1.25rem] text-sm active:scale-95 transition-transform mt-1 shadow-md">登録</button>
+                <div id="form-delivery" class="space-y-3">
+                    <input type="date" id="add-del-date" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                    <select id="add-del-carrier" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                        <option value="post" selected>JP (日本郵便)</option>
+                        <option value="yamato">ヤマト</option>
+                        <option value="sagawa">佐川</option>
+                        <option value="amazon">Amazon</option>
+                        <option value="yodobashi">ヨドバシ</option>
+                    </select>
+                    <select id="add-del-time" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                        <option value="なし">指定なし</option><option value="8-12" selected>8:00〜12:00</option><option value="14-16">14:00〜16:00</option><option value="16-18">16:00〜18:00</option><option value="18-20">18:00〜20:00</option><option value="19-21">19:00〜21:00</option>
+                    </select>
+                    <input type="text" id="add-del-remark" placeholder="品名 / ショップ名" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                    <input type="text" id="add-del-num" placeholder="追跡番号 (任意)" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
                 </div>
+
+                <div id="form-anime" class="space-y-3 hidden">
+                    <input type="date" id="add-anime-date" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                    <input type="time" id="add-anime-time" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                    <input type="text" id="add-anime-title" placeholder="タイトル" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                    <label class="flex items-center gap-2 text-xs font-bold text-slate-600 ml-1">
+                        <input type="checkbox" id="add-anime-nextday" checked class="w-4 h-4 accent-slate-800"> 翌日の予定として表示する
+                    </label>
+                </div>
+
+                <div id="form-baseball" class="space-y-3 hidden">
+                    <input type="date" id="add-base-date" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                    <input type="time" id="add-base-time" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                    <input type="text" id="add-base-title" placeholder="対戦カード等" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                </div>
+
+                <button onclick="saveNewItem()" class="w-full bg-slate-800 text-white font-bold py-3.5 rounded-[1rem] mt-5 active:scale-95 transition-transform">追加する</button>
             </div>
+        </div>
 
-            <div id="list" class="space-y-2 pb-20"></div>
-        </main>
     </div>
 
     <script>
-        const urls = { post: "https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=", yamato: "https://toi.kuronekoyamato.co.jp/cgi-bin/tneko?number01=", sagawa: "https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do?okurijoNo=", amazon: "https://www.amazon.co.jp/gp/your-account/order-history", yodobashi: "https://www.yodobashi.com/" };
-        
-        document.getElementById('commonShipDate').value = new Date().toISOString().split('T')[0];
+        // --- 1. 初期データセットアップ ---
+        function initDefaults() {
+            if (!localStorage.getItem('sec_app_deliveries')) {
+                // デフォルト荷物 (日本郵便 = JP, セカンドストリート)
+                localStorage.setItem('sec_app_deliveries', JSON.stringify([
+                    { id: 1, carrier: 'post', num: '', remark: 'セカンドストリート', deliveryDateRaw: '2026-04-06', timeSlot: '8-12' }
+                ]));
+            }
+            if (!localStorage.getItem('sec_app_animes')) {
+                // アニメ (4/5スタート, 翌日表示設定)
+                localStorage.setItem('sec_app_animes', JSON.stringify([
+                    { id: 2, title: 'メイドさんは食べるだけ', dateRaw: '2026-04-05', time: '22:00', nextDayDisplay: true, isWeekly: true, weeks: 12 }
+                ]));
+            }
+            if (!localStorage.getItem('sec_app_baseballs')) {
+                // プロ野球
+                localStorage.setItem('sec_app_baseballs', JSON.stringify([
+                    { id: 3, title: 'プロ野球', dateRaw: '2026-04-07', time: '18:00' }
+                ]));
+            }
+        }
+        initDefaults();
 
-        function clearAllInputs() {
-            document.querySelectorAll('.carrier-sel').forEach(el => { el.value = "none"; updateCarrierColor(el); });
-            document.querySelectorAll('.num-input').forEach(el => el.value = "");
-            document.querySelectorAll('.row-time-sel').forEach(el => el.value = "なし");
-            document.querySelectorAll('.remark-sel').forEach(el => el.value = "選択");
-            document.getElementById('commonCarrier').selectedIndex = 0;
-            document.getElementById('commonTimeSlot').selectedIndex = 0;
-            document.getElementById('commonRemark').selectedIndex = 0;
+        // トラッキングURL（既存機能維持）
+        const urls = { 
+            post: "https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=", 
+            yamato: "https://toi.kuronekoyamato.co.jp/cgi-bin/tneko?number01=", 
+            sagawa: "https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do?okurijoNo=", 
+            amazon: "https://www.amazon.co.jp/gp/your-account/order-history", 
+            yodobashi: "https://www.yodobashi.com/" 
+        };
+
+        // --- 2. 日付・時間管理 ---
+        let activeDate = new Date();
+
+        function checkTimeAndSetDate() {
+            let now = new Date();
+            // 23時になったら翌日表示
+            if (now.getHours() >= 23) {
+                now.setDate(now.getDate() + 1);
+            }
+            now.setHours(0,0,0,0);
+            return now;
         }
 
-        function syncCarriers(val) { document.querySelectorAll('.carrier-sel').forEach(sel => { sel.value = val; updateCarrierColor(sel); }); }
-        function syncTimeSlots(val) { document.querySelectorAll('.row-time-sel').forEach(sel => sel.value = val); }
-        function syncRemarks(val) { document.querySelectorAll('.remark-sel').forEach(sel => { sel.value = val; }); }
+        // 初期化
+        activeDate = checkTimeAndSetDate();
 
-        function formatDateShort(dateObj) { return `${dateObj.getMonth() + 1}/${dateObj.getDate()}`; }
+        setInterval(() => {
+            let now = new Date();
+            document.getElementById('currentTime').innerText = now.toLocaleTimeString('ja-JP', {hour: '2-digit', minute:'2-digit'});
+            // 23時またぎの自動切り替えチェック
+            let calculatedDate = checkTimeAndSetDate();
+            if(activeDate.getTime() !== calculatedDate.getTime() && document.visibilityState === 'visible') {
+                activeDate = calculatedDate;
+                renderDashboard();
+            }
+        }, 1000);
 
-        function addAll() {
-            const rows = document.querySelectorAll('.row-entry');
-            const items = JSON.parse(localStorage.getItem('delivery_v_final_secure') || '[]');
-            const shipDateStr = document.getElementById('commonShipDate').value;
+        function changeDate(days) {
+            activeDate.setDate(activeDate.getDate() + days);
+            renderDashboard();
+        }
 
-            rows.forEach(row => {
-                const carrier = row.querySelector('.carrier-sel').value;
-                const num = row.querySelector('.num-input').value.trim();
-                const remark = row.querySelector('.remark-sel').value;
-                const timeSlot = row.querySelector('.row-time-sel').value;
+        function formatDateStr(dateObj) {
+            const days = ['日', '月', '火', '水', '木', '金', '土'];
+            return `${dateObj.getMonth() + 1}月${dateObj.getDate()}日(${days[dateObj.getDay()]})`;
+        }
 
-                if (carrier !== "none" && (num || carrier === 'amazon' || carrier === 'yodobashi')) {
-                    const shipDate = new Date(shipDateStr);
-                    const deliveryDateObj = new Date(shipDate);
-                    deliveryDateObj.setDate(shipDate.getDate() + 2);
-                    items.push({ id: Date.now() + Math.random(), carrier, num: num || "(直接配送)", remark: remark === "選択" ? "荷物" : remark, deliveryDateRaw: deliveryDateObj.toISOString().split('T')[0], timeSlot: timeSlot });
-                    
-                    row.querySelector('.num-input').value = '';
-                    row.querySelector('.remark-sel').value = "選択";
-                    const carrierSel = row.querySelector('.carrier-sel');
-                    carrierSel.value = "none";
-                    updateCarrierColor(carrierSel);
+        function getYYYYMMDD(dateObj) {
+            return `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
+        }
+
+        // --- 3. ゴミ捨てロジック ---
+        function getGarbageForDate(dateObj) {
+            let garbages = [];
+            let day = dateObj.getDay();
+            let m = dateObj.getMonth() + 1;
+            let d = dateObj.getDate();
+
+            if (day === 2 || day === 5) garbages.push({ name: '燃えるゴミ', color: 'bg-red-50 text-red-600 border-red-200' });
+            if (day === 3) garbages.push({ name: 'ペット／ビン／缶', color: 'bg-blue-50 text-blue-600 border-blue-200' });
+            
+            if ((m === 4 && d === 23) || (m === 5 && d === 21)) {
+                garbages.push({ name: '燃えないゴミ', color: 'bg-slate-100 text-slate-600 border-slate-300' });
+            }
+            return garbages;
+        }
+
+        // --- 4. アニメ抽出ロジック ---
+        function getAnimesForDate(targetDateStr) {
+            let animes = JSON.parse(localStorage.getItem('sec_app_animes') || '[]');
+            let results = [];
+            let targetTime = new Date(targetDateStr).getTime();
+
+            animes.forEach(anime => {
+                let baseDate = new Date(anime.dateRaw);
+                if (anime.nextDayDisplay) {
+                    baseDate.setDate(baseDate.getDate() + 1); // 翌日表示設定なら基準日を+1
+                }
+                
+                if (anime.isWeekly) {
+                    let weeks = anime.weeks || 1;
+                    let endTime = new Date(baseDate).getTime() + ((weeks - 1) * 7 * 24 * 60 * 60 * 1000);
+                    // 曜日が一致、かつ期間内か
+                    if (new Date(targetDateStr).getDay() === baseDate.getDay() && targetTime >= baseDate.getTime() && targetTime <= endTime) {
+                        results.push({...anime, displayPrefix: anime.nextDayDisplay ? "前日" : "本日"});
+                    }
+                } else {
+                    if (getYYYYMMDD(baseDate) === targetDateStr) {
+                        results.push({...anime, displayPrefix: anime.nextDayDisplay ? "前日" : "本日"});
+                    }
                 }
             });
-            localStorage.setItem('delivery_v_final_secure', JSON.stringify(items));
-            render();
-            document.getElementById('commonCarrier').selectedIndex = 0;
-            document.getElementById('commonTimeSlot').selectedIndex = 0;
-            document.getElementById('commonRemark').selectedIndex = 0;
-            syncTimeSlots("なし");
+            return results;
         }
 
-        function remove(id) {
-            let items = JSON.parse(localStorage.getItem('delivery_v_final_secure') || '[]');
-            localStorage.setItem('delivery_v_final_secure', JSON.stringify(items.filter(i => i.id !== id)));
-            render();
+        // --- 5. 描画ロジック ---
+        function renderDashboard() {
+            document.getElementById('displayDate').innerText = formatDateStr(activeDate);
+            const targetDateStr = getYYYYMMDD(activeDate);
+            const content = document.getElementById('dashboardContent');
+            let html = '';
+
+            // ゴミ捨てセクション
+            const garbages = getGarbageForDate(activeDate);
+            if (garbages.length > 0) {
+                html += `<div class="bg-white p-4 rounded-[1.5rem] shadow-sm border border-slate-100">
+                            <h3 class="text-[10px] font-bold text-slate-400 mb-2 tracking-widest flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> ゴミ出し
+                            </h3>
+                            <div class="flex gap-2 flex-wrap">`;
+                garbages.forEach(g => {
+                    html += `<div class="px-3 py-1.5 rounded-lg border text-xs font-bold ${g.color}">${g.name}</div>`;
+                });
+                html += `</div></div>`;
+            }
+
+            // 配送セクション
+            let deliveries = JSON.parse(localStorage.getItem('sec_app_deliveries') || '[]');
+            let todaysDeliveries = deliveries.filter(d => d.deliveryDateRaw === targetDateStr);
+            if (todaysDeliveries.length > 0) {
+                html += `<div class="bg-white p-4 rounded-[1.5rem] shadow-sm border border-slate-100">
+                            <h3 class="text-[10px] font-bold text-slate-400 mb-3 tracking-widest flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg> 配送予定
+                            </h3>
+                            <div class="space-y-2">`;
+                todaysDeliveries.forEach(d => {
+                    let btnText = (d.carrier === 'amazon' || d.carrier === 'yodobashi') ? 'HP' : '追跡';
+                    html += `
+                    <div class="bg-${d.carrier} rounded-2xl p-1.5 flex items-center gap-2">
+                        <div class="bg-white rounded-xl w-[55px] h-10 shrink-0 flex items-center justify-center">
+                            <p class="text-[10px] font-bold text-slate-500 leading-none">${d.timeSlot === '8-12' ? '8:00〜' : d.timeSlot}</p>
+                        </div>
+                        <a href="${urls[d.carrier]}${btnText==='HP'?'':d.num}" target="_blank" class="bg-slate-800 rounded-xl h-10 w-[45px] shrink-0 flex items-center justify-center active:opacity-70 shadow-sm">
+                            <p class="text-[10px] font-bold text-white">${btnText}</p>
+                        </a>
+                        <div class="flex-1 min-w-0 px-1">
+                            <p class="text-xs font-bold text-slate-800 truncate">${d.remark}</p>
+                        </div>
+                    </div>`;
+                });
+                html += `</div></div>`;
+            }
+
+            // アニメセクション
+            let todaysAnimes = getAnimesForDate(targetDateStr);
+            if (todaysAnimes.length > 0) {
+                html += `<div class="bg-white p-4 rounded-[1.5rem] shadow-sm border border-slate-100">
+                            <h3 class="text-[10px] font-bold text-slate-400 mb-3 tracking-widest flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> アニメ
+                            </h3>
+                            <div class="space-y-2">`;
+                todaysAnimes.forEach(a => {
+                    html += `
+                    <div class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+                        <div class="bg-indigo-100 text-indigo-700 px-2 py-1.5 rounded-xl flex flex-col items-center justify-center min-w-[50px]">
+                            <span class="text-[8px] font-bold">${a.displayPrefix}</span>
+                            <span class="text-xs font-bold leading-none mt-0.5">${a.time}</span>
+                        </div>
+                        <p class="text-sm font-bold text-slate-800">${a.title}</p>
+                    </div>`;
+                });
+                html += `</div></div>`;
+            }
+
+            // プロ野球セクション
+            let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs') || '[]');
+            let todaysBaseballs = baseballs.filter(b => b.dateRaw === targetDateStr);
+            if (todaysBaseballs.length > 0) {
+                html += `<div class="bg-white p-4 rounded-[1.5rem] shadow-sm border border-slate-100">
+                            <h3 class="text-[10px] font-bold text-slate-400 mb-3 tracking-widest flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> プロ野球
+                            </h3>
+                            <div class="space-y-2">`;
+                todaysBaseballs.forEach(b => {
+                    html += `
+                    <div class="flex items-center gap-3 bg-emerald-50 p-2.5 rounded-2xl border border-emerald-100">
+                        <div class="bg-emerald-600 text-white px-2 py-1.5 rounded-xl flex items-center justify-center min-w-[50px]">
+                            <span class="text-xs font-bold">${b.time}</span>
+                        </div>
+                        <p class="text-sm font-bold text-slate-800">${b.title}</p>
+                    </div>`;
+                });
+                html += `</div></div>`;
+            }
+
+            if(html === '') {
+                html = `<div class="text-center py-20"><p class="text-slate-400 font-bold text-xs tracking-widest">予定はありません</p></div>`;
+            }
+
+            content.innerHTML = html;
         }
 
-        function updateDate(id, val) {
-            let items = JSON.parse(localStorage.getItem('delivery_v_final_secure') || '[]');
-            const item = items.find(i => i.id === id);
-            if (item) { item.deliveryDateRaw = val; localStorage.setItem('delivery_v_final_secure', JSON.stringify(items)); render(); }
-        }
-        function updateTime(id, val) {
-            let items = JSON.parse(localStorage.getItem('delivery_v_final_secure') || '[]');
-            const item = items.find(i => i.id === id);
-            if (item) { item.timeSlot = val; localStorage.setItem('delivery_v_final_secure', JSON.stringify(items)); render(); }
+        // --- 6. モーダル・登録制御 ---
+        let currentTab = 'delivery';
+
+        function openModal() {
+            document.getElementById('addModal').classList.remove('hidden');
+            let d = getYYYYMMDD(activeDate);
+            document.getElementById('add-del-date').value = d;
+            document.getElementById('add-anime-date').value = d;
+            document.getElementById('add-base-date').value = d;
         }
 
-        function render() {
-            let items = JSON.parse(localStorage.getItem('delivery_v_final_secure') || '[]');
-            const listEl = document.getElementById('list');
-            if (items.length === 0) { listEl.innerHTML = '<p class="text-center py-10 text-slate-300 font-bold text-[10px]">荷物はありません</p>'; return; }
+        function closeModal() {
+            document.getElementById('addModal').classList.add('hidden');
+        }
 
-            const timePriority = { "なし": 0, "8-12": 1, "14-16": 2, "16-18": 3, "18-20": 4, "19-21": 5 };
-            items.sort((a, b) => {
-                const dateA = new Date(a.deliveryDateRaw);
-                const dateB = new Date(b.deliveryDateRaw);
-                if (dateA.getTime() !== dateB.getTime()) return dateA - dateB;
-                return (timePriority[a.timeSlot] || 0) - (timePriority[b.timeSlot] || 0);
+        function switchTab(tab) {
+            currentTab = tab;
+            ['delivery', 'anime', 'baseball'].forEach(t => {
+                document.getElementById(`form-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).className = 'flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 transition-all';
             });
-
-            listEl.innerHTML = items.map(item => {
-                const displayDate = formatDateShort(new Date(item.deliveryDateRaw));
-                const btnText = (item.carrier === 'amazon' || item.carrier === 'yodobashi') ? 'HP' : '追跡';
-                
-                return `
-                <div class="card-${item.carrier} rounded-[1.25rem] p-2 shadow-sm flex items-center gap-1.5 transition-all">
-                    <div class="bg-white rounded-[1.25rem] w-[55px] h-10 shrink-0 relative flex items-center justify-center shadow-sm">
-                        <p class="text-[12px] font-bold text-slate-800 leading-none">${displayDate}</p>
-                        <input type="date" value="${item.deliveryDateRaw}" onchange="updateDate(${item.id}, this.value)" class="absolute inset-0 opacity-0 w-full h-full">
-                    </div>
-                    <div class="bg-white rounded-[1.25rem] w-[55px] h-10 shrink-0 relative flex items-center justify-center shadow-sm">
-                        <p class="text-[10px] font-bold text-slate-500 leading-none">${item.timeSlot}</p>
-                        <select onchange="updateTime(${item.id}, this.value)" class="absolute inset-0 opacity-0 w-full h-full">
-                            <option value="なし" ${item.timeSlot==='なし'?'selected':''}>なし</option><option value="8-12" ${item.timeSlot==='8-12'?'selected':''}>8-12</option><option value="14-16" ${item.timeSlot==='14-16'?'selected':''}>14-16</option><option value="16-18" ${item.timeSlot==='16-18'?'selected':''}>16-18</option><option value="18-20" ${item.timeSlot==='18-20'?'selected':''}>18-20</option><option value="19-21" ${item.timeSlot==='19-21'?'selected':''}>19-21</option>
-                        </select>
-                    </div>
-                    <a href="${urls[item.carrier]}${item.carrier==='amazon'||item.carrier==='yodobashi'?'':item.num}" target="_blank" class="bg-slate-800 rounded-[1.25rem] h-10 w-[55px] shrink-0 flex items-center justify-center active:opacity-70 shadow-sm">
-                        <p class="text-[11px] font-bold text-white">${btnText}</p>
-                    </a>
-                    <div class="flex-1 min-w-0 text-left px-1 flex flex-col justify-center">
-                        <p class="text-[11px] font-bold truncate leading-tight mb-0.5 text-slate-800">${item.remark}</p>
-                        <p class="text-[9px] font-mono truncate leading-none text-slate-600 opacity-80">${item.num}</p>
-                    </div>
-                    <button onclick="remove(${item.id})" class="bg-white/40 backdrop-blur-sm rounded-[1.25rem] h-10 w-[55px] shrink-0 flex items-center justify-center active:bg-red-500 active:text-white transition-colors shadow-sm">
-                        <p class="text-[11px] font-bold text-slate-800">完了</p>
-                    </button>
-                </div>`;
-            }).join('');
+            document.getElementById(`form-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).className = 'flex-1 py-2 text-xs font-bold rounded-lg bg-white shadow-sm text-slate-800 transition-all';
         }
-        render();
+
+        function saveNewItem() {
+            if (currentTab === 'delivery') {
+                let items = JSON.parse(localStorage.getItem('sec_app_deliveries') || '[]');
+                items.push({
+                    id: Date.now(),
+                    carrier: document.getElementById('add-del-carrier').value,
+                    deliveryDateRaw: document.getElementById('add-del-date').value,
+                    timeSlot: document.getElementById('add-del-time').value,
+                    remark: document.getElementById('add-del-remark').value || '荷物',
+                    num: document.getElementById('add-del-num').value
+                });
+                localStorage.setItem('sec_app_deliveries', JSON.stringify(items));
+                document.getElementById('add-del-remark').value = '';
+                document.getElementById('add-del-num').value = '';
+            } 
+            else if (currentTab === 'anime') {
+                let items = JSON.parse(localStorage.getItem('sec_app_animes') || '[]');
+                items.push({
+                    id: Date.now(),
+                    title: document.getElementById('add-anime-title').value || 'アニメ',
+                    dateRaw: document.getElementById('add-anime-date').value,
+                    time: document.getElementById('add-anime-time').value || '00:00',
+                    nextDayDisplay: document.getElementById('add-anime-nextday').checked,
+                    isWeekly: false 
+                });
+                localStorage.setItem('sec_app_animes', JSON.stringify(items));
+                document.getElementById('add-anime-title').value = '';
+            }
+            else if (currentTab === 'baseball') {
+                let items = JSON.parse(localStorage.getItem('sec_app_baseballs') || '[]');
+                items.push({
+                    id: Date.now(),
+                    title: document.getElementById('add-base-title').value || 'プロ野球',
+                    dateRaw: document.getElementById('add-base-date').value,
+                    time: document.getElementById('add-base-time').value || '18:00'
+                });
+                localStorage.setItem('sec_app_baseballs', JSON.stringify(items));
+                document.getElementById('add-base-title').value = '';
+            }
+
+            renderDashboard();
+            closeModal();
+        }
+
+        // 初期描画
+        renderDashboard();
     </script>
 </body>
 </html>
