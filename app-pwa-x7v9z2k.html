@@ -15,7 +15,6 @@
     <style>
         body { background-color: #f2f2f2; overflow-x: hidden; width: 100%; -webkit-font-smoothing: antialiased; }
         
-        /* モーダル用アニメーション */
         .modal-enter { animation: slideUp 0.3s ease-out forwards; }
         @keyframes slideUp {
             from { transform: translateY(100%); opacity: 0; }
@@ -79,9 +78,9 @@
                 <div id="form-delivery" class="space-y-3">
                     <input type="date" id="add-del-date" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
                     <select id="add-del-carrier" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
-                        <option value="post" selected>JP (日本郵便)</option>
-                        <option value="yamato">ヤマト</option>
-                        <option value="sagawa">佐川</option>
+                        <option value="yamato" selected>ヤマト運輸</option>
+                        <option value="post">日本郵便</option>
+                        <option value="sagawa">佐川急便</option>
                         <option value="amazon">Amazon</option>
                         <option value="yodobashi">ヨドバシ</option>
                     </select>
@@ -96,9 +95,6 @@
                     <input type="date" id="add-anime-date" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
                     <input type="time" id="add-anime-time" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
                     <input type="text" id="add-anime-title" placeholder="タイトル" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
-                    <label class="flex items-center gap-2 text-xs font-bold text-slate-600 ml-1">
-                        <input type="checkbox" id="add-anime-nextday" checked class="w-4 h-4 accent-slate-800"> 翌日の予定として表示する
-                    </label>
                 </div>
 
                 <div id="form-baseball" class="space-y-3 hidden">
@@ -114,22 +110,60 @@
     </div>
 
     <script>
-        // --- 初期データセットアップ ---
+        // --- 1. 大量データの初期セットアップ (強制上書き回避用バージョン変更) ---
         function initDefaults() {
-            if (!localStorage.getItem('sec_app_deliveries_v2')) {
-                localStorage.setItem('sec_app_deliveries_v2', JSON.stringify([
-                    { id: 1, carrier: 'post', num: '', remark: 'セカンドストリート', deliveryDateRaw: '2026-04-06', timeSlot: '8-12' }
-                ]));
+            if (!localStorage.getItem('sec_app_animes_v3')) {
+                const defaultAnimes = [
+                    { id: 1, title: '逃がした魚は大きかったが釣りあげた魚が大きすぎた件', dateRaw: '2026-04-02', isWeekly: true, weeks: 12 },
+                    { id: 2, title: '自称悪役令嬢な婚約者の観察記録。', dateRaw: '2026-04-04', isWeekly: true, weeks: 12 },
+                    { id: 3, title: '本好きの下剋上 領主の養女', dateRaw: '2026-04-05', isWeekly: true, weeks: 12 },
+                    { id: 4, title: 'ようこそ実力至上主義の教室へ 4th Season', dateRaw: '2026-04-05', isWeekly: true, weeks: 12 },
+                    { id: 5, title: '転生したらスライムだった件 第4期', dateRaw: '2026-04-05', isWeekly: true, weeks: 12 },
+                    { id: 6, title: '最強の職業は勇者でも賢者でもなく鑑定士（仮）らしいですよ？', dateRaw: '2026-04-05', isWeekly: true, weeks: 12 },
+                    { id: 7, title: 'メイドさんは食べるだけ', dateRaw: '2026-04-06', isWeekly: true, weeks: 12 },
+                    { id: 8, title: '魔物喰らいの冒険者～俺だけ魔物を喰らって強くなる～', dateRaw: '2026-04-06', isWeekly: true, weeks: 12 },
+                    { id: 9, title: '灰原くんの強くて青春ニューゲーム', dateRaw: '2026-04-06', isWeekly: true, weeks: 12 },
+                    { id: 10, title: '自動販売機に生まれ変わった俺は迷宮を彷徨う 3rd season', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
+                    { id: 11, title: '異世界のんびり農家2', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
+                    { id: 12, title: 'また殺されてしまったのですね、探偵様', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
+                    { id: 13, title: 'お隣の天使様にいつの間にか駄目人間にされていた件2', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
+                    { id: 14, title: 'LIAR GAME', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
+                    { id: 15, title: '神の庭付き楠木邸', dateRaw: '2026-04-10', isWeekly: true, weeks: 12 },
+                    { id: 16, title: 'Re:ゼロから始める異世界生活 4th season', dateRaw: '2026-04-12', isWeekly: true, weeks: 12 },
+                    { id: 17, title: 'クラスで2番目に可愛い女の子と友だちになった', dateRaw: '2026-04-12', isWeekly: true, weeks: 12 },
+                    { id: 18, title: '姫騎士は蛮族の嫁', dateRaw: '2026-04-13', isWeekly: true, weeks: 12 },
+                    { id: 19, title: '女神「異世界転生何になりたいですか」俺「勇者の肋骨で」', dateRaw: '2026-04-13', isWeekly: true, weeks: 12 },
+                    { id: 20, title: '悲劇の元凶となる最強外道ラスボス女王は民の為に尽くします。 Season2', dateRaw: '2026-04-14', isWeekly: true, weeks: 12 },
+                    { id: 21, title: '彼女、お借りします 第5期', dateRaw: '2026-04-15', isWeekly: true, weeks: 12 },
+                    { id: 22, title: '夜桜さんちの大作戦 第2期', dateRaw: '2026-04-18', isWeekly: true, weeks: 12 }
+                ];
+                localStorage.setItem('sec_app_animes_v3', JSON.stringify(defaultAnimes));
             }
-            if (!localStorage.getItem('sec_app_animes_v2')) {
-                localStorage.setItem('sec_app_animes_v2', JSON.stringify([
-                    { id: 2, title: 'メイドさんは食べるだけ', dateRaw: '2026-04-05', time: '22:00', nextDayDisplay: true, isWeekly: true, weeks: 12 }
-                ]));
-            }
-            if (!localStorage.getItem('sec_app_baseballs_v2')) {
-                localStorage.setItem('sec_app_baseballs_v2', JSON.stringify([
-                    { id: 3, title: 'プロ野球', dateRaw: '2026-04-07', time: '18:00' }
-                ]));
+
+            if (!localStorage.getItem('sec_app_baseballs_v3')) {
+                const defaultBaseballs = [
+                    { id: 1, title: '楽天 @ 楽天モバイル', dateRaw: '2026-05-07', time: '18:00' },
+                    { id: 2, title: '楽天 @ 楽天モバイル', dateRaw: '2026-05-08', time: '18:00' },
+                    { id: 3, title: '楽天 @ 楽天モバイル', dateRaw: '2026-05-09', time: '18:00' },
+                    { id: 4, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-05-11', time: '14:00' },
+                    { id: 5, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-05-12', time: '13:00' },
+                    { id: 6, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-05-14', time: '18:00' },
+                    { id: 7, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-05-15', time: '18:00' },
+                    { id: 8, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-05-16', time: '18:00' },
+                    { id: 9, title: '西武 @ エスコンF', dateRaw: '2026-05-17', time: '18:00' },
+                    { id: 10, title: '西武 @ エスコンF', dateRaw: '2026-05-18', time: '14:00' },
+                    { id: 11, title: '西武 @ エスコンF', dateRaw: '2026-05-19', time: '13:00' },
+                    { id: 12, title: '楽天 @ エスコンF', dateRaw: '2026-05-21', time: '18:00' },
+                    { id: 13, title: '楽天 @ エスコンF', dateRaw: '2026-05-22', time: '18:00' },
+                    { id: 14, title: '楽天 @ エスコンF', dateRaw: '2026-05-23', time: '18:00' },
+                    { id: 15, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-05-24', time: '18:00' },
+                    { id: 16, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-05-25', time: '14:00' },
+                    { id: 17, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-05-26', time: '13:00' },
+                    { id: 18, title: '西武 @ ベルーナドーム', dateRaw: '2026-05-28', time: '13:00' },
+                    { id: 19, title: '西武 @ ベルーナドーム', dateRaw: '2026-05-29', time: '14:00' },
+                    { id: 20, title: '西武 @ ベルーナドーム', dateRaw: '2026-05-30', time: '18:00' }
+                ];
+                localStorage.setItem('sec_app_baseballs_v3', JSON.stringify(defaultBaseballs));
             }
         }
         initDefaults();
@@ -141,11 +175,11 @@
             amazon: "https://www.amazon.co.jp/gp/your-account/order-history", 
             yodobashi: "https://www.yodobashi.com/" 
         };
-
         const carrierDisplayNames = { post: '日本郵便', yamato: 'ヤマト運輸', sagawa: '佐川急便', amazon: 'Amazon', yodobashi: 'ヨドバシ' };
 
-        // --- 日付・時間管理 ---
-        let activeDate = new Date();
+        // --- 2. 日付・時間管理 (強制リセットバグ修正) ---
+        let displayDate = new Date(); // ユーザーが操作・閲覧している日付
+        let internalSystemDate = checkTimeAndSetDate(); // システム内部の「今日」
 
         function checkTimeAndSetDate() {
             let now = new Date();
@@ -156,7 +190,8 @@
             return now;
         }
 
-        activeDate = checkTimeAndSetDate();
+        // 初回ロード時は「今日」を表示
+        displayDate = new Date(internalSystemDate);
 
         setInterval(() => {
             let now = new Date();
@@ -164,15 +199,21 @@
             let minutes = String(now.getMinutes()).padStart(2, '0');
             document.getElementById('currentTime').innerText = `${hours}:${minutes}`;
             
+            // 23時の日付またぎ監視 (システム上の「今日」が変わったか)
             let calculatedDate = checkTimeAndSetDate();
-            if(activeDate.getTime() !== calculatedDate.getTime() && document.visibilityState === 'visible') {
-                activeDate = calculatedDate;
-                renderDashboard();
+            if(internalSystemDate.getTime() !== calculatedDate.getTime()) {
+                internalSystemDate = calculatedDate;
+                // もしユーザーが「今日」を見ている状態なら、表示も翌日に切り替える
+                // 過去・未来を見ている場合は勝手に切り替えない
+                if (document.visibilityState === 'visible') {
+                    displayDate = new Date(internalSystemDate);
+                    renderDashboard();
+                }
             }
         }, 1000);
 
         function changeDate(days) {
-            activeDate.setDate(activeDate.getDate() + days);
+            displayDate.setDate(displayDate.getDate() + days);
             renderDashboard();
         }
 
@@ -180,7 +221,7 @@
             return `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
         }
 
-        // --- ゴミ捨てロジック ---
+        // --- 3. データ抽出ロジック ---
         function getGarbageForDate(dateObj) {
             let garbages = [];
             let day = dateObj.getDay();
@@ -189,23 +230,19 @@
 
             if (day === 2 || day === 5) garbages.push({ name: '燃えるゴミ', bg: 'bg-[#f05a5a]', text: 'text-white' });
             if (day === 3) garbages.push({ name: 'ペット／ビン／缶', bg: 'bg-[#1d7eb8]', text: 'text-white' });
+            if ((m === 4 && d === 23) || (m === 5 && d === 21)) garbages.push({ name: '燃えないゴミ', bg: 'bg-slate-400', text: 'text-white' });
             
-            if ((m === 4 && d === 23) || (m === 5 && d === 21)) {
-                garbages.push({ name: '燃えないゴミ', bg: 'bg-slate-400', text: 'text-white' });
-            }
             return garbages;
         }
 
-        // --- アニメ抽出ロジック ---
         function getAnimesForDate(targetDateStr) {
-            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v2') || '[]');
+            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v3') || '[]');
             let results = [];
             let targetTime = new Date(targetDateStr).getTime();
 
             animes.forEach(anime => {
                 let baseDate = new Date(anime.dateRaw);
-                if (anime.nextDayDisplay) baseDate.setDate(baseDate.getDate() + 1);
-                
+                // 翌日表示ルール廃止。当日判定のみ。
                 if (anime.isWeekly) {
                     let weeks = anime.weeks || 1;
                     let endTime = new Date(baseDate).getTime() + ((weeks - 1) * 7 * 24 * 60 * 60 * 1000);
@@ -219,52 +256,51 @@
             return results;
         }
 
-        // --- 描画ロジック ---
+        // --- 4. 描画ロジック ---
         function renderDashboard() {
-            // ヘッダー更新
             const days = ['日', '月', '火', '水', '木', '金', '土'];
-            document.getElementById('headerDay').innerText = days[activeDate.getDay()];
-            document.getElementById('headerDate').innerText = activeDate.getDate();
+            document.getElementById('headerDay').innerText = days[displayDate.getDay()];
+            document.getElementById('headerDate').innerText = displayDate.getDate();
 
-            const targetDateStr = getYYYYMMDD(activeDate);
+            const targetDateStr = getYYYYMMDD(displayDate);
             const content = document.getElementById('dashboardContent');
             let html = '';
 
-            // 1. バッジエリア（ゴミ・プロ野球）
-            const garbages = getGarbageForDate(activeDate);
-            let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs_v2') || '[]');
+            // バッジエリア（ゴミ・プロ野球）※横幅拡大 (w-full)
+            const garbages = getGarbageForDate(displayDate);
+            let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs_v3') || '[]');
             let todaysBaseballs = baseballs.filter(b => b.dateRaw === targetDateStr);
             
             if (garbages.length > 0 || todaysBaseballs.length > 0) {
-                html += `<div class="flex items-center justify-center gap-3 flex-wrap">`;
+                html += `<div class="flex flex-col gap-3">`;
                 garbages.forEach(g => {
-                    html += `<div class="${g.bg} ${g.text} rounded-full px-5 py-2.5 font-black text-lg shadow-sm tracking-widest">${g.name}</div>`;
+                    html += `<div class="w-full ${g.bg} ${g.text} rounded-full py-3.5 font-black text-xl shadow-sm tracking-widest text-center">${g.name}</div>`;
                 });
                 todaysBaseballs.forEach(b => {
+                    // Fの文字色を背景と同じ #1d7eb8 に指定
                     html += `
-                    <div class="relative bg-[#1d7eb8] text-white rounded-full px-7 py-2.5 font-black text-xl shadow-sm tracking-widest">
-                        <div class="absolute -top-1.5 -left-1.5 w-7 h-7 border-[2.5px] border-slate-800 rounded-full bg-white text-slate-800 flex items-center justify-center font-black text-sm">F</div>
-                        ${b.time}
+                    <div class="w-full relative bg-[#1d7eb8] text-white rounded-full py-3.5 font-black text-xl shadow-sm tracking-widest text-center">
+                        <div class="absolute top-1/2 -translate-y-1/2 left-2 w-9 h-9 border-[2.5px] border-slate-800 rounded-full bg-white text-[#1d7eb8] flex items-center justify-center font-black text-base">F</div>
+                        ${b.time} ${b.title}
                     </div>`;
                 });
                 html += `</div>`;
             }
 
-            // 2. 配送カード（統合表示）
+            // 配送カード（区切り線廃止、マージン調整）
             let deliveries = JSON.parse(localStorage.getItem('sec_app_deliveries_v2') || '[]');
             let todaysDeliveries = deliveries.filter(d => d.deliveryDateRaw === targetDateStr);
             if (todaysDeliveries.length > 0) {
-                html += `<div class="bg-white rounded-[2rem] p-5 shadow-sm mt-4">`;
-                todaysDeliveries.forEach((d, index) => {
+                html += `<div class="bg-white rounded-[2rem] p-5 shadow-sm mt-4 space-y-5">`;
+                todaysDeliveries.forEach((d) => {
                     const cName = carrierDisplayNames[d.carrier] || d.carrier;
-                    const borderClass = index !== todaysDeliveries.length - 1 ? 'border-b-2 border-slate-800 pb-4 mb-4' : '';
                     const btnText = (d.carrier === 'amazon' || d.carrier === 'yodobashi') ? 'HP' : '追跡';
                     
                     html += `
-                    <div class="flex items-center justify-between ${borderClass}">
+                    <div class="flex items-center justify-between">
                         <div class="flex flex-col flex-1 min-w-0 pr-2">
                             <span class="text-${d.carrier} font-black text-xl tracking-tight truncate">${cName}</span>
-                            <span class="text-[11px] font-bold text-slate-500 mt-1 truncate">${d.remark}</span>
+                            <span class="text-[11px] font-bold text-slate-500 mt-0.5 truncate">${d.remark}</span>
                         </div>
                         <div class="text-${d.carrier} font-black text-2xl tracking-tighter shrink-0 mx-2">
                             ${d.timeSlot}
@@ -277,14 +313,14 @@
                 html += `</div>`;
             }
 
-            // 3. アニメカード
+            // アニメカード
             let todaysAnimes = getAnimesForDate(targetDateStr);
             if (todaysAnimes.length > 0) {
                 html += `<div class="relative bg-white rounded-[2rem] p-6 shadow-sm mt-8">
                             <div class="absolute -top-4 -left-2 bg-[#c2a853] text-white font-black px-4 py-1.5 rounded-full text-sm tracking-widest shadow-sm">NEW</div>
                             <div class="space-y-2 mt-2">`;
                 todaysAnimes.forEach(a => {
-                    html += `<p class="text-xl font-black text-slate-900 tracking-tight leading-snug">・${a.title}</p>`;
+                    html += `<p class="text-lg font-black text-slate-900 tracking-tight leading-snug">・${a.title}</p>`;
                 });
                 html += `</div></div>`;
             }
@@ -296,12 +332,12 @@
             content.innerHTML = html;
         }
 
-        // --- モーダル・登録制御 ---
+        // --- 5. モーダル・登録制御 ---
         let currentTab = 'delivery';
 
         function openModal() {
             document.getElementById('addModal').classList.remove('hidden');
-            let d = getYYYYMMDD(activeDate);
+            let d = getYYYYMMDD(displayDate);
             document.getElementById('add-del-date').value = d;
             document.getElementById('add-anime-date').value = d;
             document.getElementById('add-base-date').value = d;
@@ -337,33 +373,34 @@
                 document.getElementById('add-del-num').value = '';
             } 
             else if (currentTab === 'anime') {
-                let items = JSON.parse(localStorage.getItem('sec_app_animes_v2') || '[]');
+                let items = JSON.parse(localStorage.getItem('sec_app_animes_v3') || '[]');
                 items.push({
                     id: Date.now(),
                     title: document.getElementById('add-anime-title').value || 'アニメ',
                     dateRaw: document.getElementById('add-anime-date').value,
                     time: document.getElementById('add-anime-time').value || '00:00',
-                    nextDayDisplay: document.getElementById('add-anime-nextday').checked,
                     isWeekly: false 
                 });
-                localStorage.setItem('sec_app_animes_v2', JSON.stringify(items));
+                localStorage.setItem('sec_app_animes_v3', JSON.stringify(items));
                 document.getElementById('add-anime-title').value = '';
             }
             else if (currentTab === 'baseball') {
-                let items = JSON.parse(localStorage.getItem('sec_app_baseballs_v2') || '[]');
+                let items = JSON.parse(localStorage.getItem('sec_app_baseballs_v3') || '[]');
                 items.push({
                     id: Date.now(),
                     title: document.getElementById('add-base-title').value || 'プロ野球',
                     dateRaw: document.getElementById('add-base-date').value,
                     time: document.getElementById('add-base-time').value || '18:00'
                 });
-                localStorage.setItem('sec_app_baseballs_v2', JSON.stringify(items));
+                localStorage.setItem('sec_app_baseballs_v3', JSON.stringify(items));
                 document.getElementById('add-base-title').value = '';
             }
 
             renderDashboard();
             closeModal();
         }
+
+        renderDashboard();
     </script>
 </body>
 </html>
