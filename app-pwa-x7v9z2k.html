@@ -32,14 +32,14 @@
     <div class="max-w-xl mx-auto relative px-4">
         
         <div class="flex justify-center items-center gap-4 mb-6">
-            <div class="relative w-[130px] h-[130px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
-                <div id="headerDay" class="absolute -top-2 -left-2 w-12 h-12 border-[3px] border-black rounded-xl bg-white flex items-center justify-center font-black text-xl z-10">
-                    --
+            <div class="relative w-[140px] h-[130px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
+                <div class="flex items-center pl-1">
+                    <span id="headerDate" class="text-[4.5rem] font-black leading-none tracking-tighter">--</span>
+                    <span id="headerDay" class="ml-1 text-lg font-black tracking-widest text-slate-800" style="writing-mode: vertical-rl; text-orientation: upright;">--曜日</span>
                 </div>
-                <span id="headerDate" class="text-[5rem] font-black leading-none tracking-tighter">--</span>
             </div>
             
-            <div class="w-[150px] h-[150px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
+            <div class="w-[150px] h-[130px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
                 <span id="currentTime" class="text-[3rem] font-black leading-none tracking-tighter">--:--</span>
             </div>
         </div>
@@ -52,7 +52,7 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
             </button>
             <button onclick="openModal()" class="flex-1 bg-[#8cd2e6] text-white font-black text-lg py-3 rounded-full shadow-md active:scale-95 transition-transform tracking-wider">
-                予定を追加
+                荷物を登録
             </button>
             <button onclick="changeDate(1)" class="w-12 h-12 shrink-0 bg-[#8cd2e6] text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
@@ -60,56 +60,38 @@
         </div>
 
         <div id="addModal" class="hidden fixed inset-0 bg-slate-900/40 z-30 flex items-end sm:items-center justify-center backdrop-blur-sm">
-            <div class="bg-white w-full sm:max-w-md sm:rounded-[2rem] rounded-t-[2rem] p-5 modal-enter shadow-2xl max-h-[90vh] overflow-y-auto">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-black text-slate-800">予定の登録</h3>
+            <div class="bg-white w-full sm:max-w-md sm:rounded-[2rem] rounded-t-[2rem] p-6 modal-enter shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-black text-slate-800 tracking-tight">荷物の登録</h3>
                     <button onclick="closeModal()" class="bg-slate-100 p-2 rounded-full text-slate-500 active:bg-slate-200">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
-                
-                <div class="flex gap-2 mb-4 bg-slate-100 p-1 rounded-xl">
-                    <button onclick="switchTab('delivery')" id="tab-delivery" class="flex-1 py-2 text-xs font-bold rounded-lg bg-white shadow-sm text-slate-800 transition-all">荷物</button>
-                    <button onclick="switchTab('anime')" id="tab-anime" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 transition-all">アニメ</button>
-                    <button onclick="switchTab('baseball')" id="tab-baseball" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 transition-all">プロ野球</button>
-                </div>
 
-                <div id="form-delivery" class="space-y-3">
-                    <input type="date" id="add-del-date" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
-                    <select id="add-del-carrier" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                <div id="form-delivery" class="space-y-4">
+                    <input type="date" id="add-del-date" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
+                    <select id="add-del-carrier" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
                         <option value="yamato" selected>ヤマト運輸</option>
                         <option value="post">日本郵便</option>
                         <option value="sagawa">佐川急便</option>
                         <option value="amazon">Amazon</option>
                         <option value="yodobashi">ヨドバシ</option>
                     </select>
-                    <select id="add-del-time" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                    <select id="add-del-time" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
                         <option value="なし">指定なし</option><option value="8-12" selected>8-12</option><option value="14-16">14-16</option><option value="16-18">16-18</option><option value="18-20">18-20</option><option value="19-21">19-21</option>
                     </select>
-                    <input type="text" id="add-del-remark" placeholder="品名 / ショップ名" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
-                    <input type="text" id="add-del-num" placeholder="追跡番号 (任意)" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
+                    <input type="text" id="add-del-remark" placeholder="品名 / ショップ名" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
+                    <input type="text" id="add-del-num" placeholder="追跡番号 (任意)" class="w-full bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
                 </div>
 
-                <div id="form-anime" class="space-y-3 hidden">
-                    <input type="date" id="add-anime-date" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
-                    <input type="time" id="add-anime-time" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
-                    <input type="text" id="add-anime-title" placeholder="タイトル" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
-                </div>
-
-                <div id="form-baseball" class="space-y-3 hidden">
-                    <input type="date" id="add-base-date" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
-                    <input type="time" id="add-base-time" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
-                    <input type="text" id="add-base-title" placeholder="対戦カード等" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
-                </div>
-
-                <button onclick="saveNewItem()" class="w-full bg-[#8cd2e6] text-white font-black text-lg py-3.5 rounded-[1.25rem] mt-5 active:scale-95 transition-transform tracking-widest">追加する</button>
+                <button onclick="saveNewItem()" class="w-full bg-[#8cd2e6] text-white font-black text-lg py-4 rounded-[1.25rem] mt-6 active:scale-95 transition-transform tracking-widest">追加する</button>
             </div>
         </div>
 
     </div>
 
     <script>
-        // --- データ初期化 (v4へバージョンアップ) ---
+        // --- データ初期化 (v4へバージョンアップ維持) ---
         function initDefaults() {
             if (!localStorage.getItem('sec_app_animes_v4')) {
                 const defaultAnimes = [
@@ -303,7 +285,7 @@
         };
         const carrierDisplayNames = { post: '日本郵便', yamato: 'ヤマト運輸', sagawa: '佐川急便', amazon: 'Amazon', yodobashi: 'ヨドバシ' };
 
-        // --- 日付・時間管理 (強制リセットバグ修正) ---
+        // --- 日付・時間管理 ---
         let displayDate = new Date(); 
         let internalSystemDate = checkTimeAndSetDate(); 
 
@@ -348,7 +330,6 @@
             let garbages = [];
             let day = dateObj.getDay();
             
-            // 燃えないゴミ完全版リスト
             const unburnableDates = ['04-23', '05-21', '06-18', '07-16', '08-13', '09-10'];
             let mdStr = String(dateObj.getMonth()+1).padStart(2,'0') + '-' + String(dateObj.getDate()).padStart(2,'0');
 
@@ -366,7 +347,6 @@
 
             animes.forEach(anime => {
                 let baseDate = new Date(anime.dateRaw);
-                // 翌日表示は廃止、当日判定のみ
                 if (anime.isWeekly) {
                     let weeks = anime.weeks || 1;
                     let endTime = new Date(baseDate).getTime() + ((weeks - 1) * 7 * 24 * 60 * 60 * 1000);
@@ -382,7 +362,7 @@
 
         // --- 描画ロジック ---
         function renderDashboard() {
-            const days = ['日', '月', '火', '水', '木', '金', '土'];
+            const days = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
             document.getElementById('headerDay').innerText = days[displayDate.getDay()];
             document.getElementById('headerDate').innerText = displayDate.getDate();
 
@@ -390,27 +370,31 @@
             const content = document.getElementById('dashboardContent');
             let html = '';
 
-            // バッジエリア
+            // 1. バッジエリア (横並び統合 / 球場情報のカット)
             const garbages = getGarbageForDate(displayDate);
             let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs_v4') || '[]');
             let todaysBaseballs = baseballs.filter(b => b.dateRaw === targetDateStr);
             
             if (garbages.length > 0 || todaysBaseballs.length > 0) {
-                html += `<div class="flex flex-col gap-3">`;
+                html += `<div class="flex gap-3 w-full">`;
+                
                 garbages.forEach(g => {
-                    html += `<div class="w-full ${g.bg} ${g.text} rounded-full py-3.5 font-black text-xl shadow-sm tracking-widest text-center">${g.name}</div>`;
+                    html += `<div class="flex-1 ${g.bg} ${g.text} rounded-full py-3.5 font-black text-base md:text-lg shadow-sm tracking-widest text-center flex items-center justify-center min-w-0 px-2 truncate">${g.name}</div>`;
                 });
+
                 todaysBaseballs.forEach(b => {
+                    let opponent = b.title.split(' @')[0]; // 会場情報を削除
                     html += `
-                    <div class="w-full relative bg-[#1d7eb8] text-white rounded-full py-3.5 font-black text-xl shadow-sm tracking-widest text-center">
-                        <div class="absolute top-1/2 -translate-y-1/2 left-2 w-9 h-9 border-[2.5px] border-slate-800 rounded-full bg-white text-[#1d7eb8] flex items-center justify-center font-black text-base">F</div>
-                        ${b.time} ${b.title}
+                    <div class="flex-1 relative bg-[#1d7eb8] text-white rounded-full py-3.5 font-black text-base md:text-lg shadow-sm tracking-widest text-center flex items-center justify-center min-w-0 px-2 truncate">
+                        <div class="absolute top-1/2 -translate-y-1/2 left-2 w-7 h-7 border-[2px] border-slate-800 rounded-full bg-white text-[#1d7eb8] flex items-center justify-center font-black text-xs shrink-0">F</div>
+                        <span class="ml-6 truncate">${b.time} ${opponent}</span>
                     </div>`;
                 });
+                
                 html += `</div>`;
             }
 
-            // 配送カード (区切り線廃止)
+            // 2. 配送カード
             let deliveries = JSON.parse(localStorage.getItem('sec_app_deliveries_v4') || '[]');
             let todaysDeliveries = deliveries.filter(d => d.deliveryDateRaw === targetDateStr);
             if (todaysDeliveries.length > 0) {
@@ -436,7 +420,7 @@
                 html += `</div>`;
             }
 
-            // アニメカード (1行統一・はみ出し時省略)
+            // 3. アニメカード
             let todaysAnimes = getAnimesForDate(targetDateStr);
             if (todaysAnimes.length > 0) {
                 html += `<div class="relative bg-white rounded-[2rem] px-5 py-6 shadow-sm mt-8">
@@ -456,69 +440,30 @@
         }
 
         // --- モーダル・登録制御 ---
-        let currentTab = 'delivery';
-
         function openModal() {
             document.getElementById('addModal').classList.remove('hidden');
             let d = getYYYYMMDD(displayDate);
             document.getElementById('add-del-date').value = d;
-            document.getElementById('add-anime-date').value = d;
-            document.getElementById('add-base-date').value = d;
         }
 
         function closeModal() {
             document.getElementById('addModal').classList.add('hidden');
         }
 
-        function switchTab(tab) {
-            currentTab = tab;
-            ['delivery', 'anime', 'baseball'].forEach(t => {
-                document.getElementById(`form-${t}`).classList.add('hidden');
-                document.getElementById(`tab-${t}`).className = 'flex-1 py-2 text-xs font-bold rounded-lg text-slate-500 transition-all';
-            });
-            document.getElementById(`form-${tab}`).classList.remove('hidden');
-            document.getElementById(`tab-${tab}`).className = 'flex-1 py-2 text-xs font-bold rounded-lg bg-white shadow-sm text-slate-800 transition-all';
-        }
-
         function saveNewItem() {
-            if (currentTab === 'delivery') {
-                let items = JSON.parse(localStorage.getItem('sec_app_deliveries_v4') || '[]');
-                items.push({
-                    id: Date.now(),
-                    carrier: document.getElementById('add-del-carrier').value,
-                    deliveryDateRaw: document.getElementById('add-del-date').value,
-                    timeSlot: document.getElementById('add-del-time').value,
-                    remark: document.getElementById('add-del-remark').value || '荷物',
-                    num: document.getElementById('add-del-num').value
-                });
-                localStorage.setItem('sec_app_deliveries_v4', JSON.stringify(items));
-                document.getElementById('add-del-remark').value = '';
-                document.getElementById('add-del-num').value = '';
-            } 
-            else if (currentTab === 'anime') {
-                let items = JSON.parse(localStorage.getItem('sec_app_animes_v4') || '[]');
-                items.push({
-                    id: Date.now(),
-                    title: document.getElementById('add-anime-title').value || 'アニメ',
-                    dateRaw: document.getElementById('add-anime-date').value,
-                    time: document.getElementById('add-anime-time').value || '00:00',
-                    isWeekly: false 
-                });
-                localStorage.setItem('sec_app_animes_v4', JSON.stringify(items));
-                document.getElementById('add-anime-title').value = '';
-            }
-            else if (currentTab === 'baseball') {
-                let items = JSON.parse(localStorage.getItem('sec_app_baseballs_v4') || '[]');
-                items.push({
-                    id: Date.now(),
-                    title: document.getElementById('add-base-title').value || 'プロ野球',
-                    dateRaw: document.getElementById('add-base-date').value,
-                    time: document.getElementById('add-base-time').value || '18:00'
-                });
-                localStorage.setItem('sec_app_baseballs_v4', JSON.stringify(items));
-                document.getElementById('add-base-title').value = '';
-            }
-
+            let items = JSON.parse(localStorage.getItem('sec_app_deliveries_v4') || '[]');
+            items.push({
+                id: Date.now(),
+                carrier: document.getElementById('add-del-carrier').value,
+                deliveryDateRaw: document.getElementById('add-del-date').value,
+                timeSlot: document.getElementById('add-del-time').value,
+                remark: document.getElementById('add-del-remark').value || '荷物',
+                num: document.getElementById('add-del-num').value
+            });
+            localStorage.setItem('sec_app_deliveries_v4', JSON.stringify(items));
+            document.getElementById('add-del-remark').value = '';
+            document.getElementById('add-del-num').value = '';
+            
             renderDashboard();
             closeModal();
         }
