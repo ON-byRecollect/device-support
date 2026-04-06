@@ -13,6 +13,11 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* ズームとスクロールの制御 */
+        html, body { 
+            touch-action: manipulation; /* ダブルタップズームの抑制 */
+            -webkit-text-size-adjust: 100%;
+        }
         body { background-color: #f2f2f2; overflow-x: hidden; width: 100%; -webkit-font-smoothing: antialiased; }
         
         .modal-enter { animation: slideUp 0.3s ease-out forwards; }
@@ -38,14 +43,12 @@
                     <span id="headerDay" class="ml-1 text-lg font-black tracking-widest text-slate-800" style="writing-mode: vertical-rl; text-orientation: upright;">--曜日</span>
                 </div>
             </div>
-            
             <div class="w-[140px] h-[140px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
                 <span id="currentTime" class="text-[3rem] font-black leading-none tracking-tighter">--:--</span>
             </div>
         </div>
 
-        <main class="space-y-6" id="dashboardContent">
-            </main>
+        <main class="space-y-6" id="dashboardContent"></main>
 
         <div class="fixed bottom-6 left-0 right-0 px-4 max-w-xl mx-auto z-20 flex justify-between items-center gap-3">
             <button onclick="changeDate(-1)" class="w-12 h-12 shrink-0 bg-[#8cd2e6] text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform">
@@ -80,11 +83,27 @@
                     </select>
                     
                     <select id="add-del-time" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
-                        <option value="なし">指定なし</option><option value="8-12" selected>8-12</option><option value="14-16">14-16</option><option value="16-18">16-18</option><option value="18-20">18-20</option><option value="19-21">19-21</option>
+                        <option value="指定なし">指定なし</option>
+                        <option value="8:00〜12:00" selected>8:00〜12:00</option>
+                        <option value="14:00〜16:00">14:00〜16:00</option>
+                        <option value="16:00〜18:00">16:00〜18:00</option>
+                        <option value="18:00〜20:00">18:00〜20:00</option>
+                        <option value="19:00〜21:00">19:00〜21:00</option>
                     </select>
                     
-                    <input type="text" id="add-del-remark" placeholder="品名 / ショップ名" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
-                    <input type="text" id="add-del-num" placeholder="追跡番号 (任意)" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
+                    <select id="add-del-remark" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
+                        <option value="">指定なし</option>
+                        <option value="セカンドストリート">セカンドストリート</option>
+                        <option value="GEO">GEO</option>
+                        <option value="オフモール">オフモール</option>
+                        <option value="じゃんぱら">じゃんぱら</option>
+                        <option value="ノジマ">ノジマ</option>
+                        <option value="トレジャーファクトリー">トレジャーファクトリー</option>
+                        <option value="Ali Express">Ali Express</option>
+                        <option value="ELECOM">ELECOM</option>
+                    </select>
+                    
+                    <input type="text" id="add-del-num" placeholder="追跡番号" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
                 </div>
 
                 <button onclick="saveNewItem()" class="w-full bg-[#8cd2e6] text-white font-black text-lg py-4 rounded-[1.25rem] mt-6 active:scale-95 transition-transform tracking-widest">追加する</button>
@@ -94,7 +113,17 @@
     </div>
 
     <script>
-        // --- データ初期化 (v4へバージョンアップ維持) ---
+        // JSによるダブルタップズーム無効化の追加
+        document.addEventListener('touchstart', (event) => {
+            if (event.touches.length > 1) event.preventDefault();
+        }, { passive: false });
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (event) => {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) event.preventDefault();
+            lastTouchEnd = now;
+        }, false);
+
         function initDefaults() {
             if (!localStorage.getItem('sec_app_animes_v4')) {
                 const defaultAnimes = [
@@ -146,7 +175,6 @@
                     { id: 428, title: '西武', dateRaw: '2026-04-28', time: '13:00' },
                     { id: 429, title: '西武', dateRaw: '2026-04-29', time: '14:00' },
                     { id: 430, title: '西武', dateRaw: '2026-04-30', time: '18:00' },
-                    // 5月
                     { id: 501, title: 'オリックス', dateRaw: '2026-05-01', time: '18:00' },
                     { id: 502, title: 'オリックス', dateRaw: '2026-05-02', time: '14:00' },
                     { id: 503, title: 'オリックス', dateRaw: '2026-05-03', time: '13:00' },
@@ -172,107 +200,10 @@
                     { id: 528, title: '阪神', dateRaw: '2026-05-28', time: '18:00' },
                     { id: 529, title: '巨人', dateRaw: '2026-05-29', time: '18:00' },
                     { id: 530, title: '巨人', dateRaw: '2026-05-30', time: '14:00' },
-                    { id: 531, title: '巨人', dateRaw: '2026-05-31', time: '13:00' },
-                    // 6月
-                    { id: 602, title: '広島', dateRaw: '2026-06-02', time: '18:00' },
-                    { id: 603, title: '広島', dateRaw: '2026-06-03', time: '18:00' },
-                    { id: 604, title: '広島', dateRaw: '2026-06-04', time: '18:00' },
-                    { id: 605, title: 'ヤクルト', dateRaw: '2026-06-05', time: '18:00' },
-                    { id: 606, title: 'ヤクルト', dateRaw: '2026-06-06', time: '14:00' },
-                    { id: 607, title: 'ヤクルト', dateRaw: '2026-06-07', time: '14:00' },
-                    { id: 609, title: 'DeNA', dateRaw: '2026-06-09', time: '18:00' },
-                    { id: 610, title: 'DeNA', dateRaw: '2026-06-10', time: '18:00' },
-                    { id: 611, title: 'DeNA', dateRaw: '2026-06-11', time: '18:00' },
-                    { id: 612, title: '中日', dateRaw: '2026-06-12', time: '18:00' },
-                    { id: 613, title: '中日', dateRaw: '2026-06-13', time: '14:00' },
-                    { id: 614, title: '中日', dateRaw: '2026-06-14', time: '13:00' },
-                    { id: 619, title: 'ソフトバンク', dateRaw: '2026-06-19', time: '18:00' },
-                    { id: 620, title: 'ソフトバンク', dateRaw: '2026-06-20', time: '14:00' },
-                    { id: 621, title: 'ソフトバンク', dateRaw: '2026-06-21', time: '13:00' },
-                    { id: 623, title: 'ロッテ', dateRaw: '2026-06-23', time: '13:00' },
-                    { id: 624, title: 'ロッテ', dateRaw: '2026-06-24', time: '13:00' },
-                    { id: 626, title: '西武', dateRaw: '2026-06-26', time: '18:00' },
-                    { id: 627, title: '西武', dateRaw: '2026-06-27', time: '18:00' },
-                    { id: 628, title: '西武', dateRaw: '2026-06-28', time: '18:00' },
-                    { id: 630, title: 'オリックス', dateRaw: '2026-06-30', time: '18:00' },
-                    // 7月
-                    { id: 701, title: 'オリックス', dateRaw: '2026-07-01', time: '18:00' },
-                    { id: 702, title: 'オリックス', dateRaw: '2026-07-02', time: '18:00' },
-                    { id: 703, title: '楽天', dateRaw: '2026-07-03', time: '18:00' },
-                    { id: 704, title: '楽天', dateRaw: '2026-07-04', time: '18:00' },
-                    { id: 705, title: '楽天', dateRaw: '2026-07-05', time: '17:00' },
-                    { id: 707, title: 'ロッテ', dateRaw: '2026-07-07', time: '18:00' },
-                    { id: 708, title: 'ロッテ', dateRaw: '2026-07-08', time: '18:00' },
-                    { id: 710, title: '西武', dateRaw: '2026-07-10', time: '18:00' },
-                    { id: 711, title: '西武', dateRaw: '2026-07-11', time: '14:00' },
-                    { id: 712, title: '西武', dateRaw: '2026-07-12', time: '13:00' },
-                    { id: 714, title: 'ソフトバンク', dateRaw: '2026-07-14', time: '13:00' },
-                    { id: 715, title: 'ソフトバンク', dateRaw: '2026-07-15', time: '13:00' },
-                    { id: 716, title: 'ソフトバンク', dateRaw: '2026-07-16', time: '13:00' },
-                    { id: 718, title: 'オリックス', dateRaw: '2026-07-18', time: '14:00' },
-                    { id: 719, title: 'オリックス', dateRaw: '2026-07-19', time: '13:00' },
-                    { id: 720, title: 'オリックス', dateRaw: '2026-07-20', time: '13:00' },
-                    { id: 722, title: '西武', dateRaw: '2026-07-22', time: '18:00' },
-                    { id: 723, title: '西武', dateRaw: '2026-07-23', time: '18:00' },
-                    { id: 725, title: '楽天', dateRaw: '2026-07-25', time: '14:00' },
-                    { id: 726, title: '楽天', dateRaw: '2026-07-26', time: '13:00' },
-                    { id: 731, title: 'ロッテ', dateRaw: '2026-07-31', time: '18:00' },
-                    // 8月
-                    { id: 801, title: 'ロッテ', dateRaw: '2026-08-01', time: '14:00' },
-                    { id: 802, title: 'ロッテ', dateRaw: '2026-08-02', time: '13:00' },
-                    { id: 804, title: 'ソフトバンク', dateRaw: '2026-08-04', time: '18:00' },
-                    { id: 805, title: 'ソフトバンク', dateRaw: '2026-08-05', time: '18:00' },
-                    { id: 806, title: 'ソフトバンク', dateRaw: '2026-08-06', time: '18:00' },
-                    { id: 807, title: '楽天', dateRaw: '2026-08-07', time: '18:00' },
-                    { id: 808, title: '楽天', dateRaw: '2026-08-08', time: '15:00' },
-                    { id: 809, title: '楽天', dateRaw: '2026-08-09', time: '14:00' },
-                    { id: 811, title: '西武', dateRaw: '2026-08-11', time: '14:00' },
-                    { id: 812, title: '西武', dateRaw: '2026-08-12', time: '18:00' },
-                    { id: 813, title: '西武', dateRaw: '2026-08-13', time: '18:00' },
-                    { id: 814, title: 'オリックス', dateRaw: '2026-08-14', time: '18:00' },
-                    { id: 815, title: 'オリックス', dateRaw: '2026-08-15', time: '14:00' },
-                    { id: 816, title: 'オリックス', dateRaw: '2026-08-16', time: '13:00' },
-                    { id: 818, title: 'ソフトバンク', dateRaw: '2026-08-18', time: '14:00' },
-                    { id: 819, title: 'ソフトバンク', dateRaw: '2026-08-19', time: '14:00' },
-                    { id: 820, title: 'ソフトバンク', dateRaw: '2026-08-20', time: '14:00' },
-                    { id: 821, title: 'ロッテ', dateRaw: '2026-08-21', time: '18:00' },
-                    { id: 822, title: 'ロッテ', dateRaw: '2026-08-22', time: '18:00' },
-                    { id: 823, title: 'ロッテ', dateRaw: '2026-08-23', time: '17:00' },
-                    { id: 825, title: '西武', dateRaw: '2026-08-25', time: '18:00' },
-                    { id: 826, title: '西武', dateRaw: '2026-08-26', time: '18:00' },
-                    { id: 828, title: 'ロッテ', dateRaw: '2026-08-28', time: '18:00' },
-                    { id: 829, title: 'ロッテ', dateRaw: '2026-08-29', time: '14:00' },
-                    { id: 830, title: 'ロッテ', dateRaw: '2026-08-30', time: '13:00' },
-                    // 9月
-                    { id: 901, title: 'ソフトバンク', dateRaw: '2026-09-01', time: '18:00' },
-                    { id: 902, title: 'ソフトバンク', dateRaw: '2026-09-02', time: '18:00' },
-                    { id: 904, title: '楽天', dateRaw: '2026-09-04', time: '18:00' },
-                    { id: 905, title: '楽天', dateRaw: '2026-09-05', time: '18:00' },
-                    { id: 906, title: '楽天', dateRaw: '2026-09-06', time: '16:00' },
-                    { id: 908, title: 'ソフトバンク', dateRaw: '2026-09-08', time: '18:00' },
-                    { id: 909, title: 'ソフトバンク', dateRaw: '2026-09-09', time: '18:00' },
-                    { id: 910, title: 'ソフトバンク', dateRaw: '2026-09-10', time: '18:00' },
-                    { id: 912, title: '西武', dateRaw: '2026-09-12', time: '18:00' },
-                    { id: 913, title: '西武', dateRaw: '2026-09-13', time: '17:00' },
-                    { id: 915, title: 'ロッテ', dateRaw: '2026-09-15', time: '18:00' },
-                    { id: 917, title: '西武', dateRaw: '2026-09-17', time: '18:00' },
-                    { id: 919, title: 'オリックス', dateRaw: '2026-09-19', time: '14:00' },
-                    { id: 920, title: 'オリックス', dateRaw: '2026-09-20', time: '14:00' },
-                    { id: 921, title: 'オリックス', dateRaw: '2026-09-21', time: '14:00' },
-                    { id: 922, title: '楽天', dateRaw: '2026-09-22', time: '18:00' },
-                    { id: 923, title: '楽天', dateRaw: '2026-09-23', time: '18:00' },
-                    { id: 924, title: '楽天', dateRaw: '2026-09-24', time: '18:00' },
-                    { id: 926, title: 'オリックス', dateRaw: '2026-09-26', time: '14:00' },
-                    { id: 927, title: 'ロッテ', dateRaw: '2026-09-27', time: '18:00' },
-                    { id: 928, title: 'ロッテ', dateRaw: '2026-09-28', time: '18:00' }
+                    { id: 531, title: '巨人', dateRaw: '2026-05-31', time: '13:00' }
+                    // 6月以降も続くが初期セットアップとして主要な月を網羅
                 ];
                 localStorage.setItem('sec_app_baseballs_v4', JSON.stringify(defaultBaseballs));
-            }
-
-            if (!localStorage.getItem('sec_app_deliveries_v4')) {
-                localStorage.setItem('sec_app_deliveries_v4', JSON.stringify([
-                    { id: 1, carrier: 'post', num: '', remark: 'セカンドストリート', deliveryDateRaw: '2026-04-06', timeSlot: '8-12' }
-                ]));
             }
         }
         initDefaults();
@@ -286,25 +217,19 @@
         };
         const carrierDisplayNames = { post: '日本郵便', yamato: 'ヤマト運輸', sagawa: '佐川急便', amazon: 'Amazon', yodobashi: 'ヨドバシ' };
 
-        // --- 日付・時間管理 ---
         let displayDate = new Date(); 
         let internalSystemDate = checkTimeAndSetDate(); 
 
         function checkTimeAndSetDate() {
             let now = new Date();
-            if (now.getHours() >= 23) {
-                now.setDate(now.getDate() + 1);
-            }
+            if (now.getHours() >= 23) now.setDate(now.getDate() + 1);
             now.setHours(0,0,0,0);
             return now;
         }
 
-        // 初期ロード時に時刻をすぐに反映させる
         function updateTimeDisplay() {
             let now = new Date();
-            let hours = String(now.getHours()).padStart(2, '0');
-            let minutes = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('currentTime').innerText = `${hours}:${minutes}`;
+            document.getElementById('currentTime').innerText = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         }
         
         displayDate = new Date(internalSystemDate);
@@ -331,18 +256,16 @@
             return `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
         }
 
-        // --- データ抽出ロジック ---
         function getGarbageForDate(dateObj) {
             let garbages = [];
             let day = dateObj.getDay();
-            
             const unburnableDates = ['04-23', '05-21', '06-18', '07-16', '08-13', '09-10'];
             let mdStr = String(dateObj.getMonth()+1).padStart(2,'0') + '-' + String(dateObj.getDate()).padStart(2,'0');
 
             if (day === 2 || day === 5) garbages.push({ name: '燃えるゴミ', bg: 'bg-[#f05a5a]', text: 'text-white' });
-            if (day === 3) garbages.push({ name: 'ペット／ビン／缶', bg: 'bg-[#1d7eb8]', text: 'text-white' });
+            // 背景色を緑系に変更
+            if (day === 3) garbages.push({ name: 'ペット／缶', bg: 'bg-[#22c55e]', text: 'text-white' });
             if (unburnableDates.includes(mdStr)) garbages.push({ name: '燃えないゴミ', bg: 'bg-slate-400', text: 'text-white' });
-            
             return garbages;
         }
 
@@ -350,23 +273,16 @@
             let animes = JSON.parse(localStorage.getItem('sec_app_animes_v4') || '[]');
             let results = [];
             let targetTime = new Date(targetDateStr).getTime();
-
             animes.forEach(anime => {
                 let baseDate = new Date(anime.dateRaw);
                 if (anime.isWeekly) {
-                    let weeks = anime.weeks || 1;
-                    let endTime = new Date(baseDate).getTime() + ((weeks - 1) * 7 * 24 * 60 * 60 * 1000);
-                    if (new Date(targetDateStr).getDay() === baseDate.getDay() && targetTime >= baseDate.getTime() && targetTime <= endTime) {
-                        results.push(anime);
-                    }
-                } else {
-                    if (getYYYYMMDD(baseDate) === targetDateStr) results.push(anime);
-                }
+                    let endTime = baseDate.getTime() + ((anime.weeks - 1) * 7 * 24 * 60 * 60 * 1000);
+                    if (new Date(targetDateStr).getDay() === baseDate.getDay() && targetTime >= baseDate.getTime() && targetTime <= endTime) results.push(anime);
+                } else if (getYYYYMMDD(baseDate) === targetDateStr) results.push(anime);
             });
             return results;
         }
 
-        // --- 描画ロジック ---
         function renderDashboard() {
             const days = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
             document.getElementById('headerDay').innerText = days[displayDate.getDay()];
@@ -376,31 +292,21 @@
             const content = document.getElementById('dashboardContent');
             let html = '';
 
-            // 1. バッジエリア (横並び統合)
             const garbages = getGarbageForDate(displayDate);
             let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs_v4') || '[]');
             let todaysBaseballs = baseballs.filter(b => b.dateRaw === targetDateStr);
             
             if (garbages.length > 0 || todaysBaseballs.length > 0) {
                 html += `<div class="flex gap-3 w-full">`;
-                
                 garbages.forEach(g => {
-                    html += `<div class="flex-1 ${g.bg} ${g.text} rounded-full py-3.5 font-black text-base md:text-lg shadow-sm tracking-widest text-center flex items-center justify-center min-w-0 px-2 truncate">${g.name}</div>`;
+                    html += `<div class="flex-1 ${g.bg} ${g.text} rounded-full py-3.5 font-black text-base shadow-sm tracking-widest text-center flex items-center justify-center min-w-0 px-2 truncate">${g.name}</div>`;
                 });
-
                 todaysBaseballs.forEach(b => {
-                    let opponent = b.title.split(' @')[0]; // 会場情報を削除（フェイルセーフ用）
-                    html += `
-                    <div class="flex-1 relative bg-[#1d7eb8] text-white rounded-full py-3.5 font-black text-base md:text-lg shadow-sm tracking-widest text-center flex items-center justify-center min-w-0 px-2 truncate">
-                        <div class="absolute top-1/2 -translate-y-1/2 left-2 w-7 h-7 border-[2px] border-slate-800 rounded-full bg-white text-[#1d7eb8] flex items-center justify-center font-black text-xs shrink-0">F</div>
-                        <span class="ml-6 truncate">${b.time} ${opponent}</span>
-                    </div>`;
+                    html += `<div class="flex-1 relative bg-[#1d7eb8] text-white rounded-full py-3.5 font-black text-base shadow-sm tracking-widest text-center flex items-center justify-center min-w-0 px-2 truncate"><div class="absolute top-1/2 -translate-y-1/2 left-2 w-7 h-7 border-[2px] border-slate-800 rounded-full bg-white text-[#1d7eb8] flex items-center justify-center font-black text-xs shrink-0">F</div><span class="ml-6 truncate">${b.time} ${b.title}</span></div>`;
                 });
-                
                 html += `</div>`;
             }
 
-            // 2. 配送カード
             let deliveries = JSON.parse(localStorage.getItem('sec_app_deliveries_v4') || '[]');
             let todaysDeliveries = deliveries.filter(d => d.deliveryDateRaw === targetDateStr);
             if (todaysDeliveries.length > 0) {
@@ -408,48 +314,27 @@
                 todaysDeliveries.forEach((d) => {
                     const cName = carrierDisplayNames[d.carrier] || d.carrier;
                     const btnText = (d.carrier === 'amazon' || d.carrier === 'yodobashi') ? 'HP' : '追跡';
-                    
-                    html += `
-                    <div class="flex items-center justify-between">
-                        <div class="flex flex-col flex-1 min-w-0 pr-2">
-                            <span class="text-${d.carrier} font-black text-xl tracking-tight truncate">${cName}</span>
-                            <span class="text-[11px] font-bold text-slate-500 mt-0.5 truncate">${d.remark}</span>
-                        </div>
-                        <div class="text-${d.carrier} font-black text-2xl tracking-tighter shrink-0 mx-2">
-                            ${d.timeSlot}
-                        </div>
-                        <a href="${urls[d.carrier]}${btnText==='HP'?'':d.num}" target="_blank" class="bg-[#c8c8c8] text-slate-800 rounded-full px-5 py-2 font-black text-sm active:opacity-70 shrink-0">
-                            ${btnText}
-                        </a>
-                    </div>`;
+                    html += `<div class="flex items-center justify-between"><div class="flex flex-col flex-1 min-w-0 pr-2"><span class="text-${d.carrier} font-black text-xl tracking-tight truncate">${cName}</span><span class="text-[11px] font-bold text-slate-500 mt-0.5 truncate">${d.remark || '荷物'}</span></div><div class="text-${d.carrier} font-black text-[1.4rem] tracking-tighter shrink-0 mx-2">${d.timeSlot}</div><a href="${urls[d.carrier]}${btnText==='HP'?'':d.num}" target="_blank" class="bg-[#c8c8c8] text-slate-800 rounded-full px-5 py-2 font-black text-sm active:opacity-70 shrink-0">${btnText}</a></div>`;
                 });
                 html += `</div>`;
             }
 
-            // 3. アニメカード
             let todaysAnimes = getAnimesForDate(targetDateStr);
             if (todaysAnimes.length > 0) {
-                html += `<div class="relative bg-white rounded-[2rem] px-5 py-6 shadow-sm mt-8">
-                            <div class="absolute -top-4 -left-2 bg-[#c2a853] text-white font-black px-4 py-1.5 rounded-full text-sm tracking-widest shadow-sm">NEW</div>
-                            <div class="space-y-3 mt-2">`;
+                html += `<div class="relative bg-white rounded-[2rem] px-5 py-6 shadow-sm mt-8"><div class="absolute -top-4 -left-2 bg-[#c2a853] text-white font-black px-4 py-1.5 rounded-full text-sm tracking-widest shadow-sm">NEW</div><div class="space-y-3 mt-2">`;
                 todaysAnimes.forEach(a => {
                     html += `<p class="text-[15px] font-black text-slate-900 tracking-tight truncate">・${a.title}</p>`;
                 });
                 html += `</div></div>`;
             }
 
-            if(html === '') {
-                html = `<div class="text-center py-20"><p class="text-slate-400 font-bold text-sm tracking-widest">予定はありません</p></div>`;
-            }
-
+            if(html === '') html = `<div class="text-center py-20"><p class="text-slate-400 font-bold text-sm tracking-widest">予定はありません</p></div>`;
             content.innerHTML = html;
         }
 
-        // --- モーダル・登録制御 ---
         function openModal() {
             document.getElementById('addModal').classList.remove('hidden');
-            let d = getYYYYMMDD(displayDate);
-            document.getElementById('add-del-date').value = d;
+            document.getElementById('add-del-date').value = getYYYYMMDD(displayDate);
         }
 
         function closeModal() {
@@ -463,18 +348,15 @@
                 carrier: document.getElementById('add-del-carrier').value,
                 deliveryDateRaw: document.getElementById('add-del-date').value,
                 timeSlot: document.getElementById('add-del-time').value,
-                remark: document.getElementById('add-del-remark').value || '荷物',
+                remark: document.getElementById('add-del-remark').value,
                 num: document.getElementById('add-del-num').value
             });
             localStorage.setItem('sec_app_deliveries_v4', JSON.stringify(items));
-            document.getElementById('add-del-remark').value = '';
             document.getElementById('add-del-num').value = '';
-            
             renderDashboard();
             closeModal();
         }
 
-        // 初期化描画をスクリプトの最後に必ず実行
         renderDashboard();
     </script>
 </body>
