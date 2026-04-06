@@ -33,24 +33,25 @@
         .text-yodobashi { color: #1e1b4b; }
     </style>
 </head>
-<body class="min-h-screen font-sans text-slate-800 pb-28 pt-8">
+<body class="min-h-screen font-sans text-slate-800 pb-32 pt-8">
     <div class="max-w-xl mx-auto relative px-4">
         
-        <div class="flex justify-center items-center gap-4 mb-6">
-            <div class="relative w-[140px] h-[140px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
+        <div class="flex w-full gap-3 mb-6">
+            <div class="relative flex-1 aspect-square bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
                 <div class="flex items-center pl-1">
-                    <span id="headerDate" class="text-[4.5rem] font-black leading-none tracking-tighter">--</span>
-                    <span id="headerDay" class="ml-1 text-lg font-black tracking-widest text-slate-800" style="writing-mode: vertical-rl; text-orientation: upright;">--曜日</span>
+                    <span id="headerDate" class="text-[4rem] sm:text-[5.5rem] font-black leading-none tracking-tighter">--</span>
+                    <span id="headerDay" class="ml-1 sm:ml-2 text-lg sm:text-xl font-black tracking-widest text-slate-800" style="writing-mode: vertical-rl; text-orientation: upright;">--曜日</span>
                 </div>
             </div>
-            <div class="w-[140px] h-[140px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
-                <span id="currentTime" class="text-[3rem] font-black leading-none tracking-tighter">--:--</span>
+            
+            <div class="flex-1 aspect-square bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
+                <span id="currentTime" class="text-[2.75rem] sm:text-[3.5rem] font-black leading-none tracking-tighter">--:--</span>
             </div>
         </div>
 
         <main class="space-y-6" id="dashboardContent"></main>
 
-        <div class="fixed bottom-6 left-0 right-0 px-4 max-w-xl mx-auto z-20 flex justify-between items-center gap-3">
+        <div class="fixed bottom-12 left-0 right-0 px-4 max-w-xl mx-auto z-20 flex justify-between items-center gap-3">
             <button onclick="changeDate(-1)" class="w-12 h-12 shrink-0 bg-[#8cd2e6] text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
             </button>
@@ -126,9 +127,9 @@
             lastTouchEnd = now;
         }, false);
 
-        // --- データ初期化 ---
+        // --- データ初期化 (v5維持) ---
         function initDefaults() {
-            if (!localStorage.getItem('sec_app_animes_v4')) {
+            if (!localStorage.getItem('sec_app_animes_v5')) {
                 const defaultAnimes = [
                     { id: 1, title: '逃がした魚は大きかったが釣りあげた魚が大きすぎた件', dateRaw: '2026-04-02', isWeekly: true, weeks: 12 },
                     { id: 2, title: '自称悪役令嬢な婚約者の観察記録。', dateRaw: '2026-04-04', isWeekly: true, weeks: 12 },
@@ -153,10 +154,10 @@
                     { id: 21, title: '彼女、お借りします 第5期', dateRaw: '2026-04-15', isWeekly: true, weeks: 12 },
                     { id: 22, title: '夜桜さんちの大作戦 第2期', dateRaw: '2026-04-18', isWeekly: true, weeks: 12 }
                 ];
-                localStorage.setItem('sec_app_animes_v4', JSON.stringify(defaultAnimes));
+                localStorage.setItem('sec_app_animes_v5', JSON.stringify(defaultAnimes));
             }
 
-            if (!localStorage.getItem('sec_app_baseballs_v4')) {
+            if (!localStorage.getItem('sec_app_baseballs_v5')) {
                 const defaultBaseballs = [
                     { id: 407, title: '楽天', dateRaw: '2026-04-07', time: '18:00' },
                     { id: 408, title: '楽天', dateRaw: '2026-04-08', time: '18:00' },
@@ -293,13 +294,11 @@
                     { id: 927, title: 'ロッテ', dateRaw: '2026-09-27', time: '18:00' },
                     { id: 928, title: 'ロッテ', dateRaw: '2026-09-28', time: '18:00' }
                 ];
-                localStorage.setItem('sec_app_baseballs_v4', JSON.stringify(defaultBaseballs));
+                localStorage.setItem('sec_app_baseballs_v5', JSON.stringify(defaultBaseballs));
             }
 
-            if (!localStorage.getItem('sec_app_deliveries_v4')) {
-                localStorage.setItem('sec_app_deliveries_v4', JSON.stringify([
-                    { id: 1, carrier: 'post', num: '', remark: 'セカンドストリート', deliveryDateRaw: '2026-04-06', timeSlot: '8:00〜12:00' }
-                ]));
+            if (!localStorage.getItem('sec_app_deliveries_v5')) {
+                localStorage.setItem('sec_app_deliveries_v5', JSON.stringify([]));
             }
         }
         initDefaults();
@@ -365,7 +364,7 @@
         }
 
         function getAnimesForDate(targetDateStr) {
-            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v4') || '[]');
+            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v5') || '[]');
             let results = [];
             let targetTime = new Date(targetDateStr).getTime();
             animes.forEach(anime => {
@@ -388,7 +387,7 @@
             let html = '';
 
             const garbages = getGarbageForDate(displayDate);
-            let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs_v4') || '[]');
+            let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs_v5') || '[]');
             let todaysBaseballs = baseballs.filter(b => b.dateRaw === targetDateStr);
             
             if (garbages.length > 0 || todaysBaseballs.length > 0) {
@@ -403,27 +402,14 @@
                 html += `</div>`;
             }
 
-            let deliveries = JSON.parse(localStorage.getItem('sec_app_deliveries_v4') || '[]');
+            let deliveries = JSON.parse(localStorage.getItem('sec_app_deliveries_v5') || '[]');
             let todaysDeliveries = deliveries.filter(d => d.deliveryDateRaw === targetDateStr);
             if (todaysDeliveries.length > 0) {
                 html += `<div class="bg-white rounded-[2rem] p-5 shadow-sm mt-4 space-y-6">`;
                 todaysDeliveries.forEach((d) => {
                     const cName = carrierDisplayNames[d.carrier] || d.carrier;
                     const btnText = (d.carrier === 'amazon' || d.carrier === 'yodobashi') ? 'HP' : '追跡';
-                    
-                    // onClickイベントでeditItemを呼び出し、モーダルを開く
-                    html += `<div class="flex items-center justify-between cursor-pointer active:bg-slate-50 transition-colors rounded-xl -mx-2 px-2" onclick="openEditModal(${d.id})">
-                                <div class="flex flex-col flex-1 min-w-0 pr-2">
-                                    <span class="text-${d.carrier} font-black text-xl tracking-tight truncate pointer-events-none">${cName}</span>
-                                    <span class="text-[11px] font-bold text-slate-500 mt-0.5 truncate pointer-events-none">${d.remark || '荷物'}</span>
-                                </div>
-                                <div class="text-${d.carrier} font-black text-[1.2rem] tracking-tighter shrink-0 mx-2 pointer-events-none">
-                                    ${d.timeSlot}
-                                </div>
-                                <a href="${urls[d.carrier]}${btnText==='HP'?'':d.num}" target="_blank" onclick="event.stopPropagation()" class="bg-[#c8c8c8] text-slate-800 rounded-full px-5 py-2 font-black text-sm active:opacity-70 shrink-0">
-                                    ${btnText}
-                                </a>
-                            </div>`;
+                    html += `<div class="flex items-center justify-between cursor-pointer active:bg-slate-50 transition-colors rounded-xl -mx-2 px-2" onclick="openEditModal(${d.id})"><div class="flex flex-col flex-1 min-w-0 pr-2"><span class="text-${d.carrier} font-black text-xl tracking-tight truncate pointer-events-none">${cName}</span><span class="text-[11px] font-bold text-slate-500 mt-0.5 truncate pointer-events-none">${d.remark || '荷物'}</span></div><div class="text-${d.carrier} font-black text-[1.2rem] tracking-tighter shrink-0 mx-2 pointer-events-none">${d.timeSlot}</div><a href="${urls[d.carrier]}${btnText==='HP'?'':d.num}" target="_blank" onclick="event.stopPropagation()" class="bg-[#c8c8c8] text-slate-800 rounded-full px-5 py-2 font-black text-sm active:opacity-70 shrink-0">${btnText}</a></div>`;
                 });
                 html += `</div>`;
             }
@@ -441,11 +427,10 @@
             content.innerHTML = html;
         }
 
-        // --- 編集＆登録制御 ---
         function openModal() {
             document.getElementById('modalTitle').innerText = "荷物の登録";
             document.getElementById('saveBtn').innerText = "追加する";
-            document.getElementById('edit-del-id').value = ""; // IDクリアで新規扱い
+            document.getElementById('edit-del-id').value = ""; 
             
             document.getElementById('add-del-date').value = getYYYYMMDD(displayDate);
             document.getElementById('add-del-carrier').value = 'yamato';
@@ -456,9 +441,8 @@
             document.getElementById('addModal').classList.remove('hidden');
         }
 
-        // 既存データの編集用モーダルを開く
         function openEditModal(id) {
-            let items = JSON.parse(localStorage.getItem('sec_app_deliveries_v4') || '[]');
+            let items = JSON.parse(localStorage.getItem('sec_app_deliveries_v5') || '[]');
             const target = items.find(i => i.id === id);
             if(!target) return;
 
@@ -480,7 +464,7 @@
         }
 
         function saveNewItem() {
-            let items = JSON.parse(localStorage.getItem('sec_app_deliveries_v4') || '[]');
+            let items = JSON.parse(localStorage.getItem('sec_app_deliveries_v5') || '[]');
             const editId = document.getElementById('edit-del-id').value;
 
             const newItemData = {
@@ -492,24 +476,17 @@
             };
 
             if (editId) {
-                // 既存の編集
                 const idx = items.findIndex(i => i.id == editId);
-                if(idx !== -1) {
-                    items[idx] = { ...items[idx], ...newItemData };
-                }
+                if(idx !== -1) items[idx] = { ...items[idx], ...newItemData };
             } else {
-                // 新規追加
                 newItemData.id = Date.now();
                 items.push(newItemData);
             }
 
-            localStorage.setItem('sec_app_deliveries_v4', JSON.stringify(items));
+            localStorage.setItem('sec_app_deliveries_v5', JSON.stringify(items));
             renderDashboard();
             closeModal();
         }
-
-        // 削除ボタン (追跡ボタンとは別にリスト内で完了/削除させる用) は今回インライン表示にしたため
-        // 編集モーダル内に「削除」機能を追加したい場合はお知らせください。
 
         renderDashboard();
     </script>
