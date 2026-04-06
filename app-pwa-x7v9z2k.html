@@ -36,16 +36,16 @@
 <body class="min-h-screen font-sans text-slate-800 pb-32 pt-8">
     <div class="max-w-xl mx-auto relative px-4">
         
-        <div class="flex w-full gap-3 mb-6">
-            <div class="relative flex-1 aspect-square bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
+        <div class="flex justify-center items-center gap-4 mb-6">
+            <div class="relative w-[140px] h-[140px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
                 <div class="flex items-center pl-1">
-                    <span id="headerDate" class="text-[4rem] sm:text-[5.5rem] font-black leading-none tracking-tighter">--</span>
-                    <span id="headerDay" class="ml-1 sm:ml-2 text-lg sm:text-xl font-black tracking-widest text-slate-800" style="writing-mode: vertical-rl; text-orientation: upright;">--曜日</span>
+                    <span id="headerDate" class="text-[4.5rem] font-black leading-none tracking-tighter">--</span>
+                    <span id="headerDay" class="ml-1 text-lg font-black tracking-widest text-slate-800" style="writing-mode: vertical-rl; text-orientation: upright;">--曜日</span>
                 </div>
             </div>
             
-            <div class="flex-1 aspect-square bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
-                <span id="currentTime" class="text-[2.75rem] sm:text-[3.5rem] font-black leading-none tracking-tighter">--:--</span>
+            <div class="w-[140px] h-[140px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
+                <span id="currentTime" class="text-[3rem] font-black leading-none tracking-tighter">--:--</span>
             </div>
         </div>
 
@@ -127,7 +127,7 @@
             lastTouchEnd = now;
         }, false);
 
-        // --- データ初期化 (v5維持) ---
+        // --- データ初期化 ---
         function initDefaults() {
             if (!localStorage.getItem('sec_app_animes_v5')) {
                 const defaultAnimes = [
