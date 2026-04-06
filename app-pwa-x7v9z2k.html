@@ -21,7 +21,6 @@
             to { transform: translateY(0); opacity: 1; }
         }
         
-        /* テキストカラー（業者別） */
         .text-post { color: #ef4444; }
         .text-yamato { color: #eab308; }
         .text-sagawa { color: #3b82f6; }
@@ -33,14 +32,14 @@
     <div class="max-w-xl mx-auto relative px-4">
         
         <div class="flex justify-center items-center gap-4 mb-6">
-            <div class="relative w-[130px] h-[130px] bg-white rounded-full shadow-sm flex items-center justify-center">
-                <div id="headerDay" class="absolute -top-1 -left-1 w-12 h-12 border-[3px] border-black rounded-full bg-white flex items-center justify-center font-black text-xl z-10">
+            <div class="relative w-[130px] h-[130px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
+                <div id="headerDay" class="absolute -top-2 -left-2 w-12 h-12 border-[3px] border-black rounded-xl bg-white flex items-center justify-center font-black text-xl z-10">
                     --
                 </div>
                 <span id="headerDate" class="text-[5rem] font-black leading-none tracking-tighter">--</span>
             </div>
             
-            <div class="w-[150px] h-[150px] bg-white rounded-full shadow-sm flex items-center justify-center">
+            <div class="w-[150px] h-[150px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
                 <span id="currentTime" class="text-[3rem] font-black leading-none tracking-tighter">--:--</span>
             </div>
         </div>
@@ -110,9 +109,9 @@
     </div>
 
     <script>
-        // --- 1. 大量データの初期セットアップ (強制上書き回避用バージョン変更) ---
+        // --- データ初期化 (v4へバージョンアップ) ---
         function initDefaults() {
-            if (!localStorage.getItem('sec_app_animes_v3')) {
+            if (!localStorage.getItem('sec_app_animes_v4')) {
                 const defaultAnimes = [
                     { id: 1, title: '逃がした魚は大きかったが釣りあげた魚が大きすぎた件', dateRaw: '2026-04-02', isWeekly: true, weeks: 12 },
                     { id: 2, title: '自称悪役令嬢な婚約者の観察記録。', dateRaw: '2026-04-04', isWeekly: true, weeks: 12 },
@@ -137,33 +136,160 @@
                     { id: 21, title: '彼女、お借りします 第5期', dateRaw: '2026-04-15', isWeekly: true, weeks: 12 },
                     { id: 22, title: '夜桜さんちの大作戦 第2期', dateRaw: '2026-04-18', isWeekly: true, weeks: 12 }
                 ];
-                localStorage.setItem('sec_app_animes_v3', JSON.stringify(defaultAnimes));
+                localStorage.setItem('sec_app_animes_v4', JSON.stringify(defaultAnimes));
             }
 
-            if (!localStorage.getItem('sec_app_baseballs_v3')) {
+            if (!localStorage.getItem('sec_app_baseballs_v4')) {
+                // 4月〜9月完全版データ
                 const defaultBaseballs = [
-                    { id: 1, title: '楽天 @ 楽天モバイル', dateRaw: '2026-05-07', time: '18:00' },
-                    { id: 2, title: '楽天 @ 楽天モバイル', dateRaw: '2026-05-08', time: '18:00' },
-                    { id: 3, title: '楽天 @ 楽天モバイル', dateRaw: '2026-05-09', time: '18:00' },
-                    { id: 4, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-05-11', time: '14:00' },
-                    { id: 5, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-05-12', time: '13:00' },
-                    { id: 6, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-05-14', time: '18:00' },
-                    { id: 7, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-05-15', time: '18:00' },
-                    { id: 8, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-05-16', time: '18:00' },
-                    { id: 9, title: '西武 @ エスコンF', dateRaw: '2026-05-17', time: '18:00' },
-                    { id: 10, title: '西武 @ エスコンF', dateRaw: '2026-05-18', time: '14:00' },
-                    { id: 11, title: '西武 @ エスコンF', dateRaw: '2026-05-19', time: '13:00' },
-                    { id: 12, title: '楽天 @ エスコンF', dateRaw: '2026-05-21', time: '18:00' },
-                    { id: 13, title: '楽天 @ エスコンF', dateRaw: '2026-05-22', time: '18:00' },
-                    { id: 14, title: '楽天 @ エスコンF', dateRaw: '2026-05-23', time: '18:00' },
-                    { id: 15, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-05-24', time: '18:00' },
-                    { id: 16, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-05-25', time: '14:00' },
-                    { id: 17, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-05-26', time: '13:00' },
-                    { id: 18, title: '西武 @ ベルーナドーム', dateRaw: '2026-05-28', time: '13:00' },
-                    { id: 19, title: '西武 @ ベルーナドーム', dateRaw: '2026-05-29', time: '14:00' },
-                    { id: 20, title: '西武 @ ベルーナドーム', dateRaw: '2026-05-30', time: '18:00' }
+                    // 4月
+                    { id: 407, title: '楽天 @ 楽天モバイル', dateRaw: '2026-04-07', time: '18:00' },
+                    { id: 408, title: '楽天 @ 楽天モバイル', dateRaw: '2026-04-08', time: '18:00' },
+                    { id: 409, title: '楽天 @ 楽天モバイル', dateRaw: '2026-04-09', time: '18:00' },
+                    { id: 411, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-04-11', time: '14:00' },
+                    { id: 412, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-04-12', time: '13:00' },
+                    { id: 414, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-04-14', time: '18:00' },
+                    { id: 415, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-04-15', time: '18:00' },
+                    { id: 416, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-04-16', time: '18:00' },
+                    { id: 417, title: '西武 @ エスコンF', dateRaw: '2026-04-17', time: '18:00' },
+                    { id: 418, title: '西武 @ エスコンF', dateRaw: '2026-04-18', time: '14:00' },
+                    { id: 419, title: '西武 @ エスコンF', dateRaw: '2026-04-19', time: '13:00' },
+                    { id: 421, title: '楽天 @ エスコンF', dateRaw: '2026-04-21', time: '18:00' },
+                    { id: 422, title: '楽天 @ エスコンF', dateRaw: '2026-04-22', time: '18:00' },
+                    { id: 423, title: '楽天 @ エスコンF', dateRaw: '2026-04-23', time: '18:00' },
+                    { id: 424, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-04-24', time: '18:00' },
+                    { id: 425, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-04-25', time: '14:00' },
+                    { id: 426, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-04-26', time: '13:00' },
+                    { id: 428, title: '西武 @ ベルーナドーム', dateRaw: '2026-04-28', time: '13:00' },
+                    { id: 429, title: '西武 @ ベルーナドーム', dateRaw: '2026-04-29', time: '14:00' },
+                    { id: 430, title: '西武 @ ベルーナドーム', dateRaw: '2026-04-30', time: '18:00' },
+                    // 5月
+                    { id: 501, title: 'オリックス @ エスコンF', dateRaw: '2026-05-01', time: '18:00' },
+                    { id: 502, title: 'オリックス @ エスコンF', dateRaw: '2026-05-02', time: '14:00' },
+                    { id: 503, title: 'オリックス @ エスコンF', dateRaw: '2026-05-03', time: '13:00' },
+                    { id: 504, title: '楽天 @ 楽天モバイル', dateRaw: '2026-05-04', time: '18:00' },
+                    { id: 505, title: '楽天 @ 楽天モバイル', dateRaw: '2026-05-05', time: '14:00' },
+                    { id: 506, title: '楽天 @ 楽天モバイル', dateRaw: '2026-05-06', time: '14:00' },
+                    { id: 508, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-05-08', time: '18:00' },
+                    { id: 509, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-05-09', time: '14:00' },
+                    { id: 510, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-05-10', time: '13:00' },
+                    { id: 512, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-05-12', time: '18:00' },
+                    { id: 513, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-05-13', time: '18:00' },
+                    { id: 514, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-05-14', time: '18:00' },
+                    { id: 515, title: '西武 @ エスコンF', dateRaw: '2026-05-15', time: '18:00' },
+                    { id: 516, title: '西武 @ エスコンF', dateRaw: '2026-05-16', time: '14:00' },
+                    { id: 517, title: '西武 @ エスコンF', dateRaw: '2026-05-17', time: '13:00' },
+                    { id: 519, title: '楽天 @ エスコンF', dateRaw: '2026-05-19', time: '18:00' },
+                    { id: 520, title: '楽天 @ エスコンF', dateRaw: '2026-05-20', time: '18:00' },
+                    { id: 522, title: 'ソフトバンク @ みずほPayPay', dateRaw: '2026-05-22', time: '18:00' },
+                    { id: 523, title: 'ソフトバンク @ みずほPayPay', dateRaw: '2026-05-23', time: '14:00' },
+                    { id: 524, title: 'ソフトバンク @ みずほPayPay', dateRaw: '2026-05-24', time: '14:00' },
+                    { id: 526, title: '阪神 @ 甲子園', dateRaw: '2026-05-26', time: '18:00' },
+                    { id: 527, title: '阪神 @ 甲子園', dateRaw: '2026-05-27', time: '18:00' },
+                    { id: 528, title: '阪神 @ 甲子園', dateRaw: '2026-05-28', time: '18:00' },
+                    { id: 529, title: '巨人 @ エスコンF', dateRaw: '2026-05-29', time: '18:00' },
+                    { id: 530, title: '巨人 @ エスコンF', dateRaw: '2026-05-30', time: '14:00' },
+                    { id: 531, title: '巨人 @ エスコンF', dateRaw: '2026-05-31', time: '13:00' },
+                    // 6月
+                    { id: 602, title: '広島 @ マツダスタジアム', dateRaw: '2026-06-02', time: '18:00' },
+                    { id: 603, title: '広島 @ マツダスタジアム', dateRaw: '2026-06-03', time: '18:00' },
+                    { id: 604, title: '広島 @ マツダスタジアム', dateRaw: '2026-06-04', time: '18:00' },
+                    { id: 605, title: 'ヤクルト @ 神宮', dateRaw: '2026-06-05', time: '18:00' },
+                    { id: 606, title: 'ヤクルト @ 神宮', dateRaw: '2026-06-06', time: '14:00' },
+                    { id: 607, title: 'ヤクルト @ 神宮', dateRaw: '2026-06-07', time: '14:00' },
+                    { id: 609, title: 'DeNA @ エスコンF', dateRaw: '2026-06-09', time: '18:00' },
+                    { id: 610, title: 'DeNA @ エスコンF', dateRaw: '2026-06-10', time: '18:00' },
+                    { id: 611, title: 'DeNA @ エスコンF', dateRaw: '2026-06-11', time: '18:00' },
+                    { id: 612, title: '中日 @ エスコンF', dateRaw: '2026-06-12', time: '18:00' },
+                    { id: 613, title: '中日 @ エスコンF', dateRaw: '2026-06-13', time: '14:00' },
+                    { id: 614, title: '中日 @ エスコンF', dateRaw: '2026-06-14', time: '13:00' },
+                    { id: 619, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-06-19', time: '18:00' },
+                    { id: 620, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-06-20', time: '14:00' },
+                    { id: 621, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-06-21', time: '13:00' },
+                    { id: 623, title: 'ロッテ @ エスコンF', dateRaw: '2026-06-23', time: '13:00' },
+                    { id: 624, title: 'ロッテ @ エスコンF', dateRaw: '2026-06-24', time: '13:00' },
+                    { id: 626, title: '西武 @ ベルーナドーム', dateRaw: '2026-06-26', time: '18:00' },
+                    { id: 627, title: '西武 @ ベルーナドーム', dateRaw: '2026-06-27', time: '18:00' },
+                    { id: 628, title: '西武 @ ベルーナドーム', dateRaw: '2026-06-28', time: '18:00' },
+                    { id: 630, title: 'オリックス @ エスコンF', dateRaw: '2026-06-30', time: '18:00' },
+                    // 7月
+                    { id: 701, title: 'オリックス @ エスコンF', dateRaw: '2026-07-01', time: '18:00' },
+                    { id: 702, title: 'オリックス @ エスコンF', dateRaw: '2026-07-02', time: '18:00' },
+                    { id: 703, title: '楽天 @ 楽天モバイル', dateRaw: '2026-07-03', time: '18:00' },
+                    { id: 704, title: '楽天 @ 楽天モバイル', dateRaw: '2026-07-04', time: '18:00' },
+                    { id: 705, title: '楽天 @ 楽天モバイル', dateRaw: '2026-07-05', time: '17:00' },
+                    { id: 707, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-07-07', time: '18:00' },
+                    { id: 708, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-07-08', time: '18:00' },
+                    { id: 710, title: '西武 @ エスコンF', dateRaw: '2026-07-10', time: '18:00' },
+                    { id: 711, title: '西武 @ エスコンF', dateRaw: '2026-07-11', time: '14:00' },
+                    { id: 712, title: '西武 @ エスコンF', dateRaw: '2026-07-12', time: '13:00' },
+                    { id: 714, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-07-14', time: '13:00' },
+                    { id: 715, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-07-15', time: '13:00' },
+                    { id: 716, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-07-16', time: '13:00' },
+                    { id: 718, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-07-18', time: '14:00' },
+                    { id: 719, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-07-19', time: '13:00' },
+                    { id: 720, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-07-20', time: '13:00' },
+                    { id: 722, title: '西武 @ ベルーナドーム', dateRaw: '2026-07-22', time: '18:00' },
+                    { id: 723, title: '西武 @ ベルーナドーム', dateRaw: '2026-07-23', time: '18:00' },
+                    { id: 725, title: '楽天 @ エスコンF', dateRaw: '2026-07-25', time: '14:00' },
+                    { id: 726, title: '楽天 @ エスコンF', dateRaw: '2026-07-26', time: '13:00' },
+                    { id: 731, title: 'ロッテ @ エスコンF', dateRaw: '2026-07-31', time: '18:00' },
+                    // 8月
+                    { id: 801, title: 'ロッテ @ エスコンF', dateRaw: '2026-08-01', time: '14:00' },
+                    { id: 802, title: 'ロッテ @ エスコンF', dateRaw: '2026-08-02', time: '13:00' },
+                    { id: 804, title: 'ソフトバンク @ 京セラD大阪', dateRaw: '2026-08-04', time: '18:00' },
+                    { id: 805, title: 'ソフトバンク @ みずほPayPay', dateRaw: '2026-08-05', time: '18:00' },
+                    { id: 806, title: 'ソフトバンク @ みずほPayPay', dateRaw: '2026-08-06', time: '18:00' },
+                    { id: 807, title: '楽天 @ エスコンF', dateRaw: '2026-08-07', time: '18:00' },
+                    { id: 808, title: '楽天 @ エスコンF', dateRaw: '2026-08-08', time: '15:00' },
+                    { id: 809, title: '楽天 @ エスコンF', dateRaw: '2026-08-09', time: '14:00' },
+                    { id: 811, title: '西武 @ エスコンF', dateRaw: '2026-08-11', time: '14:00' },
+                    { id: 812, title: '西武 @ エスコンF', dateRaw: '2026-08-12', time: '18:00' },
+                    { id: 813, title: '西武 @ エスコンF', dateRaw: '2026-08-13', time: '18:00' },
+                    { id: 814, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-08-14', time: '18:00' },
+                    { id: 815, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-08-15', time: '14:00' },
+                    { id: 816, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-08-16', time: '13:00' },
+                    { id: 818, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-08-18', time: '14:00' },
+                    { id: 819, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-08-19', time: '14:00' },
+                    { id: 820, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-08-20', time: '14:00' },
+                    { id: 821, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-08-21', time: '18:00' },
+                    { id: 822, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-08-22', time: '18:00' },
+                    { id: 823, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-08-23', time: '17:00' },
+                    { id: 825, title: '西武 @ ベルーナドーム', dateRaw: '2026-08-25', time: '18:00' },
+                    { id: 826, title: '西武 @ ベルーナドーム', dateRaw: '2026-08-26', time: '18:00' },
+                    { id: 828, title: 'ロッテ @ エスコンF', dateRaw: '2026-08-28', time: '18:00' },
+                    { id: 829, title: 'ロッテ @ エスコンF', dateRaw: '2026-08-29', time: '14:00' },
+                    { id: 830, title: 'ロッテ @ エスコンF', dateRaw: '2026-08-30', time: '13:00' },
+                    // 9月
+                    { id: 901, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-09-01', time: '18:00' },
+                    { id: 902, title: 'ソフトバンク @ エスコンF', dateRaw: '2026-09-02', time: '18:00' },
+                    { id: 904, title: '楽天 @ 楽天モバイル', dateRaw: '2026-09-04', time: '18:00' },
+                    { id: 905, title: '楽天 @ 楽天モバイル', dateRaw: '2026-09-05', time: '18:00' },
+                    { id: 906, title: '楽天 @ 楽天モバイル', dateRaw: '2026-09-06', time: '16:00' },
+                    { id: 908, title: 'ソフトバンク @ みずほPayPay', dateRaw: '2026-09-08', time: '18:00' },
+                    { id: 909, title: 'ソフトバンク @ みずほPayPay', dateRaw: '2026-09-09', time: '18:00' },
+                    { id: 910, title: 'ソフトバンク @ みずほPayPay', dateRaw: '2026-09-10', time: '18:00' },
+                    { id: 912, title: '西武 @ ベルーナドーム', dateRaw: '2026-09-12', time: '18:00' },
+                    { id: 913, title: '西武 @ ベルーナドーム', dateRaw: '2026-09-13', time: '17:00' },
+                    { id: 915, title: 'ロッテ @ エスコンF', dateRaw: '2026-09-15', time: '18:00' },
+                    { id: 917, title: '西武 @ エスコンF', dateRaw: '2026-09-17', time: '18:00' },
+                    { id: 919, title: 'オリックス @ エスコンF', dateRaw: '2026-09-19', time: '14:00' },
+                    { id: 920, title: 'オリックス @ エスコンF', dateRaw: '2026-09-20', time: '14:00' },
+                    { id: 921, title: 'オリックス @ エスコンF', dateRaw: '2026-09-21', time: '14:00' },
+                    { id: 922, title: '楽天 @ エスコンF', dateRaw: '2026-09-22', time: '18:00' },
+                    { id: 923, title: '楽天 @ エスコンF', dateRaw: '2026-09-23', time: '18:00' },
+                    { id: 924, title: '楽天 @ エスコンF', dateRaw: '2026-09-24', time: '18:00' },
+                    { id: 926, title: 'オリックス @ 京セラD大阪', dateRaw: '2026-09-26', time: '14:00' },
+                    { id: 927, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-09-27', time: '18:00' },
+                    { id: 928, title: 'ロッテ @ ZOZOマリン', dateRaw: '2026-09-28', time: '18:00' }
                 ];
-                localStorage.setItem('sec_app_baseballs_v3', JSON.stringify(defaultBaseballs));
+                localStorage.setItem('sec_app_baseballs_v4', JSON.stringify(defaultBaseballs));
+            }
+
+            if (!localStorage.getItem('sec_app_deliveries_v4')) {
+                localStorage.setItem('sec_app_deliveries_v4', JSON.stringify([
+                    { id: 1, carrier: 'post', num: '', remark: 'セカンドストリート', deliveryDateRaw: '2026-04-06', timeSlot: '8-12' }
+                ]));
             }
         }
         initDefaults();
@@ -177,9 +303,9 @@
         };
         const carrierDisplayNames = { post: '日本郵便', yamato: 'ヤマト運輸', sagawa: '佐川急便', amazon: 'Amazon', yodobashi: 'ヨドバシ' };
 
-        // --- 2. 日付・時間管理 (強制リセットバグ修正) ---
-        let displayDate = new Date(); // ユーザーが操作・閲覧している日付
-        let internalSystemDate = checkTimeAndSetDate(); // システム内部の「今日」
+        // --- 日付・時間管理 (強制リセットバグ修正) ---
+        let displayDate = new Date(); 
+        let internalSystemDate = checkTimeAndSetDate(); 
 
         function checkTimeAndSetDate() {
             let now = new Date();
@@ -190,7 +316,6 @@
             return now;
         }
 
-        // 初回ロード時は「今日」を表示
         displayDate = new Date(internalSystemDate);
 
         setInterval(() => {
@@ -199,12 +324,9 @@
             let minutes = String(now.getMinutes()).padStart(2, '0');
             document.getElementById('currentTime').innerText = `${hours}:${minutes}`;
             
-            // 23時の日付またぎ監視 (システム上の「今日」が変わったか)
             let calculatedDate = checkTimeAndSetDate();
             if(internalSystemDate.getTime() !== calculatedDate.getTime()) {
                 internalSystemDate = calculatedDate;
-                // もしユーザーが「今日」を見ている状態なら、表示も翌日に切り替える
-                // 過去・未来を見ている場合は勝手に切り替えない
                 if (document.visibilityState === 'visible') {
                     displayDate = new Date(internalSystemDate);
                     renderDashboard();
@@ -221,28 +343,30 @@
             return `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
         }
 
-        // --- 3. データ抽出ロジック ---
+        // --- データ抽出ロジック ---
         function getGarbageForDate(dateObj) {
             let garbages = [];
             let day = dateObj.getDay();
-            let m = dateObj.getMonth() + 1;
-            let d = dateObj.getDate();
+            
+            // 燃えないゴミ完全版リスト
+            const unburnableDates = ['04-23', '05-21', '06-18', '07-16', '08-13', '09-10'];
+            let mdStr = String(dateObj.getMonth()+1).padStart(2,'0') + '-' + String(dateObj.getDate()).padStart(2,'0');
 
             if (day === 2 || day === 5) garbages.push({ name: '燃えるゴミ', bg: 'bg-[#f05a5a]', text: 'text-white' });
             if (day === 3) garbages.push({ name: 'ペット／ビン／缶', bg: 'bg-[#1d7eb8]', text: 'text-white' });
-            if ((m === 4 && d === 23) || (m === 5 && d === 21)) garbages.push({ name: '燃えないゴミ', bg: 'bg-slate-400', text: 'text-white' });
+            if (unburnableDates.includes(mdStr)) garbages.push({ name: '燃えないゴミ', bg: 'bg-slate-400', text: 'text-white' });
             
             return garbages;
         }
 
         function getAnimesForDate(targetDateStr) {
-            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v3') || '[]');
+            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v4') || '[]');
             let results = [];
             let targetTime = new Date(targetDateStr).getTime();
 
             animes.forEach(anime => {
                 let baseDate = new Date(anime.dateRaw);
-                // 翌日表示ルール廃止。当日判定のみ。
+                // 翌日表示は廃止、当日判定のみ
                 if (anime.isWeekly) {
                     let weeks = anime.weeks || 1;
                     let endTime = new Date(baseDate).getTime() + ((weeks - 1) * 7 * 24 * 60 * 60 * 1000);
@@ -256,7 +380,7 @@
             return results;
         }
 
-        // --- 4. 描画ロジック ---
+        // --- 描画ロジック ---
         function renderDashboard() {
             const days = ['日', '月', '火', '水', '木', '金', '土'];
             document.getElementById('headerDay').innerText = days[displayDate.getDay()];
@@ -266,9 +390,9 @@
             const content = document.getElementById('dashboardContent');
             let html = '';
 
-            // バッジエリア（ゴミ・プロ野球）※横幅拡大 (w-full)
+            // バッジエリア
             const garbages = getGarbageForDate(displayDate);
-            let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs_v3') || '[]');
+            let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs_v4') || '[]');
             let todaysBaseballs = baseballs.filter(b => b.dateRaw === targetDateStr);
             
             if (garbages.length > 0 || todaysBaseballs.length > 0) {
@@ -277,7 +401,6 @@
                     html += `<div class="w-full ${g.bg} ${g.text} rounded-full py-3.5 font-black text-xl shadow-sm tracking-widest text-center">${g.name}</div>`;
                 });
                 todaysBaseballs.forEach(b => {
-                    // Fの文字色を背景と同じ #1d7eb8 に指定
                     html += `
                     <div class="w-full relative bg-[#1d7eb8] text-white rounded-full py-3.5 font-black text-xl shadow-sm tracking-widest text-center">
                         <div class="absolute top-1/2 -translate-y-1/2 left-2 w-9 h-9 border-[2.5px] border-slate-800 rounded-full bg-white text-[#1d7eb8] flex items-center justify-center font-black text-base">F</div>
@@ -287,11 +410,11 @@
                 html += `</div>`;
             }
 
-            // 配送カード（区切り線廃止、マージン調整）
-            let deliveries = JSON.parse(localStorage.getItem('sec_app_deliveries_v2') || '[]');
+            // 配送カード (区切り線廃止)
+            let deliveries = JSON.parse(localStorage.getItem('sec_app_deliveries_v4') || '[]');
             let todaysDeliveries = deliveries.filter(d => d.deliveryDateRaw === targetDateStr);
             if (todaysDeliveries.length > 0) {
-                html += `<div class="bg-white rounded-[2rem] p-5 shadow-sm mt-4 space-y-5">`;
+                html += `<div class="bg-white rounded-[2rem] p-5 shadow-sm mt-4 space-y-6">`;
                 todaysDeliveries.forEach((d) => {
                     const cName = carrierDisplayNames[d.carrier] || d.carrier;
                     const btnText = (d.carrier === 'amazon' || d.carrier === 'yodobashi') ? 'HP' : '追跡';
@@ -313,14 +436,14 @@
                 html += `</div>`;
             }
 
-            // アニメカード
+            // アニメカード (1行統一・はみ出し時省略)
             let todaysAnimes = getAnimesForDate(targetDateStr);
             if (todaysAnimes.length > 0) {
-                html += `<div class="relative bg-white rounded-[2rem] p-6 shadow-sm mt-8">
+                html += `<div class="relative bg-white rounded-[2rem] px-5 py-6 shadow-sm mt-8">
                             <div class="absolute -top-4 -left-2 bg-[#c2a853] text-white font-black px-4 py-1.5 rounded-full text-sm tracking-widest shadow-sm">NEW</div>
-                            <div class="space-y-2 mt-2">`;
+                            <div class="space-y-3 mt-2">`;
                 todaysAnimes.forEach(a => {
-                    html += `<p class="text-lg font-black text-slate-900 tracking-tight leading-snug">・${a.title}</p>`;
+                    html += `<p class="text-[15px] font-black text-slate-900 tracking-tight truncate">・${a.title}</p>`;
                 });
                 html += `</div></div>`;
             }
@@ -332,7 +455,7 @@
             content.innerHTML = html;
         }
 
-        // --- 5. モーダル・登録制御 ---
+        // --- モーダル・登録制御 ---
         let currentTab = 'delivery';
 
         function openModal() {
@@ -359,7 +482,7 @@
 
         function saveNewItem() {
             if (currentTab === 'delivery') {
-                let items = JSON.parse(localStorage.getItem('sec_app_deliveries_v2') || '[]');
+                let items = JSON.parse(localStorage.getItem('sec_app_deliveries_v4') || '[]');
                 items.push({
                     id: Date.now(),
                     carrier: document.getElementById('add-del-carrier').value,
@@ -368,12 +491,12 @@
                     remark: document.getElementById('add-del-remark').value || '荷物',
                     num: document.getElementById('add-del-num').value
                 });
-                localStorage.setItem('sec_app_deliveries_v2', JSON.stringify(items));
+                localStorage.setItem('sec_app_deliveries_v4', JSON.stringify(items));
                 document.getElementById('add-del-remark').value = '';
                 document.getElementById('add-del-num').value = '';
             } 
             else if (currentTab === 'anime') {
-                let items = JSON.parse(localStorage.getItem('sec_app_animes_v3') || '[]');
+                let items = JSON.parse(localStorage.getItem('sec_app_animes_v4') || '[]');
                 items.push({
                     id: Date.now(),
                     title: document.getElementById('add-anime-title').value || 'アニメ',
@@ -381,26 +504,24 @@
                     time: document.getElementById('add-anime-time').value || '00:00',
                     isWeekly: false 
                 });
-                localStorage.setItem('sec_app_animes_v3', JSON.stringify(items));
+                localStorage.setItem('sec_app_animes_v4', JSON.stringify(items));
                 document.getElementById('add-anime-title').value = '';
             }
             else if (currentTab === 'baseball') {
-                let items = JSON.parse(localStorage.getItem('sec_app_baseballs_v3') || '[]');
+                let items = JSON.parse(localStorage.getItem('sec_app_baseballs_v4') || '[]');
                 items.push({
                     id: Date.now(),
                     title: document.getElementById('add-base-title').value || 'プロ野球',
                     dateRaw: document.getElementById('add-base-date').value,
                     time: document.getElementById('add-base-time').value || '18:00'
                 });
-                localStorage.setItem('sec_app_baseballs_v3', JSON.stringify(items));
+                localStorage.setItem('sec_app_baseballs_v4', JSON.stringify(items));
                 document.getElementById('add-base-title').value = '';
             }
 
             renderDashboard();
             closeModal();
         }
-
-        renderDashboard();
     </script>
 </body>
 </html>
