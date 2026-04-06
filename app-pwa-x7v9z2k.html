@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=0">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>秘書ダッシュボード</title>
@@ -12,22 +13,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 業者別パステル背景色 */
-        .bg-post { background-color: #fee2e2 !important; }
-        .bg-yamato { background-color: #fef3c7 !important; }
-        .bg-sagawa { background-color: #dbeafe !important; }
-        .bg-yodobashi { background-color: #e0e7ff !important; }
-        .bg-amazon { background-color: #ffedd5 !important; }
-
-        /* セレクトボックス背景 */
-        .opt-none { background-color: #f1f5f9; color: #64748b; }
-        .opt-post { background-color: #ef4444 !important; color: white !important; }
-        .opt-yamato { background-color: #fbbf24 !important; color: #1e293b !important; }
-        .opt-sagawa { background-color: #2563eb !important; color: white !important; }
-        .opt-yodobashi { background-color: #a5b4fc !important; color: white !important; }
-        .opt-amazon { background-color: #f97316 !important; color: white !important; }
-
-        body { overflow-x: hidden; width: 100%; -webkit-font-smoothing: antialiased; }
+        body { background-color: #f2f2f2; overflow-x: hidden; width: 100%; -webkit-font-smoothing: antialiased; }
         
         /* モーダル用アニメーション */
         .modal-enter { animation: slideUp 0.3s ease-out forwards; }
@@ -35,40 +21,52 @@
             from { transform: translateY(100%); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+        
+        /* テキストカラー（業者別） */
+        .text-post { color: #ef4444; }
+        .text-yamato { color: #eab308; }
+        .text-sagawa { color: #3b82f6; }
+        .text-amazon { color: #f97316; }
+        .text-yodobashi { color: #1e1b4b; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen font-sans text-slate-800 pb-24">
-    <div class="max-w-xl mx-auto relative min-h-screen shadow-xl bg-slate-50">
+<body class="min-h-screen font-sans text-slate-800 pb-28 pt-8">
+    <div class="max-w-xl mx-auto relative px-4">
         
-        <header class="bg-white px-4 py-4 shadow-sm sticky top-0 z-20 flex justify-between items-center rounded-b-[1.5rem]">
-            <button onclick="changeDate(-1)" class="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-full active:bg-slate-200">
-                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
-            </button>
-            <div class="text-center flex flex-col items-center justify-center">
-                <h2 id="displayDate" class="text-xl font-bold text-slate-800 tracking-tight">--月--日(--)</h2>
-                <div class="bg-slate-800 text-white text-[10px] font-bold px-3 py-0.5 rounded-full mt-1 tracking-widest" id="currentTime">--:--</div>
+        <div class="flex justify-center items-center gap-4 mb-6">
+            <div class="relative w-[130px] h-[130px] bg-white rounded-full shadow-sm flex items-center justify-center">
+                <div id="headerDay" class="absolute -top-1 -left-1 w-12 h-12 border-[3px] border-black rounded-full bg-white flex items-center justify-center font-black text-xl z-10">
+                    --
+                </div>
+                <span id="headerDate" class="text-[5rem] font-black leading-none tracking-tighter">--</span>
             </div>
-            <button onclick="changeDate(1)" class="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-full active:bg-slate-200">
-                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-            </button>
-        </header>
+            
+            <div class="w-[150px] h-[150px] bg-white rounded-full shadow-sm flex items-center justify-center">
+                <span id="currentTime" class="text-[3rem] font-black leading-none tracking-tighter">--:--</span>
+            </div>
+        </div>
 
-        <main class="p-4 space-y-5" id="dashboardContent">
+        <main class="space-y-6" id="dashboardContent">
             </main>
 
-        <div class="fixed bottom-6 left-0 right-0 px-4 max-w-xl mx-auto z-20">
-            <button onclick="openModal()" class="w-full bg-slate-800 text-white font-bold text-base py-4 rounded-[1.25rem] shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+        <div class="fixed bottom-6 left-0 right-0 px-4 max-w-xl mx-auto z-20 flex justify-between items-center gap-3">
+            <button onclick="changeDate(-1)" class="w-12 h-12 shrink-0 bg-[#8cd2e6] text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button onclick="openModal()" class="flex-1 bg-[#8cd2e6] text-white font-black text-lg py-3 rounded-full shadow-md active:scale-95 transition-transform tracking-wider">
                 予定を追加
+            </button>
+            <button onclick="changeDate(1)" class="w-12 h-12 shrink-0 bg-[#8cd2e6] text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
             </button>
         </div>
 
         <div id="addModal" class="hidden fixed inset-0 bg-slate-900/40 z-30 flex items-end sm:items-center justify-center backdrop-blur-sm">
             <div class="bg-white w-full sm:max-w-md sm:rounded-[2rem] rounded-t-[2rem] p-5 modal-enter shadow-2xl max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-bold text-slate-800">予定の登録</h3>
+                    <h3 class="text-lg font-black text-slate-800">予定の登録</h3>
                     <button onclick="closeModal()" class="bg-slate-100 p-2 rounded-full text-slate-500 active:bg-slate-200">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
                 
@@ -88,7 +86,7 @@
                         <option value="yodobashi">ヨドバシ</option>
                     </select>
                     <select id="add-del-time" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
-                        <option value="なし">指定なし</option><option value="8-12" selected>8:00〜12:00</option><option value="14-16">14:00〜16:00</option><option value="16-18">16:00〜18:00</option><option value="18-20">18:00〜20:00</option><option value="19-21">19:00〜21:00</option>
+                        <option value="なし">指定なし</option><option value="8-12" selected>8-12</option><option value="14-16">14-16</option><option value="16-18">16-18</option><option value="18-20">18-20</option><option value="19-21">19-21</option>
                     </select>
                     <input type="text" id="add-del-remark" placeholder="品名 / ショップ名" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
                     <input type="text" id="add-del-num" placeholder="追跡番号 (任意)" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
@@ -109,37 +107,33 @@
                     <input type="text" id="add-base-title" placeholder="対戦カード等" class="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl text-sm font-bold text-slate-800 outline-none">
                 </div>
 
-                <button onclick="saveNewItem()" class="w-full bg-slate-800 text-white font-bold py-3.5 rounded-[1rem] mt-5 active:scale-95 transition-transform">追加する</button>
+                <button onclick="saveNewItem()" class="w-full bg-[#8cd2e6] text-white font-black text-lg py-3.5 rounded-[1.25rem] mt-5 active:scale-95 transition-transform tracking-widest">追加する</button>
             </div>
         </div>
 
     </div>
 
     <script>
-        // --- 1. 初期データセットアップ ---
+        // --- 初期データセットアップ ---
         function initDefaults() {
-            if (!localStorage.getItem('sec_app_deliveries')) {
-                // デフォルト荷物 (日本郵便 = JP, セカンドストリート)
-                localStorage.setItem('sec_app_deliveries', JSON.stringify([
+            if (!localStorage.getItem('sec_app_deliveries_v2')) {
+                localStorage.setItem('sec_app_deliveries_v2', JSON.stringify([
                     { id: 1, carrier: 'post', num: '', remark: 'セカンドストリート', deliveryDateRaw: '2026-04-06', timeSlot: '8-12' }
                 ]));
             }
-            if (!localStorage.getItem('sec_app_animes')) {
-                // アニメ (4/5スタート, 翌日表示設定)
-                localStorage.setItem('sec_app_animes', JSON.stringify([
+            if (!localStorage.getItem('sec_app_animes_v2')) {
+                localStorage.setItem('sec_app_animes_v2', JSON.stringify([
                     { id: 2, title: 'メイドさんは食べるだけ', dateRaw: '2026-04-05', time: '22:00', nextDayDisplay: true, isWeekly: true, weeks: 12 }
                 ]));
             }
-            if (!localStorage.getItem('sec_app_baseballs')) {
-                // プロ野球
-                localStorage.setItem('sec_app_baseballs', JSON.stringify([
+            if (!localStorage.getItem('sec_app_baseballs_v2')) {
+                localStorage.setItem('sec_app_baseballs_v2', JSON.stringify([
                     { id: 3, title: 'プロ野球', dateRaw: '2026-04-07', time: '18:00' }
                 ]));
             }
         }
         initDefaults();
 
-        // トラッキングURL（既存機能維持）
         const urls = { 
             post: "https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=", 
             yamato: "https://toi.kuronekoyamato.co.jp/cgi-bin/tneko?number01=", 
@@ -148,12 +142,13 @@
             yodobashi: "https://www.yodobashi.com/" 
         };
 
-        // --- 2. 日付・時間管理 ---
+        const carrierDisplayNames = { post: '日本郵便', yamato: 'ヤマト運輸', sagawa: '佐川急便', amazon: 'Amazon', yodobashi: 'ヨドバシ' };
+
+        // --- 日付・時間管理 ---
         let activeDate = new Date();
 
         function checkTimeAndSetDate() {
             let now = new Date();
-            // 23時になったら翌日表示
             if (now.getHours() >= 23) {
                 now.setDate(now.getDate() + 1);
             }
@@ -161,13 +156,14 @@
             return now;
         }
 
-        // 初期化
         activeDate = checkTimeAndSetDate();
 
         setInterval(() => {
             let now = new Date();
-            document.getElementById('currentTime').innerText = now.toLocaleTimeString('ja-JP', {hour: '2-digit', minute:'2-digit'});
-            // 23時またぎの自動切り替えチェック
+            let hours = String(now.getHours()).padStart(2, '0');
+            let minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('currentTime').innerText = `${hours}:${minutes}`;
+            
             let calculatedDate = checkTimeAndSetDate();
             if(activeDate.getTime() !== calculatedDate.getTime() && document.visibilityState === 'visible') {
                 activeDate = calculatedDate;
@@ -180,157 +176,127 @@
             renderDashboard();
         }
 
-        function formatDateStr(dateObj) {
-            const days = ['日', '月', '火', '水', '木', '金', '土'];
-            return `${dateObj.getMonth() + 1}月${dateObj.getDate()}日(${days[dateObj.getDay()]})`;
-        }
-
         function getYYYYMMDD(dateObj) {
             return `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
         }
 
-        // --- 3. ゴミ捨てロジック ---
+        // --- ゴミ捨てロジック ---
         function getGarbageForDate(dateObj) {
             let garbages = [];
             let day = dateObj.getDay();
             let m = dateObj.getMonth() + 1;
             let d = dateObj.getDate();
 
-            if (day === 2 || day === 5) garbages.push({ name: '燃えるゴミ', color: 'bg-red-50 text-red-600 border-red-200' });
-            if (day === 3) garbages.push({ name: 'ペット／ビン／缶', color: 'bg-blue-50 text-blue-600 border-blue-200' });
+            if (day === 2 || day === 5) garbages.push({ name: '燃えるゴミ', bg: 'bg-[#f05a5a]', text: 'text-white' });
+            if (day === 3) garbages.push({ name: 'ペット／ビン／缶', bg: 'bg-[#1d7eb8]', text: 'text-white' });
             
             if ((m === 4 && d === 23) || (m === 5 && d === 21)) {
-                garbages.push({ name: '燃えないゴミ', color: 'bg-slate-100 text-slate-600 border-slate-300' });
+                garbages.push({ name: '燃えないゴミ', bg: 'bg-slate-400', text: 'text-white' });
             }
             return garbages;
         }
 
-        // --- 4. アニメ抽出ロジック ---
+        // --- アニメ抽出ロジック ---
         function getAnimesForDate(targetDateStr) {
-            let animes = JSON.parse(localStorage.getItem('sec_app_animes') || '[]');
+            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v2') || '[]');
             let results = [];
             let targetTime = new Date(targetDateStr).getTime();
 
             animes.forEach(anime => {
                 let baseDate = new Date(anime.dateRaw);
-                if (anime.nextDayDisplay) {
-                    baseDate.setDate(baseDate.getDate() + 1); // 翌日表示設定なら基準日を+1
-                }
+                if (anime.nextDayDisplay) baseDate.setDate(baseDate.getDate() + 1);
                 
                 if (anime.isWeekly) {
                     let weeks = anime.weeks || 1;
                     let endTime = new Date(baseDate).getTime() + ((weeks - 1) * 7 * 24 * 60 * 60 * 1000);
-                    // 曜日が一致、かつ期間内か
                     if (new Date(targetDateStr).getDay() === baseDate.getDay() && targetTime >= baseDate.getTime() && targetTime <= endTime) {
-                        results.push({...anime, displayPrefix: anime.nextDayDisplay ? "前日" : "本日"});
+                        results.push(anime);
                     }
                 } else {
-                    if (getYYYYMMDD(baseDate) === targetDateStr) {
-                        results.push({...anime, displayPrefix: anime.nextDayDisplay ? "前日" : "本日"});
-                    }
+                    if (getYYYYMMDD(baseDate) === targetDateStr) results.push(anime);
                 }
             });
             return results;
         }
 
-        // --- 5. 描画ロジック ---
+        // --- 描画ロジック ---
         function renderDashboard() {
-            document.getElementById('displayDate').innerText = formatDateStr(activeDate);
+            // ヘッダー更新
+            const days = ['日', '月', '火', '水', '木', '金', '土'];
+            document.getElementById('headerDay').innerText = days[activeDate.getDay()];
+            document.getElementById('headerDate').innerText = activeDate.getDate();
+
             const targetDateStr = getYYYYMMDD(activeDate);
             const content = document.getElementById('dashboardContent');
             let html = '';
 
-            // ゴミ捨てセクション
+            // 1. バッジエリア（ゴミ・プロ野球）
             const garbages = getGarbageForDate(activeDate);
-            if (garbages.length > 0) {
-                html += `<div class="bg-white p-4 rounded-[1.5rem] shadow-sm border border-slate-100">
-                            <h3 class="text-[10px] font-bold text-slate-400 mb-2 tracking-widest flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> ゴミ出し
-                            </h3>
-                            <div class="flex gap-2 flex-wrap">`;
-                garbages.forEach(g => {
-                    html += `<div class="px-3 py-1.5 rounded-lg border text-xs font-bold ${g.color}">${g.name}</div>`;
-                });
-                html += `</div></div>`;
-            }
-
-            // 配送セクション
-            let deliveries = JSON.parse(localStorage.getItem('sec_app_deliveries') || '[]');
-            let todaysDeliveries = deliveries.filter(d => d.deliveryDateRaw === targetDateStr);
-            if (todaysDeliveries.length > 0) {
-                html += `<div class="bg-white p-4 rounded-[1.5rem] shadow-sm border border-slate-100">
-                            <h3 class="text-[10px] font-bold text-slate-400 mb-3 tracking-widest flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg> 配送予定
-                            </h3>
-                            <div class="space-y-2">`;
-                todaysDeliveries.forEach(d => {
-                    let btnText = (d.carrier === 'amazon' || d.carrier === 'yodobashi') ? 'HP' : '追跡';
-                    html += `
-                    <div class="bg-${d.carrier} rounded-2xl p-1.5 flex items-center gap-2">
-                        <div class="bg-white rounded-xl w-[55px] h-10 shrink-0 flex items-center justify-center">
-                            <p class="text-[10px] font-bold text-slate-500 leading-none">${d.timeSlot === '8-12' ? '8:00〜' : d.timeSlot}</p>
-                        </div>
-                        <a href="${urls[d.carrier]}${btnText==='HP'?'':d.num}" target="_blank" class="bg-slate-800 rounded-xl h-10 w-[45px] shrink-0 flex items-center justify-center active:opacity-70 shadow-sm">
-                            <p class="text-[10px] font-bold text-white">${btnText}</p>
-                        </a>
-                        <div class="flex-1 min-w-0 px-1">
-                            <p class="text-xs font-bold text-slate-800 truncate">${d.remark}</p>
-                        </div>
-                    </div>`;
-                });
-                html += `</div></div>`;
-            }
-
-            // アニメセクション
-            let todaysAnimes = getAnimesForDate(targetDateStr);
-            if (todaysAnimes.length > 0) {
-                html += `<div class="bg-white p-4 rounded-[1.5rem] shadow-sm border border-slate-100">
-                            <h3 class="text-[10px] font-bold text-slate-400 mb-3 tracking-widest flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg> アニメ
-                            </h3>
-                            <div class="space-y-2">`;
-                todaysAnimes.forEach(a => {
-                    html += `
-                    <div class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
-                        <div class="bg-indigo-100 text-indigo-700 px-2 py-1.5 rounded-xl flex flex-col items-center justify-center min-w-[50px]">
-                            <span class="text-[8px] font-bold">${a.displayPrefix}</span>
-                            <span class="text-xs font-bold leading-none mt-0.5">${a.time}</span>
-                        </div>
-                        <p class="text-sm font-bold text-slate-800">${a.title}</p>
-                    </div>`;
-                });
-                html += `</div></div>`;
-            }
-
-            // プロ野球セクション
-            let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs') || '[]');
+            let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs_v2') || '[]');
             let todaysBaseballs = baseballs.filter(b => b.dateRaw === targetDateStr);
-            if (todaysBaseballs.length > 0) {
-                html += `<div class="bg-white p-4 rounded-[1.5rem] shadow-sm border border-slate-100">
-                            <h3 class="text-[10px] font-bold text-slate-400 mb-3 tracking-widest flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> プロ野球
-                            </h3>
-                            <div class="space-y-2">`;
+            
+            if (garbages.length > 0 || todaysBaseballs.length > 0) {
+                html += `<div class="flex items-center justify-center gap-3 flex-wrap">`;
+                garbages.forEach(g => {
+                    html += `<div class="${g.bg} ${g.text} rounded-full px-5 py-2.5 font-black text-lg shadow-sm tracking-widest">${g.name}</div>`;
+                });
                 todaysBaseballs.forEach(b => {
                     html += `
-                    <div class="flex items-center gap-3 bg-emerald-50 p-2.5 rounded-2xl border border-emerald-100">
-                        <div class="bg-emerald-600 text-white px-2 py-1.5 rounded-xl flex items-center justify-center min-w-[50px]">
-                            <span class="text-xs font-bold">${b.time}</span>
-                        </div>
-                        <p class="text-sm font-bold text-slate-800">${b.title}</p>
+                    <div class="relative bg-[#1d7eb8] text-white rounded-full px-7 py-2.5 font-black text-xl shadow-sm tracking-widest">
+                        <div class="absolute -top-1.5 -left-1.5 w-7 h-7 border-[2.5px] border-slate-800 rounded-full bg-white text-slate-800 flex items-center justify-center font-black text-sm">F</div>
+                        ${b.time}
                     </div>`;
+                });
+                html += `</div>`;
+            }
+
+            // 2. 配送カード（統合表示）
+            let deliveries = JSON.parse(localStorage.getItem('sec_app_deliveries_v2') || '[]');
+            let todaysDeliveries = deliveries.filter(d => d.deliveryDateRaw === targetDateStr);
+            if (todaysDeliveries.length > 0) {
+                html += `<div class="bg-white rounded-[2rem] p-5 shadow-sm mt-4">`;
+                todaysDeliveries.forEach((d, index) => {
+                    const cName = carrierDisplayNames[d.carrier] || d.carrier;
+                    const borderClass = index !== todaysDeliveries.length - 1 ? 'border-b-2 border-slate-800 pb-4 mb-4' : '';
+                    const btnText = (d.carrier === 'amazon' || d.carrier === 'yodobashi') ? 'HP' : '追跡';
+                    
+                    html += `
+                    <div class="flex items-center justify-between ${borderClass}">
+                        <div class="flex flex-col flex-1 min-w-0 pr-2">
+                            <span class="text-${d.carrier} font-black text-xl tracking-tight truncate">${cName}</span>
+                            <span class="text-[11px] font-bold text-slate-500 mt-1 truncate">${d.remark}</span>
+                        </div>
+                        <div class="text-${d.carrier} font-black text-2xl tracking-tighter shrink-0 mx-2">
+                            ${d.timeSlot}
+                        </div>
+                        <a href="${urls[d.carrier]}${btnText==='HP'?'':d.num}" target="_blank" class="bg-[#c8c8c8] text-slate-800 rounded-full px-5 py-2 font-black text-sm active:opacity-70 shrink-0">
+                            ${btnText}
+                        </a>
+                    </div>`;
+                });
+                html += `</div>`;
+            }
+
+            // 3. アニメカード
+            let todaysAnimes = getAnimesForDate(targetDateStr);
+            if (todaysAnimes.length > 0) {
+                html += `<div class="relative bg-white rounded-[2rem] p-6 shadow-sm mt-8">
+                            <div class="absolute -top-4 -left-2 bg-[#c2a853] text-white font-black px-4 py-1.5 rounded-full text-sm tracking-widest shadow-sm">NEW</div>
+                            <div class="space-y-2 mt-2">`;
+                todaysAnimes.forEach(a => {
+                    html += `<p class="text-xl font-black text-slate-900 tracking-tight leading-snug">・${a.title}</p>`;
                 });
                 html += `</div></div>`;
             }
 
             if(html === '') {
-                html = `<div class="text-center py-20"><p class="text-slate-400 font-bold text-xs tracking-widest">予定はありません</p></div>`;
+                html = `<div class="text-center py-20"><p class="text-slate-400 font-bold text-sm tracking-widest">予定はありません</p></div>`;
             }
 
             content.innerHTML = html;
         }
 
-        // --- 6. モーダル・登録制御 ---
+        // --- モーダル・登録制御 ---
         let currentTab = 'delivery';
 
         function openModal() {
@@ -357,7 +323,7 @@
 
         function saveNewItem() {
             if (currentTab === 'delivery') {
-                let items = JSON.parse(localStorage.getItem('sec_app_deliveries') || '[]');
+                let items = JSON.parse(localStorage.getItem('sec_app_deliveries_v2') || '[]');
                 items.push({
                     id: Date.now(),
                     carrier: document.getElementById('add-del-carrier').value,
@@ -366,12 +332,12 @@
                     remark: document.getElementById('add-del-remark').value || '荷物',
                     num: document.getElementById('add-del-num').value
                 });
-                localStorage.setItem('sec_app_deliveries', JSON.stringify(items));
+                localStorage.setItem('sec_app_deliveries_v2', JSON.stringify(items));
                 document.getElementById('add-del-remark').value = '';
                 document.getElementById('add-del-num').value = '';
             } 
             else if (currentTab === 'anime') {
-                let items = JSON.parse(localStorage.getItem('sec_app_animes') || '[]');
+                let items = JSON.parse(localStorage.getItem('sec_app_animes_v2') || '[]');
                 items.push({
                     id: Date.now(),
                     title: document.getElementById('add-anime-title').value || 'アニメ',
@@ -380,27 +346,24 @@
                     nextDayDisplay: document.getElementById('add-anime-nextday').checked,
                     isWeekly: false 
                 });
-                localStorage.setItem('sec_app_animes', JSON.stringify(items));
+                localStorage.setItem('sec_app_animes_v2', JSON.stringify(items));
                 document.getElementById('add-anime-title').value = '';
             }
             else if (currentTab === 'baseball') {
-                let items = JSON.parse(localStorage.getItem('sec_app_baseballs') || '[]');
+                let items = JSON.parse(localStorage.getItem('sec_app_baseballs_v2') || '[]');
                 items.push({
                     id: Date.now(),
                     title: document.getElementById('add-base-title').value || 'プロ野球',
                     dateRaw: document.getElementById('add-base-date').value,
                     time: document.getElementById('add-base-time').value || '18:00'
                 });
-                localStorage.setItem('sec_app_baseballs', JSON.stringify(items));
+                localStorage.setItem('sec_app_baseballs_v2', JSON.stringify(items));
                 document.getElementById('add-base-title').value = '';
             }
 
             renderDashboard();
             closeModal();
         }
-
-        // 初期描画
-        renderDashboard();
     </script>
 </body>
 </html>
