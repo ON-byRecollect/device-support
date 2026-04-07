@@ -360,7 +360,8 @@
 
         function updateTimeDisplay() {
             let now = new Date();
-            document.getElementById('currentTime').innerText = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            // 先頭の0を削除し、分のみpadStart(2,'0')を維持
+            document.getElementById('currentTime').innerText = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
         }
         
         displayDate = new Date(internalSystemDate);
@@ -452,7 +453,6 @@
 
             let todaysAnimes = getAnimesForDate(targetDateStr);
             if (todaysAnimes.length > 0) {
-                // NEWバッジの位置を左端(left-0)に固定
                 html += `<div class="relative bg-white rounded-[2rem] px-5 py-6 shadow-sm mt-8"><div class="absolute -top-4 left-0 bg-[#c2a853] text-white font-black px-4 py-1.5 rounded-full text-sm tracking-widest shadow-sm">NEW</div><div class="space-y-3 mt-2">`;
                 todaysAnimes.forEach(a => {
                     html += `<p class="text-[15px] font-black text-slate-900 tracking-tight truncate">・${a.title}</p>`;
