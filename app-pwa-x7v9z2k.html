@@ -13,17 +13,22 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* ズームとスクロールの制御 */
+        /* ズームとスクロールの完全制御 */
         html, body { 
-            touch-action: manipulation; 
+            touch-action: none; /* スクロールとズームを完全に禁止 */
             -webkit-text-size-adjust: 100%;
+            overflow: hidden; /* スクロールバー非表示 */
+            height: 100%;
+            position: fixed; /* iOSのバウンススクロール防止 */
+            width: 100%;
         }
-        body { background-color: #f2f2f2; overflow-x: hidden; width: 100%; -webkit-font-smoothing: antialiased; }
+        body { background-color: #f2f2f2; -webkit-font-smoothing: antialiased; }
         
-        .modal-enter { animation: slideUp 0.3s ease-out forwards; }
-        @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        /* モーダル用アニメーション（上部/中央表示用） */
+        .modal-enter { animation: fadeInDown 0.3s ease-out forwards; }
+        @keyframes fadeInDown {
+            from { transform: translateY(-20px) scale(0.95); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
         }
         
         .text-post { color: #ef4444; }
@@ -31,15 +36,22 @@
         .text-sagawa { color: #3b82f6; }
         .text-amazon { color: #f97316; }
         .text-yodobashi { color: #1e1b4b; }
-        /* 新規追加業者カラー */
         .text-trial { color: #0246A1; }
         .text-aeon { color: #57C7E5; }
+
+        /* コンテンツエリアの個別スクロール設定 */
+        #dashboardScrollArea {
+            height: calc(100vh - 220px - 80px); /* ヘッダーとフッターの高さを引く */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* iOSでの滑らかなスクロール */
+            padding-bottom: 20px;
+        }
     </style>
 </head>
-<body class="min-h-screen font-sans text-slate-800 pb-32 pt-8">
-    <div class="max-w-xl mx-auto relative px-4">
+<body class="font-sans text-slate-800 pt-8">
+    <div class="max-w-xl mx-auto relative px-4 h-full flex flex-col">
         
-        <div class="flex justify-center items-center gap-4 mb-6">
+        <div class="flex justify-center items-center gap-4 mb-6 shrink-0">
             <div class="relative w-[140px] h-[140px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
                 <div class="flex items-center pl-1">
                     <span id="headerDate" class="text-[4.5rem] font-black leading-none tracking-tighter">--</span>
@@ -51,9 +63,11 @@
             </div>
         </div>
 
-        <main class="space-y-6" id="dashboardContent"></main>
+        <div id="dashboardScrollArea" class="flex-1 w-full">
+            <main class="space-y-6" id="dashboardContent"></main>
+        </div>
 
-        <div class="fixed bottom-12 left-0 right-0 px-4 max-w-xl mx-auto z-20 flex justify-between items-center gap-3">
+        <div class="fixed bottom-10 left-0 right-0 px-4 max-w-xl mx-auto z-20 flex justify-between items-center gap-3">
             <button onclick="changeDate(-1)" class="w-12 h-12 shrink-0 bg-[#8cd2e6] text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
             </button>
@@ -65,16 +79,16 @@
             </button>
         </div>
 
-        <div id="addModal" class="hidden fixed inset-0 bg-slate-900/40 z-30 flex items-end sm:items-center justify-center backdrop-blur-sm">
-            <div class="bg-white w-full sm:max-w-md sm:rounded-[2rem] rounded-t-[2rem] p-6 modal-enter shadow-2xl max-h-[90vh] overflow-y-auto box-border">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 id="modalTitle" class="text-xl font-black text-slate-800 tracking-tight">荷物の登録</h3>
+        <div id="addModal" class="hidden fixed inset-0 bg-slate-900/40 z-50 flex items-start justify-center backdrop-blur-sm pt-[10vh] px-4">
+            <div class="bg-white w-full sm:max-w-md rounded-[2rem] p-5 modal-enter shadow-2xl max-h-[80vh] overflow-y-auto box-border">
+                <div class="flex justify-between items-center mb-5">
+                    <h3 id="modalTitle" class="text-xl font-black text-slate-800 tracking-tight pl-2">荷物の登録</h3>
                     <button onclick="closeModal()" class="bg-slate-100 p-2 rounded-full text-slate-500 active:bg-slate-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
 
-                <div id="form-delivery" class="space-y-4">
+                <div id="form-delivery" class="space-y-3.5">
                     <input type="hidden" id="edit-del-id" value="">
 
                     <input type="date" id="add-del-date" class="w-full box-border appearance-none block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
@@ -113,25 +127,36 @@
                     <input type="text" id="add-del-num" placeholder="追跡番号" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
                 </div>
 
-                <button id="saveBtn" onclick="saveNewItem()" class="w-full bg-[#8cd2e6] text-white font-black text-lg py-4 rounded-[1.25rem] mt-6 active:scale-95 transition-transform tracking-widest">追加する</button>
+                <button id="saveBtn" onclick="saveNewItem()" class="w-full bg-[#8cd2e6] text-white font-black text-lg py-3.5 rounded-[1.25rem] mt-5 active:scale-95 transition-transform tracking-widest">追加する</button>
             </div>
         </div>
 
     </div>
 
     <script>
-        // JSによるダブルタップズーム無効化
-        document.addEventListener('touchstart', (event) => {
-            if (event.touches.length > 1) event.preventDefault();
+        // JSによる画面全体のスクロール無効化（モーダル内とリストエリアは除く）
+        document.addEventListener('touchmove', function(e) {
+            // モーダル内、またはリストエリアのスクロールは許可する
+            if (e.target.closest('#addModal') || e.target.closest('#dashboardScrollArea')) {
+                return;
+            }
+            e.preventDefault();
         }, { passive: false });
+
+        // ダブルタップズーム無効化
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (event) => {
             const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) event.preventDefault();
+            if (now - lastTouchEnd <= 300) {
+                // ダブルタップによるズームを防止（入力欄のフォーカスは妨げない）
+                if(event.target.tagName !== 'INPUT' && event.target.tagName !== 'SELECT' && event.target.tagName !== 'TEXTAREA') {
+                    event.preventDefault();
+                }
+            }
             lastTouchEnd = now;
         }, false);
 
-        // --- データ初期化 (v6) ---
+        // --- データ初期化 (v6維持) ---
         function initDefaults() {
             if (!localStorage.getItem('sec_app_animes_v6')) {
                 const defaultAnimes = [
@@ -311,8 +336,8 @@
             sagawa: "https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do?okurijoNo=", 
             amazon: "https://www.amazon.co.jp/gp/your-account/order-history", 
             yodobashi: "https://www.yodobashi.com/",
-            trial: "https://www.trial-net.co.jp/",  // トライアル用ダミーURL (不要な場合は空文字などにしてください)
-            aeon: "https://www.aeon.com/"          // イオン用ダミーURL
+            trial: "https://www.trial-net.co.jp/",
+            aeon: "https://www.aeon.com/"
         };
         const carrierDisplayNames = { post: '日本郵便', yamato: 'ヤマト運輸', sagawa: '佐川急便', amazon: 'Amazon', yodobashi: 'ヨドバシ', trial: 'トライアル', aeon: 'イオン' };
 
@@ -412,7 +437,6 @@
                 html += `<div class="bg-white rounded-[2rem] p-5 shadow-sm mt-4 space-y-6">`;
                 todaysDeliveries.forEach((d) => {
                     const cName = carrierDisplayNames[d.carrier] || d.carrier;
-                    // トライアルやイオンなど特定業者はボタン文字を「HP」にする
                     const btnText = (d.carrier === 'amazon' || d.carrier === 'yodobashi' || d.carrier === 'trial' || d.carrier === 'aeon') ? 'HP' : '追跡';
                     html += `<div class="flex items-center justify-between cursor-pointer active:bg-slate-50 transition-colors rounded-xl -mx-2 px-2" onclick="openEditModal(${d.id})"><div class="flex flex-col flex-1 min-w-0 pr-2"><span class="text-${d.carrier} font-black text-xl tracking-tight truncate pointer-events-none">${cName}</span><span class="text-[11px] font-bold text-slate-500 mt-0.5 truncate pointer-events-none">${d.remark || '荷物'}</span></div><div class="text-${d.carrier} font-black text-[1.2rem] tracking-tighter shrink-0 mx-2 pointer-events-none">${d.timeSlot}</div><a href="${urls[d.carrier]}${btnText==='HP'?'':d.num}" target="_blank" onclick="event.stopPropagation()" class="bg-[#c8c8c8] text-slate-800 rounded-full px-5 py-2 font-black text-sm active:opacity-70 shrink-0">${btnText}</a></div>`;
                 });
