@@ -31,6 +31,9 @@
         .text-sagawa { color: #3b82f6; }
         .text-amazon { color: #f97316; }
         .text-yodobashi { color: #1e1b4b; }
+        /* 新規追加業者カラー */
+        .text-trial { color: #0246A1; }
+        .text-aeon { color: #57C7E5; }
     </style>
 </head>
 <body class="min-h-screen font-sans text-slate-800 pb-32 pt-8">
@@ -73,14 +76,19 @@
 
                 <div id="form-delivery" class="space-y-4">
                     <input type="hidden" id="edit-del-id" value="">
+
                     <input type="date" id="add-del-date" class="w-full box-border appearance-none block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
+                    
                     <select id="add-del-carrier" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
                         <option value="yamato" selected>ヤマト運輸</option>
                         <option value="post">日本郵便</option>
                         <option value="sagawa">佐川急便</option>
                         <option value="amazon">Amazon</option>
                         <option value="yodobashi">ヨドバシ</option>
+                        <option value="trial">トライアル</option>
+                        <option value="aeon">イオン</option>
                     </select>
+                    
                     <select id="add-del-time" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
                         <option value="指定なし">指定なし</option>
                         <option value="8:00〜12:00" selected>8:00〜12:00</option>
@@ -89,6 +97,7 @@
                         <option value="18:00〜20:00">18:00〜20:00</option>
                         <option value="19:00〜21:00">19:00〜21:00</option>
                     </select>
+                    
                     <select id="add-del-remark" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
                         <option value="">指定なし</option>
                         <option value="セカンドストリート">セカンドストリート</option>
@@ -100,8 +109,10 @@
                         <option value="Ali Express">Ali Express</option>
                         <option value="ELECOM">ELECOM</option>
                     </select>
+                    
                     <input type="text" id="add-del-num" placeholder="追跡番号" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
                 </div>
+
                 <button id="saveBtn" onclick="saveNewItem()" class="w-full bg-[#8cd2e6] text-white font-black text-lg py-4 rounded-[1.25rem] mt-6 active:scale-95 transition-transform tracking-widest">追加する</button>
             </div>
         </div>
@@ -109,7 +120,7 @@
     </div>
 
     <script>
-        // ダブルタップズーム無効化
+        // JSによるダブルタップズーム無効化
         document.addEventListener('touchstart', (event) => {
             if (event.touches.length > 1) event.preventDefault();
         }, { passive: false });
@@ -120,7 +131,7 @@
             lastTouchEnd = now;
         }, false);
 
-        // --- データ初期化 (v6へ更新) ---
+        // --- データ初期化 (v6) ---
         function initDefaults() {
             if (!localStorage.getItem('sec_app_animes_v6')) {
                 const defaultAnimes = [
@@ -299,9 +310,11 @@
             yamato: "https://toi.kuronekoyamato.co.jp/cgi-bin/tneko?number01=", 
             sagawa: "https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do?okurijoNo=", 
             amazon: "https://www.amazon.co.jp/gp/your-account/order-history", 
-            yodobashi: "https://www.yodobashi.com/" 
+            yodobashi: "https://www.yodobashi.com/",
+            trial: "https://www.trial-net.co.jp/",  // トライアル用ダミーURL (不要な場合は空文字などにしてください)
+            aeon: "https://www.aeon.com/"          // イオン用ダミーURL
         };
-        const carrierDisplayNames = { post: '日本郵便', yamato: 'ヤマト運輸', sagawa: '佐川急便', amazon: 'Amazon', yodobashi: 'ヨドバシ' };
+        const carrierDisplayNames = { post: '日本郵便', yamato: 'ヤマト運輸', sagawa: '佐川急便', amazon: 'Amazon', yodobashi: 'ヨドバシ', trial: 'トライアル', aeon: 'イオン' };
 
         let displayDate = new Date(); 
         let internalSystemDate = checkTimeAndSetDate(); 
@@ -399,7 +412,8 @@
                 html += `<div class="bg-white rounded-[2rem] p-5 shadow-sm mt-4 space-y-6">`;
                 todaysDeliveries.forEach((d) => {
                     const cName = carrierDisplayNames[d.carrier] || d.carrier;
-                    const btnText = (d.carrier === 'amazon' || d.carrier === 'yodobashi') ? 'HP' : '追跡';
+                    // トライアルやイオンなど特定業者はボタン文字を「HP」にする
+                    const btnText = (d.carrier === 'amazon' || d.carrier === 'yodobashi' || d.carrier === 'trial' || d.carrier === 'aeon') ? 'HP' : '追跡';
                     html += `<div class="flex items-center justify-between cursor-pointer active:bg-slate-50 transition-colors rounded-xl -mx-2 px-2" onclick="openEditModal(${d.id})"><div class="flex flex-col flex-1 min-w-0 pr-2"><span class="text-${d.carrier} font-black text-xl tracking-tight truncate pointer-events-none">${cName}</span><span class="text-[11px] font-bold text-slate-500 mt-0.5 truncate pointer-events-none">${d.remark || '荷物'}</span></div><div class="text-${d.carrier} font-black text-[1.2rem] tracking-tighter shrink-0 mx-2 pointer-events-none">${d.timeSlot}</div><a href="${urls[d.carrier]}${btnText==='HP'?'':d.num}" target="_blank" onclick="event.stopPropagation()" class="bg-[#c8c8c8] text-slate-800 rounded-full px-5 py-2 font-black text-sm active:opacity-70 shrink-0">${btnText}</a></div>`;
                 });
                 html += `</div>`;
