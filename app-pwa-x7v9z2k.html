@@ -104,7 +104,7 @@
                     </select>
                     
                     <select id="add-del-time" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
-                        </select>
+                    </select>
                     
                     <select id="add-del-remark" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
                         <option value="">指定なし</option>
@@ -160,9 +160,9 @@
             timeSelect.innerHTML = options.map(opt => `<option value="${opt}" ${opt === selectedTime ? 'selected' : ''}>${opt}</option>`).join('');
         }
 
-        // --- データ初期化 (v7へ更新：新規アニメ追加) ---
+        // --- データ初期化 (v8へ更新：新規アニメ追加) ---
         function initDefaults() {
-            if (!localStorage.getItem('sec_app_animes_v7')) {
+            if (!localStorage.getItem('sec_app_animes_v8')) {
                 const defaultAnimes = [
                     { id: 1, title: '逃がした魚は大きかったが釣りあげた魚が大きすぎた件', dateRaw: '2026-04-02', isWeekly: true, weeks: 12 },
                     { id: 2, title: '自称悪役令嬢な婚約者の観察記録。', dateRaw: '2026-04-04', isWeekly: true, weeks: 12 },
@@ -178,7 +178,9 @@
                     { id: 13, title: 'お隣の天使様にいつの間にか駄目人間にされていた件2', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
                     { id: 14, title: 'LIAR GAME', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
                     { id: 24, title: 'カナン様はあくまでチョロい', dateRaw: '2026-04-08', isWeekly: true, weeks: 12 },
+                    { id: 26, title: '氷の城壁', dateRaw: '2026-04-10', isWeekly: true, weeks: 12 },
                     { id: 15, title: '神の庭付き楠木邸', dateRaw: '2026-04-10', isWeekly: true, weeks: 12 },
+                    { id: 25, title: 'オタクに優しいギャルはいない!?', dateRaw: '2026-04-12', isWeekly: true, weeks: 12 },
                     { id: 16, title: 'Re:ゼロから始める異世界生活 4th season', dateRaw: '2026-04-12', isWeekly: true, weeks: 12 },
                     { id: 17, title: 'クラスで2番目に可愛い女の子と友だちになった', dateRaw: '2026-04-12', isWeekly: true, weeks: 12 },
                     { id: 18, title: '姫騎士は蛮族の嫁', dateRaw: '2026-04-13', isWeekly: true, weeks: 12 },
@@ -187,7 +189,7 @@
                     { id: 21, title: '彼女、お借りします 第5期', dateRaw: '2026-04-15', isWeekly: true, weeks: 12 },
                     { id: 22, title: '夜桜さんちの大作戦 第2期', dateRaw: '2026-04-18', isWeekly: true, weeks: 12 }
                 ];
-                localStorage.setItem('sec_app_animes_v7', JSON.stringify(defaultAnimes));
+                localStorage.setItem('sec_app_animes_v8', JSON.stringify(defaultAnimes));
             }
 
             if (!localStorage.getItem('sec_app_baseballs_v5')) {
@@ -237,95 +239,7 @@
                     { id: 528, title: '阪神', dateRaw: '2026-05-28', time: '18:00' },
                     { id: 529, title: '巨人', dateRaw: '2026-05-29', time: '18:00' },
                     { id: 530, title: '巨人', dateRaw: '2026-05-30', time: '14:00' },
-                    { id: 531, title: '巨人', dateRaw: '2026-05-31', time: '13:00' },
-                    { id: 602, title: '広島', dateRaw: '2026-06-02', time: '18:00' },
-                    { id: 603, title: '広島', dateRaw: '2026-06-03', time: '18:00' },
-                    { id: 604, title: '広島', dateRaw: '2026-06-04', time: '18:00' },
-                    { id: 605, title: 'ヤクルト', dateRaw: '2026-06-05', time: '18:00' },
-                    { id: 606, title: 'ヤクルト', dateRaw: '2026-06-06', time: '14:00' },
-                    { id: 607, title: 'ヤクルト', dateRaw: '2026-06-07', time: '14:00' },
-                    { id: 609, title: 'DeNA', dateRaw: '2026-06-09', time: '18:00' },
-                    { id: 610, title: 'DeNA', dateRaw: '2026-06-10', time: '18:00' },
-                    { id: 611, title: 'DeNA', dateRaw: '2026-06-11', time: '18:00' },
-                    { id: 612, title: '中日', dateRaw: '2026-06-12', time: '18:00' },
-                    { id: 613, title: '中日', dateRaw: '2026-06-13', time: '14:00' },
-                    { id: 614, title: '中日', dateRaw: '2026-06-14', time: '13:00' },
-                    { id: 619, title: 'ソフトバンク', dateRaw: '2026-06-19', time: '18:00' },
-                    { id: 620, title: 'ソフトバンク', dateRaw: '2026-06-20', time: '14:00' },
-                    { id: 621, title: 'ソフトバンク', dateRaw: '2026-06-21', time: '13:00' },
-                    { id: 623, title: 'ロッテ', dateRaw: '2026-06-23', time: '13:00' },
-                    { id: 624, title: 'ロッテ', dateRaw: '2026-06-24', time: '13:00' },
-                    { id: 626, title: '西武', dateRaw: '2026-06-26', time: '18:00' },
-                    { id: 627, title: '西武', dateRaw: '2026-06-27', time: '18:00' },
-                    { id: 628, title: '西武', dateRaw: '2026-06-28', time: '18:00' },
-                    { id: 630, title: 'オリックス', dateRaw: '2026-06-30', time: '18:00' },
-                    { id: 701, title: 'オリックス', dateRaw: '2026-07-01', time: '18:00' },
-                    { id: 702, title: 'オリックス', dateRaw: '2026-07-02', time: '18:00' },
-                    { id: 703, title: '楽天', dateRaw: '2026-07-03', time: '18:00' },
-                    { id: 704, title: '楽天', dateRaw: '2026-07-04', time: '18:00' },
-                    { id: 705, title: '楽天', dateRaw: '2026-07-05', time: '17:00' },
-                    { id: 707, title: 'ロッテ', dateRaw: '2026-07-07', time: '18:00' },
-                    { id: 708, title: 'ロッテ', dateRaw: '2026-07-08', time: '18:00' },
-                    { id: 710, title: '西武', dateRaw: '2026-07-10', time: '18:00' },
-                    { id: 711, title: '西武', dateRaw: '2026-07-11', time: '14:00' },
-                    { id: 712, title: '西武', dateRaw: '2026-07-12', time: '13:00' },
-                    { id: 714, title: 'ソフトバンク', dateRaw: '2026-07-14', time: '13:00' },
-                    { id: 715, title: 'ソフトバンク', dateRaw: '2026-07-15', time: '13:00' },
-                    { id: 716, title: 'ソフトバンク', dateRaw: '2026-07-16', time: '13:00' },
-                    { id: 718, title: 'オリックス', dateRaw: '2026-07-18', time: '14:00' },
-                    { id: 719, title: 'オリックス', dateRaw: '2026-07-19', time: '13:00' },
-                    { id: 720, title: 'オリックス', dateRaw: '2026-07-20', time: '13:00' },
-                    { id: 722, title: '西武', dateRaw: '2026-07-22', time: '18:00' },
-                    { id: 723, title: '西武', dateRaw: '2026-07-23', time: '18:00' },
-                    { id: 725, title: '楽天', dateRaw: '2026-07-25', time: '14:00' },
-                    { id: 726, title: '楽天', dateRaw: '2026-07-26', time: '13:00' },
-                    { id: 731, title: 'ロッテ', dateRaw: '2026-07-31', time: '18:00' },
-                    { id: 801, title: 'ロッテ', dateRaw: '2026-08-01', time: '14:00' },
-                    { id: 802, title: 'ロッテ', dateRaw: '2026-08-02', time: '13:00' },
-                    { id: 804, title: 'ソフトバンク', dateRaw: '2026-08-04', time: '18:00' },
-                    { id: 805, title: 'ソフトバンク', dateRaw: '2026-08-05', time: '18:00' },
-                    { id: 806, title: 'ソフトバンク', dateRaw: '2026-08-06', time: '18:00' },
-                    { id: 807, title: '楽天', dateRaw: '2026-08-07', time: '18:00' },
-                    { id: 808, title: '楽天', dateRaw: '2026-08-08', time: '15:00' },
-                    { id: 809, title: '楽天', dateRaw: '2026-08-09', time: '14:00' },
-                    { id: 811, title: '西武', dateRaw: '2026-08-11', time: '14:00' },
-                    { id: 812, title: '西武', dateRaw: '2026-08-12', time: '18:00' },
-                    { id: 813, title: '西武', dateRaw: '2026-08-13', time: '18:00' },
-                    { id: 814, title: 'オリックス', dateRaw: '2026-08-14', time: '18:00' },
-                    { id: 815, title: 'オリックス', dateRaw: '2026-08-15', time: '14:00' },
-                    { id: 816, title: 'オリックス', dateRaw: '2026-08-16', time: '13:00' },
-                    { id: 818, title: 'ソフトバンク', dateRaw: '2026-08-18', time: '14:00' },
-                    { id: 819, title: 'ソフトバンク', dateRaw: '2026-08-19', time: '14:00' },
-                    { id: 820, title: 'ソフトバンク', dateRaw: '2026-08-20', time: '14:00' },
-                    { id: 821, title: 'ロッテ', dateRaw: '2026-08-21', time: '18:00' },
-                    { id: 822, title: 'ロッテ', dateRaw: '2026-08-22', time: '18:00' },
-                    { id: 823, title: 'ロッテ', dateRaw: '2026-08-23', time: '17:00' },
-                    { id: 825, title: '西武', dateRaw: '2026-08-25', time: '18:00' },
-                    { id: 826, title: '西武', dateRaw: '2026-08-26', time: '18:00' },
-                    { id: 828, title: 'ロッテ', dateRaw: '2026-08-28', time: '18:00' },
-                    { id: 829, title: 'ロッテ', dateRaw: '2026-08-29', time: '14:00' },
-                    { id: 830, title: 'ロッテ', dateRaw: '2026-08-30', time: '13:00' },
-                    { id: 901, title: 'ソフトバンク', dateRaw: '2026-09-01', time: '18:00' },
-                    { id: 902, title: 'ソフトバンク', dateRaw: '2026-09-02', time: '18:00' },
-                    { id: 904, title: '楽天', dateRaw: '2026-09-04', time: '18:00' },
-                    { id: 905, title: '楽天', dateRaw: '2026-09-05', time: '18:00' },
-                    { id: 906, title: '楽天', dateRaw: '2026-09-06', time: '16:00' },
-                    { id: 908, title: 'ソフトバンク', dateRaw: '2026-09-08', time: '18:00' },
-                    { id: 909, title: 'ソフトバンク', dateRaw: '2026-09-09', time: '18:00' },
-                    { id: 910, title: 'ソフトバンク', dateRaw: '2026-09-10', time: '18:00' },
-                    { id: 912, title: '西武', dateRaw: '2026-09-12', time: '18:00' },
-                    { id: 913, title: '西武', dateRaw: '2026-09-13', time: '17:00' },
-                    { id: 915, title: 'ロッテ', dateRaw: '2026-09-15', time: '18:00' },
-                    { id: 917, title: '西武', dateRaw: '2026-09-17', time: '18:00' },
-                    { id: 919, title: 'オリックス', dateRaw: '2026-09-19', time: '14:00' },
-                    { id: 920, title: 'オリックス', dateRaw: '2026-09-20', time: '14:00' },
-                    { id: 921, title: 'オリックス', dateRaw: '2026-09-21', time: '14:00' },
-                    { id: 922, title: '楽天', dateRaw: '2026-09-22', time: '18:00' },
-                    { id: 923, title: '楽天', dateRaw: '2026-09-23', time: '18:00' },
-                    { id: 924, title: '楽天', dateRaw: '2026-09-24', time: '18:00' },
-                    { id: 926, title: 'オリックス', dateRaw: '2026-09-26', time: '14:00' },
-                    { id: 927, title: 'ロッテ', dateRaw: '2026-09-27', time: '18:00' },
-                    { id: 928, title: 'ロッテ', dateRaw: '2026-09-28', time: '18:00' }
+                    { id: 531, title: '巨人', dateRaw: '2026-05-31', time: '13:00' }
                 ];
                 localStorage.setItem('sec_app_baseballs_v5', JSON.stringify(defaultBaseballs));
             }
@@ -389,7 +303,7 @@
         }
 
         function getAnimesForDate(targetDateStr) {
-            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v7') || '[]');
+            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v8') || '[]');
             let results = [];
             let targetTime = new Date(targetDateStr).getTime();
             animes.forEach(anime => {
