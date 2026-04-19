@@ -160,9 +160,9 @@
             timeSelect.innerHTML = options.map(opt => `<option value="${opt}" ${opt === selectedTime ? 'selected' : ''}>${opt}</option>`).join('');
         }
 
-        // --- データ初期化 (v8へ更新：新規アニメ追加) ---
+        // --- データ初期化 (v9へ更新) ---
         function initDefaults() {
-            if (!localStorage.getItem('sec_app_animes_v8')) {
+            if (!localStorage.getItem('sec_app_animes_v9')) {
                 const defaultAnimes = [
                     { id: 1, title: '逃がした魚は大きかったが釣りあげた魚が大きすぎた件', dateRaw: '2026-04-02', isWeekly: true, weeks: 12 },
                     { id: 2, title: '自称悪役令嬢な婚約者の観察記録。', dateRaw: '2026-04-04', isWeekly: true, weeks: 12 },
@@ -187,9 +187,10 @@
                     { id: 19, title: '女神「異世界転生何になりたいですか」俺「勇者の肋骨で」', dateRaw: '2026-04-13', isWeekly: true, weeks: 12 },
                     { id: 20, title: '悲劇の元凶となる最強外道ラスボス女王は民の為に尽くします。 Season2', dateRaw: '2026-04-14', isWeekly: true, weeks: 12 },
                     { id: 21, title: '彼女、お借りします 第5期', dateRaw: '2026-04-15', isWeekly: true, weeks: 12 },
-                    { id: 22, title: '夜桜さんちの大作戦 第2期', dateRaw: '2026-04-18', isWeekly: true, weeks: 12 }
+                    { id: 22, title: '夜桜さんちの大作戦 第2期', dateRaw: '2026-04-18', isWeekly: true, weeks: 12 },
+                    { id: 27, title: '黒猫と魔女の教室', dateRaw: '2026-04-18', isWeekly: true, weeks: 12 }
                 ];
-                localStorage.setItem('sec_app_animes_v8', JSON.stringify(defaultAnimes));
+                localStorage.setItem('sec_app_animes_v9', JSON.stringify(defaultAnimes));
             }
 
             if (!localStorage.getItem('sec_app_baseballs_v5')) {
@@ -303,7 +304,7 @@
         }
 
         function getAnimesForDate(targetDateStr) {
-            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v8') || '[]');
+            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v9') || '[]');
             let results = [];
             let targetTime = new Date(targetDateStr).getTime();
             animes.forEach(anime => {
