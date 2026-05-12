@@ -6,119 +6,153 @@
     <title>ミニCD ジェネレーター</title>
     <style>
         :root {
-            --primary: #3b82f6;
-            --secondary: #64748b;
-            --bg: #f8fafc;
+            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #a855f7 50%, #ec4899 100%);
+            --clear-panel: rgba(255, 255, 255, 0.7); /* 半透明クリアケース */
+            --glass-blur: blur(10px);
+            --bg-start: #fffbeb; /* 画像の背景に寄せた暖色系 */
+            --bg-end: #f5f5f5;
             --text: #1e293b;
+            --secondary: #64748b;
         }
         body {
             font-family: '-apple-system', 'BlinkMacSystemFont', 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--bg);
+            background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%);
             color: var(--text);
             margin: 0;
-            padding: 15px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
         }
         h1 {
-            font-size: 1.2rem;
-            margin-bottom: 5px;
+            font-size: 1.1rem;
+            margin-bottom: 3px;
             text-align: center;
+            color: var(--text);
         }
         .instruction {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--secondary);
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             text-align: center;
             line-height: 1.4;
         }
-        .top-controls {
+        .controls-container {
             width: 100%;
             max-width: 450px;
-            display: flex;
-            gap: 10px;
+            background: var(--clear-panel);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .top-group {
+            display: flex;
+            gap: 8px;
         }
         select, button {
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: bold;
             border: none;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
         .paper-select {
             flex: 1;
-            border: 2px solid #cbd5e1;
+            border: 1px solid rgba(0,0,0,0.1);
             background-color: white;
             color: var(--text);
             appearance: none;
             text-align: center;
         }
-        .btn-add {
-            background-color: var(--primary);
+        .btn-main {
+            background: var(--primary-gradient);
             color: white;
-            padding: 12px 15px;
-            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 2px 4px rgba(168, 85, 247, 0.3);
         }
-        .btn-add:active { opacity: 0.8; }
-        .btn-add:disabled { background-color: #cbd5e1; cursor: not-allowed; box-shadow: none; }
+        .btn-main:active { transform: translateY(1px); opacity: 0.9; }
+        .btn-main:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
 
         .editor-panel {
-            width: 100%;
-            max-width: 450px;
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            margin-bottom: 15px;
+            background: rgba(255,255,255,0.4);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        #activeLabel { 
+            font-size: 0.8rem; 
+            font-weight: bold; 
+            color: var(--primary-gradient); 
+            background: -webkit-linear-gradient(135deg, #3b82f6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .slider-group {
             display: flex;
             align-items: center;
             gap: 10px;
-            flex-wrap: wrap;
         }
-        .editor-panel label { font-size: 0.85rem; font-weight: bold; width: 100%; color: var(--primary); }
-        input[type="range"] { flex: 1; min-width: 200px; }
+        .editor-panel label { font-size: 0.8rem; font-weight: bold; color: var(--secondary); white-space: nowrap; }
+        input[type="range"] { flex: 1; }
+        
         .btn-change {
-            background-color: #f1f5f9;
+            background-color: white;
             color: var(--text);
-            border: 1px solid #cbd5e1;
-            padding: 8px 12px;
-            font-size: 0.85rem;
+            border: 1px solid rgba(0,0,0,0.1);
+            padding: 6px 12px;
+            font-size: 0.8rem;
         }
 
         .canvas-container {
             width: 100%;
             max-width: 450px;
-            background: #e2e8f0; /* 背景をグレーにして用紙を際立たせる */
-            padding: 10px 0;
+            background: rgba(0,0,0,0.03); /* キャンバス背景も少しクリアに */
+            border-radius: 16px;
+            padding: 8px 0;
             position: relative;
         }
         canvas {
             width: 100%;
             height: auto;
             display: block;
-            background: #e2e8f0;
+            border-radius: 8px;
         }
         
-        .action-buttons {
+        .final-actions {
             display: flex;
             gap: 10px;
             width: 100%;
             max-width: 450px;
             margin-top: 15px;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
-        .btn-download { flex: 1; background: #10b981; color: white; }
-        .btn-print { flex: 1; background: #334155; color: white; }
+        .btn-final { flex: 1; padding: 12px 0; font-size: 1rem; }
+        .btn-final:nth-child(1) { background-color: #10b981; } /* 保存は緑のまま */
+        .btn-final:nth-child(2) { background-color: #334155; } /* 印刷はダーク */
 
         #hiddenFileInput { display: none; }
 
         @media print {
             @page { margin: 0; }
             body { background: white; padding: 0; margin: 0; }
-            h1, .instruction, .top-controls, .editor-panel, .action-buttons { display: none !important; }
+            h1, .instruction, .controls-container, .final-actions { display: none !important; }
             .canvas-container { padding: 0; max-width: none; width: 100%; height: 100vh; background: white; }
             canvas { width: 100% !important; height: 100% !important; object-fit: contain; object-position: top left; background: white; }
         }
@@ -126,33 +160,40 @@
 </head>
 <body>
 
-    <h1>ジャケット＆ディスク ジェネレーター</h1>
+    <h1>デザイン ジェネレーター</h1>
     <p class="instruction">
         空の枠をタップすると写真を選べます。<br>
         余白をスワイプして上下にスクロールできます。
     </p>
 
-    <div class="top-controls">
-        <select id="paperSelect" class="paper-select">
-            <option value="A4">A4 (自宅PC向け)</option>
-            <option value="L">L判 (コンビニ向け)</option>
-        </select>
-        <button id="addSetBtn" class="btn-add">＋ 1セット追加</button>
-    </div>
+    <div class="controls-container">
+        <div class="top-group">
+            <select id="paperSelect" class="paper-select">
+                <option value="A4">用紙：A4 (自宅PC)</option>
+                <option value="L">用紙：L判 (コンビニ)</option>
+            </select>
+            <button id="addSetBtn" class="btn btn-main">＋ 1セット追加</button>
+        </div>
 
-    <div class="editor-panel">
-        <label id="activeLabel">選択中: なし</label>
-        <input type="range" id="scaleSlider" min="0.05" max="3" step="0.01" value="1">
-        <button id="changeImageBtn" class="btn-change">画像を変更</button>
+        <div class="editor-panel">
+            <div class="editor-header">
+                <label id="activeLabel">選択中: フロント表(外)</label>
+                <button id="changeImageBtn" class="btn-change">画像を変更</button>
+            </div>
+            <div class="slider-group">
+                <label>🔍 拡大・縮小</label>
+                <input type="range" id="scaleSlider" min="0.05" max="3" step="0.01" value="1">
+            </div>
+        </div>
     </div>
 
     <div class="canvas-container">
         <canvas id="editorCanvas"></canvas>
     </div>
 
-    <div class="action-buttons">
-        <button id="downloadBtn" class="btn-download">画像を保存</button>
-        <button id="printBtn" class="btn-print">直接印刷</button>
+    <div class="final-actions">
+        <button id="downloadBtn" class="btn btn-final">画像を保存</button>
+        <button id="printBtn" class="btn btn-final">直接印刷</button>
     </div>
 
     <input type="file" id="hiddenFileInput" accept="image/*">
@@ -207,12 +248,12 @@
                     let p2Y = (i * 2 + 1) * (pageH + gap);
                     
                     // 1枚目
-                    newItems.push(createItem(idCounter++, 'jacket', 'フロント(外)', w/2, p1Y + 25*PPM));
-                    newItems.push(createItem(idCounter++, 'jacket', 'フロント(内)', w/2, p1Y + 70*PPM));
+                    newItems.push(createItem(idCounter++, 'jacket', 'フロント表(外)', w/2, p1Y + 25*PPM));
+                    newItems.push(createItem(idCounter++, 'jacket', 'フロント表(内)', w/2, p1Y + 70*PPM));
                     newItems.push(createItem(idCounter++, 'disk', '盤面', w/2, p1Y + 110*PPM));
                     // 2枚目
-                    newItems.push(createItem(idCounter++, 'jacket', 'バック(外)', w/2, p2Y + 40*PPM));
-                    newItems.push(createItem(idCounter++, 'jacket', 'バック(内)', w/2, p2Y + 90*PPM));
+                    newItems.push(createItem(idCounter++, 'jacket', 'バック裏(外)', w/2, p2Y + 40*PPM));
+                    newItems.push(createItem(idCounter++, 'jacket', 'バック裏(内)', w/2, p2Y + 90*PPM));
                 }
                 canvas.width = w;
                 // 全ページの高さ＋隙間
@@ -258,6 +299,7 @@
         function updateUI() {
             const activeItem = getActiveItem();
             if (activeItem) {
+                // CSSグラデーションをテキストに適用するためのスタイル
                 activeLabel.innerText = `選択中: ${activeItem.label}`;
                 scaleSlider.value = activeItem.scale;
             }
@@ -308,8 +350,8 @@
         });
 
         function drawCanvas() {
-            // 全体をグレーで塗りつぶす（用紙の外側）
-            ctx.fillStyle = '#e2e8f0';
+            // 全体をクリアに（用紙の外側）
+            ctx.fillStyle = 'rgba(0,0,0,0.02)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             // 用紙の白地を描画
@@ -337,7 +379,9 @@
                 
                 ctx.save();
                 ctx.clip();
-                ctx.fillStyle = isActive ? '#eff6ff' : '#f8fafc';
+                
+                // 背景（半透明クリアケース風）
+                ctx.fillStyle = isActive ? 'rgba(59, 130, 246, 0.05)' : 'rgba(255,255,255,0.7)';
                 ctx.fill();
 
                 if (item.img.src) {
@@ -345,12 +389,26 @@
                     const drawH = item.img.height * item.scale;
                     ctx.drawImage(item.img, item.cx + item.offsetX - drawW / 2, item.cy + item.offsetY - drawH / 2, drawW, drawH);
                 } else {
-                    ctx.fillStyle = '#94a3b8';
-                    ctx.textAlign = 'center';
-                    ctx.font = 'bold 30px sans-serif';
-                    ctx.fillText(item.label, item.cx, item.cy - 10);
-                    ctx.font = '24px sans-serif';
-                    ctx.fillText('タップで画像追加', item.cx, item.cy + 30);
+                    // 画像がない枠のプレースホルダー表示
+                    // ジャケットとディスクで見た目を変える
+                    if(item.type === 'jacket') {
+                        ctx.fillStyle = '#cbd5e1';
+                        ctx.textAlign = 'center';
+                        ctx.font = 'bold 30px sans-serif';
+                        ctx.fillText(item.label, item.cx, item.cy - 10);
+                        ctx.font = '24px sans-serif';
+                        ctx.fillText('タップして画像追加', item.cx, item.cy + 30);
+                    } else {
+                        // ディスク盤面（虹色シルエット風）
+                        const gradient = ctx.createRadialGradient(item.cx, item.cy, item.innerR, item.cx, item.cy, TARGET_SIZE.disk.r);
+                        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)'); // 青
+                        gradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.3)'); // 紫
+                        gradient.addColorStop(1, 'rgba(236, 72, 153, 0.3)'); // ピンク
+                        ctx.fillStyle = gradient;
+                        ctx.beginPath();
+                        ctx.arc(item.cx, item.cy, TARGET_SIZE.disk.r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
                 }
 
                 if (item.type === 'disk') {
@@ -362,6 +420,7 @@
                 }
                 ctx.restore();
 
+                // 枠線の描画
                 ctx.beginPath();
                 if (item.type === 'jacket') {
                     ctx.rect(item.cx - TARGET_SIZE.jacket.w / 2, item.cy - TARGET_SIZE.jacket.h / 2, TARGET_SIZE.jacket.w, TARGET_SIZE.jacket.h);
@@ -371,9 +430,19 @@
                     ctx.arc(item.cx, item.cy, TARGET_SIZE.disk.innerR, 0, Math.PI * 2);
                 }
 
+                // アクティブ時の枠線を虹色グラデーションに（近似）
                 ctx.lineWidth = isActive ? 6 : 3;
-                ctx.strokeStyle = isActive ? '#3b82f6' : '#cbd5e1';
-                ctx.setLineDash(isActive ? [] : [10, 10]);
+                if(isActive) {
+                    const lineGrad = ctx.createLinearGradient(item.cx - 25*PPM, item.cy, item.cx + 25*PPM, item.cy);
+                    lineGrad.addColorStop(0, '#3b82f6');
+                    lineGrad.addColorStop(0.5, '#a855f7');
+                    lineGrad.addColorStop(1, '#ec4899');
+                    ctx.strokeStyle = lineGrad;
+                    ctx.setLineDash([]);
+                } else {
+                    ctx.strokeStyle = '#cbd5e1';
+                    ctx.setLineDash([15, 15]);
+                }
                 ctx.stroke();
                 ctx.restore();
             });
@@ -397,7 +466,6 @@
             return { x: (cx - rect.left) * scaleX, y: (cy - rect.top) * scaleY };
         }
 
-        // --- タッチ・スクロール最適化処理 ---
         canvas.addEventListener('touchstart', (e) => {
             const pos = getPos(e);
             let hitItem = items.find(item => hitTest(item, pos.x, pos.y));
@@ -474,7 +542,6 @@
                 const gap = 15 * PPM;
                 const totalPages = currentSets * 2;
                 
-                // L判は物理制限のため、1ページずつ切り出して連続ダウンロード
                 for(let i=0; i<totalPages; i++) {
                     let tempCanvas = document.createElement('canvas');
                     tempCanvas.width = PAPER_SIZES['L'].w;
