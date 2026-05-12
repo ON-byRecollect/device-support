@@ -2,410 +2,290 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=0">
-    <meta name="robots" content="noindex, nofollow">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>秘書</title>
-    
-    <link rel="icon" href="del.png" type="image/png">
-    <link rel="apple-touch-icon" href="del.png">
-
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ミニCDジャケット ジェネレーター</title>
     <style>
-        /* ズームとスクロールの完全制御 */
-        html, body { 
-            touch-action: none; 
-            -webkit-text-size-adjust: 100%;
-            overflow: hidden; 
+        :root {
+            --primary: #3b82f6;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        .instruction {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .controls {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            background: var(--primary);
+            color: white;
+            padding: 12px 0;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
             height: 100%;
-            position: fixed; 
+            cursor: pointer;
+        }
+        .slider-group {
+            margin-bottom: 15px;
+        }
+        .slider-group label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="range"] {
             width: 100%;
         }
-        body { background-color: #f2f2f2; -webkit-font-smoothing: antialiased; }
-        
-        /* モーダル用アニメーション（上部/中央表示用） */
-        .modal-enter { animation: fadeInDown 0.3s ease-out forwards; }
-        @keyframes fadeInDown {
-            from { transform: translateY(-20px) scale(0.95); opacity: 0; }
-            to { transform: translateY(0) scale(1); opacity: 1; }
+        /* Canvas preview area */
+        .canvas-container {
+            width: 100%;
+            max-width: 400px;
+            /* L-size ratio: 89:127 */
+            aspect-ratio: 89 / 127;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+            touch-action: none; /* Prevent scrolling when dragging image */
         }
-        
-        .text-post { color: #ef4444; }
-        .text-yamato { color: #eab308; }
-        .text-sagawa { color: #3b82f6; }
-        .text-amazon { color: #f97316; }
-        .text-yodobashi { color: #1e1b4b; }
-        .text-trial { color: #0246A1; }
-        .text-aeon { color: #57C7E5; }
-
-        /* コンテンツエリアの個別スクロール設定 */
-        #dashboardScrollArea {
-            height: calc(100vh - 220px - 80px); 
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch; 
-            padding-bottom: 20px;
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .btn-download {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            background: #10b981;
+            color: white;
+            padding: 15px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            text-decoration: none;
         }
     </style>
 </head>
-<body class="font-sans text-slate-800 pt-8">
-    <div class="max-w-xl mx-auto relative px-4 h-full flex flex-col">
+<body>
+
+    <h1>ジャケット ジェネレーター</h1>
+    <p class="instruction">
+        画像を選んで位置と大きさを調整し、「保存」を押してください。<br>
+        保存した画像をコンビニで「L判写真プリント」すると実寸になります。
+    </p>
+
+    <div class="controls">
+        <div class="file-input-wrapper">
+            画像を選択する
+            <input type="file" id="imageLoader" accept="image/*">
+        </div>
         
-        <div class="flex justify-center items-center gap-4 mb-6 shrink-0">
-            <div class="relative w-[140px] h-[140px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
-                <div class="flex items-center pl-1">
-                    <span id="headerDate" class="text-[4.5rem] font-black leading-none tracking-tighter">--</span>
-                    <span id="headerDay" class="ml-1 text-lg font-black tracking-widest text-slate-800" style="writing-mode: vertical-rl; text-orientation: upright;">--曜日</span>
-                </div>
-            </div>
-            <div class="w-[140px] h-[140px] bg-white rounded-[2rem] shadow-sm flex items-center justify-center">
-                <span id="currentTime" class="text-[3rem] font-black leading-none tracking-tighter">--:--</span>
-            </div>
+        <div class="slider-group">
+            <label for="scaleSlider">画像の拡大・縮小</label>
+            <input type="range" id="scaleSlider" min="0.1" max="3" step="0.01" value="1">
         </div>
-
-        <div id="dashboardScrollArea" class="flex-1 w-full">
-            <main class="space-y-6" id="dashboardContent"></main>
-        </div>
-
-        <div class="fixed bottom-10 left-0 right-0 px-4 max-w-xl mx-auto z-20 flex justify-between items-center gap-3">
-            <button onclick="changeDate(-1)" class="w-12 h-12 shrink-0 bg-[#8cd2e6] text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
-            </button>
-            <button onclick="openModal()" class="flex-1 bg-[#8cd2e6] text-white font-black text-lg py-3 rounded-full shadow-md active:scale-95 transition-transform tracking-wider">
-                荷物を登録
-            </button>
-            <button onclick="changeDate(1)" class="w-12 h-12 shrink-0 bg-[#8cd2e6] text-white rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
-            </button>
-        </div>
-
-        <div id="addModal" class="hidden fixed inset-0 bg-slate-900/40 z-50 flex items-start justify-center backdrop-blur-sm pt-[10vh] px-4">
-            <div class="bg-white w-full sm:max-w-md rounded-[2rem] p-5 modal-enter shadow-2xl max-h-[80vh] overflow-y-auto box-border">
-                <div class="flex justify-between items-center mb-5">
-                    <h3 id="modalTitle" class="text-xl font-black text-slate-800 tracking-tight pl-2">荷物の登録</h3>
-                    <button onclick="closeModal()" class="bg-slate-100 p-2 rounded-full text-slate-500 active:bg-slate-200">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-
-                <div id="form-delivery" class="space-y-3.5">
-                    <input type="hidden" id="edit-del-id" value="">
-
-                    <input type="date" id="add-del-date" class="w-full box-border appearance-none block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
-                    
-                    <select id="add-del-carrier" onchange="updateTimeOptions()" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
-                        <option value="yamato" selected>ヤマト運輸</option>
-                        <option value="post">日本郵便</option>
-                        <option value="sagawa">佐川急便</option>
-                        <option value="amazon">Amazon</option>
-                        <option value="yodobashi">ヨドバシ</option>
-                        <option value="trial">トライアル</option>
-                        <option value="aeon">イオン</option>
-                    </select>
-                    
-                    <select id="add-del-time" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
-                    </select>
-                    
-                    <select id="add-del-remark" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
-                        <option value="">指定なし</option>
-                        <option value="セカンドストリート">セカンドストリート</option>
-                        <option value="GEO">GEO</option>
-                        <option value="オフモール">オフモール</option>
-                        <option value="じゃんぱら">じゃんぱら</option>
-                        <option value="ノジマ">ノジマ</option>
-                        <option value="トレジャーファクトリー">トレジャーファクトリー</option>
-                        <option value="Ali Express">Ali Express</option>
-                        <option value="ELECOM">ELECOM</option>
-                    </select>
-                    
-                    <input type="text" id="add-del-num" placeholder="追跡番号" class="w-full box-border block bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-base font-bold text-slate-800 outline-none">
-                </div>
-
-                <button id="saveBtn" onclick="saveNewItem()" class="w-full bg-[#8cd2e6] text-white font-black text-lg py-3.5 rounded-[1.25rem] mt-5 active:scale-95 transition-transform tracking-widest">追加する</button>
-            </div>
-        </div>
-
+        <p style="font-size: 0.8rem; color: #64748b; margin: 0;">※画像上を指でスワイプして位置を移動できます</p>
     </div>
 
+    <div class="canvas-container">
+        <canvas id="editorCanvas"></canvas>
+    </div>
+
+    <button id="downloadBtn" class="btn-download">L判サイズで画像を保存</button>
+
     <script>
-        // --- スクロール・ズーム制御 ---
-        document.addEventListener('touchmove', function(e) {
-            if (e.target.closest('#addModal') || e.target.closest('#dashboardScrollArea')) return;
-            e.preventDefault();
-        }, { passive: false });
+        const canvas = document.getElementById('editorCanvas');
+        const ctx = canvas.getContext('2d');
+        const imageLoader = document.getElementById('imageLoader');
+        const scaleSlider = document.getElementById('scaleSlider');
+        const downloadBtn = document.getElementById('downloadBtn');
 
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', (event) => {
-            const now = (new Date()).getTime();
-            if (now - lastTouchEnd <= 300) {
-                if(event.target.tagName !== 'INPUT' && event.target.tagName !== 'SELECT' && event.target.tagName !== 'TEXTAREA') {
-                    event.preventDefault();
+        // L-size dimensions at ~300dpi for high quality print
+        const CANVAS_WIDTH = 1051;
+        const CANVAS_HEIGHT = 1500;
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
+
+        // Target Jacket dimensions (5.0cm x 4.3cm)
+        // L-size is 8.9cm x 12.7cm.
+        // Ratio calculations:
+        const jacketWidthPx = (5.0 / 8.9) * CANVAS_WIDTH;
+        const jacketHeightPx = (4.3 / 12.7) * CANVAS_HEIGHT;
+        const jacketX = (CANVAS_WIDTH - jacketWidthPx) / 2;
+        const jacketY = 200; // Positioned slightly near the top
+
+        let img = new Image();
+        let imgX = 0, imgY = 0, imgScale = 1;
+        let isDragging = false;
+        let startX, startY;
+
+        // Draw the initial blank canvas
+        drawCanvas();
+
+        imageLoader.addEventListener('change', handleImage, false);
+        scaleSlider.addEventListener('input', () => {
+            imgScale = parseFloat(scaleSlider.value);
+            drawCanvas();
+        });
+
+        function handleImage(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                img.onload = function() {
+                    // Initial scale to fit the jacket width roughly
+                    imgScale = jacketWidthPx / img.width;
+                    scaleSlider.value = imgScale;
+                    
+                    // Center the image inside the jacket box
+                    imgX = jacketX + (jacketWidthPx - (img.width * imgScale)) / 2;
+                    imgY = jacketY + (jacketHeightPx - (img.height * imgScale)) / 2;
+                    
+                    drawCanvas();
                 }
+                img.src = event.target.result;
             }
-            lastTouchEnd = now;
-        }, false);
-
-        const timeOptionSets = {
-            default: ["指定なし", "8:00〜12:00", "14:00〜16:00", "16:00〜18:00", "18:00〜20:00", "19:00〜21:00"],
-            trial: ["指定なし", "10:00〜12:00", "12:00〜14:00", "14:00〜16:00", "16:00〜18:00", "18:00〜20:00", "20:00〜22:00"],
-            aeon: ["指定なし", "12:00〜14:00", "13:00〜15:00", "15:00〜17:00", "16:00〜18:00", "18:00〜20:00", "19:00〜21:00"]
-        };
-
-        function updateTimeOptions(selectedTime = "指定なし") {
-            const carrier = document.getElementById('add-del-carrier').value;
-            const timeSelect = document.getElementById('add-del-time');
-            let options = timeOptionSets.default;
-            if (carrier === 'trial') options = timeOptionSets.trial;
-            else if (carrier === 'aeon') options = timeOptionSets.aeon;
-            timeSelect.innerHTML = options.map(opt => `<option value="${opt}" ${opt === selectedTime ? 'selected' : ''}>${opt}</option>`).join('');
-        }
-
-        // --- データ初期化 (v9へ更新) ---
-        function initDefaults() {
-            if (!localStorage.getItem('sec_app_animes_v9')) {
-                const defaultAnimes = [
-                    { id: 1, title: '逃がした魚は大きかったが釣りあげた魚が大きすぎた件', dateRaw: '2026-04-02', isWeekly: true, weeks: 12 },
-                    { id: 2, title: '自称悪役令嬢な婚約者の観察記録。', dateRaw: '2026-04-04', isWeekly: true, weeks: 12 },
-                    { id: 3, title: '本好きの下剋上 領主の養女', dateRaw: '2026-04-05', isWeekly: true, weeks: 12 },
-                    { id: 4, title: 'ようこそ実力至上主義の教室へ 4th Season', dateRaw: '2026-04-05', isWeekly: true, weeks: 12 },
-                    { id: 5, title: '転生したらスライムだった件 第4期', dateRaw: '2026-04-05', isWeekly: true, weeks: 12 },
-                    { id: 6, title: '最強の職業は勇者でも賢者でもなく鑑定士（仮）らしいですよ？', dateRaw: '2026-04-05', isWeekly: true, weeks: 12 },
-                    { id: 23, title: '最強の王様、二度目の人生は何をする？ Season2', dateRaw: '2026-04-06', isWeekly: true, weeks: 12 },
-                    { id: 9, title: '灰原くんの強くて青春ニューゲーム', dateRaw: '2026-04-06', isWeekly: true, weeks: 12 },
-                    { id: 10, title: '自動販売機に生まれ変わった俺は迷宮を彷徨う 3rd season', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
-                    { id: 11, title: '異世界のんびり農家2', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
-                    { id: 12, title: 'また殺されてしまったのですね、探偵様', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
-                    { id: 13, title: 'お隣の天使様にいつの間にか駄目人間にされていた件2', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
-                    { id: 14, title: 'LIAR GAME', dateRaw: '2026-04-07', isWeekly: true, weeks: 12 },
-                    { id: 24, title: 'カナン様はあくまでチョロい', dateRaw: '2026-04-08', isWeekly: true, weeks: 12 },
-                    { id: 26, title: '氷の城壁', dateRaw: '2026-04-10', isWeekly: true, weeks: 12 },
-                    { id: 15, title: '神の庭付き楠木邸', dateRaw: '2026-04-10', isWeekly: true, weeks: 12 },
-                    { id: 25, title: 'オタクに優しいギャルはいない!?', dateRaw: '2026-04-12', isWeekly: true, weeks: 12 },
-                    { id: 16, title: 'Re:ゼロから始める異世界生活 4th season', dateRaw: '2026-04-12', isWeekly: true, weeks: 12 },
-                    { id: 17, title: 'クラスで2番目に可愛い女の子と友だちになった', dateRaw: '2026-04-12', isWeekly: true, weeks: 12 },
-                    { id: 18, title: '姫騎士は蛮族の嫁', dateRaw: '2026-04-13', isWeekly: true, weeks: 12 },
-                    { id: 19, title: '女神「異世界転生何になりたいですか」俺「勇者の肋骨で」', dateRaw: '2026-04-13', isWeekly: true, weeks: 12 },
-                    { id: 20, title: '悲劇の元凶となる最強外道ラスボス女王は民の為に尽くします。 Season2', dateRaw: '2026-04-14', isWeekly: true, weeks: 12 },
-                    { id: 21, title: '彼女、お借りします 第5期', dateRaw: '2026-04-15', isWeekly: true, weeks: 12 },
-                    { id: 22, title: '夜桜さんちの大作戦 第2期', dateRaw: '2026-04-18', isWeekly: true, weeks: 12 },
-                    { id: 27, title: '黒猫と魔女の教室', dateRaw: '2026-04-18', isWeekly: true, weeks: 12 }
-                ];
-                localStorage.setItem('sec_app_animes_v9', JSON.stringify(defaultAnimes));
-            }
-
-            if (!localStorage.getItem('sec_app_baseballs_v5')) {
-                const defaultBaseballs = [
-                    { id: 407, title: '楽天', dateRaw: '2026-04-07', time: '18:00' },
-                    { id: 408, title: '楽天', dateRaw: '2026-04-08', time: '18:00' },
-                    { id: 409, title: '楽天', dateRaw: '2026-04-09', time: '18:00' },
-                    { id: 411, title: 'ソフトバンク', dateRaw: '2026-04-11', time: '14:00' },
-                    { id: 412, title: 'ソフトバンク', dateRaw: '2026-04-12', time: '13:00' },
-                    { id: 414, title: 'ロッテ', dateRaw: '2026-04-14', time: '18:00' },
-                    { id: 415, title: 'ロッテ', dateRaw: '2026-04-15', time: '18:00' },
-                    { id: 416, title: 'ロッテ', dateRaw: '2026-04-16', time: '18:00' },
-                    { id: 417, title: '西武', dateRaw: '2026-04-17', time: '18:00' },
-                    { id: 418, title: '西武', dateRaw: '2026-04-18', time: '14:00' },
-                    { id: 419, title: '西武', dateRaw: '2026-04-19', time: '13:00' },
-                    { id: 421, title: '楽天', dateRaw: '2026-04-21', time: '18:00' },
-                    { id: 422, title: '楽天', dateRaw: '2026-04-22', time: '18:00' },
-                    { id: 423, title: '楽天', dateRaw: '2026-04-23', time: '18:00' },
-                    { id: 424, title: 'オリックス', dateRaw: '2026-04-24', time: '18:00' },
-                    { id: 425, title: 'オリックス', dateRaw: '2026-04-25', time: '14:00' },
-                    { id: 426, title: 'オリックス', dateRaw: '2026-04-26', time: '13:00' },
-                    { id: 428, title: '西武', dateRaw: '2026-04-28', time: '13:00' },
-                    { id: 429, title: '西武', dateRaw: '2026-04-29', time: '14:00' },
-                    { id: 430, title: '西武', dateRaw: '2026-04-30', time: '18:00' },
-                    { id: 501, title: 'オリックス', dateRaw: '2026-05-01', time: '18:00' },
-                    { id: 502, title: 'オリックス', dateRaw: '2026-05-02', time: '14:00' },
-                    { id: 503, title: 'オリックス', dateRaw: '2026-05-03', time: '13:00' },
-                    { id: 504, title: '楽天', dateRaw: '2026-05-04', time: '18:00' },
-                    { id: 505, title: '楽天', dateRaw: '2026-05-05', time: '14:00' },
-                    { id: 506, title: '楽天', dateRaw: '2026-05-06', time: '14:00' },
-                    { id: 508, title: 'オリックス', dateRaw: '2026-05-08', time: '18:00' },
-                    { id: 509, title: 'オリックス', dateRaw: '2026-05-09', time: '14:00' },
-                    { id: 510, title: 'オリックス', dateRaw: '2026-05-10', time: '13:00' },
-                    { id: 512, title: 'ロッテ', dateRaw: '2026-05-12', time: '18:00' },
-                    { id: 513, title: 'ロッテ', dateRaw: '2026-05-13', time: '18:00' },
-                    { id: 514, title: 'ロッテ', dateRaw: '2026-05-14', time: '18:00' },
-                    { id: 515, title: '西武', dateRaw: '2026-05-15', time: '18:00' },
-                    { id: 516, title: '西武', dateRaw: '2026-05-16', time: '14:00' },
-                    { id: 517, title: '西武', dateRaw: '2026-05-17', time: '13:00' },
-                    { id: 519, title: '楽天', dateRaw: '2026-05-19', time: '18:00' },
-                    { id: 520, title: '楽天', dateRaw: '2026-05-20', time: '18:00' },
-                    { id: 522, title: 'ソフトバンク', dateRaw: '2026-05-22', time: '18:00' },
-                    { id: 523, title: 'ソフトバンク', dateRaw: '2026-05-23', time: '14:00' },
-                    { id: 524, title: 'ソフトバンク', dateRaw: '2026-05-24', time: '14:00' },
-                    { id: 526, title: '阪神', dateRaw: '2026-05-26', time: '18:00' },
-                    { id: 527, title: '阪神', dateRaw: '2026-05-27', time: '18:00' },
-                    { id: 528, title: '阪神', dateRaw: '2026-05-28', time: '18:00' },
-                    { id: 529, title: '巨人', dateRaw: '2026-05-29', time: '18:00' },
-                    { id: 530, title: '巨人', dateRaw: '2026-05-30', time: '14:00' },
-                    { id: 531, title: '巨人', dateRaw: '2026-05-31', time: '13:00' }
-                ];
-                localStorage.setItem('sec_app_baseballs_v5', JSON.stringify(defaultBaseballs));
-            }
-            if (!localStorage.getItem('sec_app_deliveries_v5')) {
-                localStorage.setItem('sec_app_deliveries_v5', JSON.stringify([]));
+            if(e.target.files[0]) {
+                reader.readAsDataURL(e.target.files[0]);
             }
         }
-        initDefaults();
 
-        const urls = { post: "https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1=", yamato: "https://toi.kuronekoyamato.co.jp/cgi-bin/tneko?number01=", sagawa: "https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do?okurijoNo=", amazon: "https://www.amazon.co.jp/gp/your-account/order-history", yodobashi: "https://www.yodobashi.com/", trial: "https://www.trial-net.co.jp/", aeon: "https://www.aeon.com/" };
-        const carrierDisplayNames = { post: '日本郵便', yamato: 'ヤマト運輸', sagawa: '佐川急便', amazon: 'Amazon', yodobashi: 'ヨドバシ', trial: 'トライアル', aeon: 'イオン' };
+        function drawCanvas() {
+            // 1. Fill white background (L-size paper)
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-        let displayDate = new Date(); 
-        let internalSystemDate = checkTimeAndSetDate(); 
-
-        function checkTimeAndSetDate() {
-            let now = new Date();
-            if (now.getHours() >= 23) now.setDate(now.getDate() + 1);
-            now.setHours(0,0,0,0);
-            return now;
-        }
-
-        function updateTimeDisplay() {
-            let now = new Date();
-            document.getElementById('currentTime').innerText = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-        }
-        
-        displayDate = new Date(internalSystemDate);
-        updateTimeDisplay();
-
-        setInterval(() => {
-            updateTimeDisplay();
-            let calculatedDate = checkTimeAndSetDate();
-            if(internalSystemDate.getTime() !== calculatedDate.getTime()) {
-                internalSystemDate = calculatedDate;
-                if (document.visibilityState === 'visible') {
-                    displayDate = new Date(internalSystemDate);
-                    renderDashboard();
-                }
+            if (img.src) {
+                // 2. Draw user image inside the jacket area
+                ctx.save();
+                // Create clipping path for the jacket
+                ctx.beginPath();
+                ctx.rect(jacketX, jacketY, jacketWidthPx, jacketHeightPx);
+                ctx.clip();
+                
+                // Draw image
+                ctx.drawImage(img, imgX, imgY, img.width * imgScale, img.height * imgScale);
+                ctx.restore();
             }
-        }, 1000);
 
-        function changeDate(days) {
-            displayDate.setDate(displayDate.getDate() + days);
-            renderDashboard();
+            // 3. Draw jacket cut outline (dotted line)
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(jacketX, jacketY, jacketWidthPx, jacketHeightPx);
+            ctx.setLineDash([10, 10]);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#cccccc';
+            ctx.stroke();
+            ctx.restore();
+
+            // 4. Draw instructions on the paper
+            ctx.fillStyle = '#333333';
+            ctx.font = '36px "Helvetica Neue", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('ジャケット カット用ガイド', CANVAS_WIDTH / 2, jacketY - 40);
+            
+            ctx.font = '24px "Helvetica Neue", sans-serif';
+            ctx.fillStyle = '#666666';
+            ctx.fillText('この画像をコンビニの「L判写真プリント」で印刷し、点線に沿って切り取ってください。', CANVAS_WIDTH / 2, CANVAS_HEIGHT - 100);
+            ctx.fillText('※スマホ画面のスクリーンショットではなく、必ず保存したデータをご利用ください。', CANVAS_WIDTH / 2, CANVAS_HEIGHT - 50);
         }
 
-        function getYYYYMMDD(dateObj) {
-            return `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
-        }
-
-        function getGarbageForDate(dateObj) {
-            let garbages = [];
-            let day = dateObj.getDay();
-            const unburnableDates = ['04-23', '05-21', '06-18', '07-16', '08-13', '09-10'];
-            let mdStr = String(dateObj.getMonth()+1).padStart(2,'0') + '-' + String(dateObj.getDate()).padStart(2,'0');
-            if (day === 2 || day === 5) garbages.push({ name: '燃えるゴミ', bg: 'bg-[#f05a5a]', text: 'text-white' });
-            if (day === 3) garbages.push({ name: 'ペット／ビン／缶', bg: 'bg-[#22c55e]', text: 'text-white' });
-            if (unburnableDates.includes(mdStr)) garbages.push({ name: '燃えないゴミ', bg: 'bg-slate-400', text: 'text-white' });
-            return garbages;
-        }
-
-        function getAnimesForDate(targetDateStr) {
-            let animes = JSON.parse(localStorage.getItem('sec_app_animes_v9') || '[]');
-            let results = [];
-            let targetTime = new Date(targetDateStr).getTime();
-            animes.forEach(anime => {
-                let baseDate = new Date(anime.dateRaw);
-                if (anime.isWeekly) {
-                    let endTime = baseDate.getTime() + ((anime.weeks - 1) * 7 * 24 * 60 * 60 * 1000);
-                    if (new Date(targetDateStr).getDay() === baseDate.getDay() && targetTime >= baseDate.getTime() && targetTime <= endTime) results.push(anime);
-                } else if (getYYYYMMDD(baseDate) === targetDateStr) results.push(anime);
-            });
-            return results;
-        }
-
-        function renderDashboard() {
-            const days = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
-            document.getElementById('headerDay').innerText = days[displayDate.getDay()];
-            document.getElementById('headerDate').innerText = displayDate.getDate();
-            const targetDateStr = getYYYYMMDD(displayDate);
-            const content = document.getElementById('dashboardContent');
-            let html = '';
-            const garbages = getGarbageForDate(displayDate);
-            let baseballs = JSON.parse(localStorage.getItem('sec_app_baseballs_v5') || '[]');
-            let todaysBaseballs = baseballs.filter(b => b.dateRaw === targetDateStr);
-            if (garbages.length > 0 || todaysBaseballs.length > 0) {
-                html += `<div class="flex gap-3 w-full">`;
-                garbages.forEach(g => { html += `<div class="flex-1 ${g.bg} ${g.text} rounded-full py-3.5 font-black text-base shadow-sm tracking-widest text-center flex items-center justify-center min-w-0 px-2 truncate">${g.name}</div>`; });
-                todaysBaseballs.forEach(b => { let titleOnly = b.title.split(' @')[0]; html += `<div class="flex-1 relative bg-[#1d7eb8] text-white rounded-full py-3.5 font-black text-base shadow-sm tracking-widest text-center flex items-center justify-center min-w-0 px-2 truncate"><div class="absolute top-1/2 -translate-y-1/2 left-2 w-7 h-7 border-[2px] border-slate-800 rounded-full bg-white text-[#1d7eb8] flex items-center justify-center font-black text-xs shrink-0">F</div><span class="ml-6 truncate">${b.time} ${titleOnly}</span></div>`; });
-                html += `</div>`;
+        // --- Touch & Mouse Dragging Logic ---
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX = e.clientX;
+            let clientY = e.clientY;
+            
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
             }
-            let deliveries = JSON.parse(localStorage.getItem('sec_app_deliveries_v5') || '[]');
-            let todaysDeliveries = deliveries.filter(d => d.deliveryDateRaw === targetDateStr);
-            if (todaysDeliveries.length > 0) {
-                html += `<div class="bg-white rounded-[2rem] p-5 shadow-sm mt-4 space-y-6">`;
-                todaysDeliveries.forEach((d) => {
-                    const cName = carrierDisplayNames[d.carrier] || d.carrier;
-                    const btnText = (d.carrier === 'amazon' || d.carrier === 'yodobashi' || d.carrier === 'trial' || d.carrier === 'aeon') ? 'HP' : '追跡';
-                    html += `<div class="flex items-center justify-between cursor-pointer active:bg-slate-50 transition-colors rounded-xl -mx-2 px-2" onclick="openEditModal(${d.id})"><div class="flex flex-col flex-1 min-w-0 pr-2"><span class="text-${d.carrier} font-black text-xl tracking-tight truncate pointer-events-none">${cName}</span><span class="text-[11px] font-bold text-slate-500 mt-0.5 truncate pointer-events-none">${d.remark || '荷物'}</span></div><div class="text-${d.carrier} font-black text-[1.2rem] tracking-tighter shrink-0 mx-2 pointer-events-none">${d.timeSlot}</div><a href="${urls[d.carrier]}${btnText==='HP'?'':d.num}" target="_blank" onclick="event.stopPropagation()" class="bg-[#c8c8c8] text-slate-800 rounded-full px-5 py-2 font-black text-sm active:opacity-70 shrink-0">${btnText}</a></div>`;
-                });
-                html += `</div>`;
-            }
-            let todaysAnimes = getAnimesForDate(targetDateStr);
-            if (todaysAnimes.length > 0) {
-                html += `<div class="relative bg-white rounded-[2rem] px-5 py-6 shadow-sm mt-8"><div class="absolute -top-4 left-0 bg-[#c2a853] text-white font-black px-4 py-1.5 rounded-full text-sm tracking-widest shadow-sm">NEW</div><div class="space-y-3 mt-2">`;
-                todaysAnimes.forEach(a => { html += `<p class="text-[15px] font-black text-slate-900 tracking-tight truncate">・${a.title}</p>`; });
-                html += `</div></div>`;
-            }
-            if(html === '') html = `<div class="text-center py-20"><p class="text-slate-400 font-bold text-sm tracking-widest">予定はありません</p></div>`;
-            content.innerHTML = html;
-        }
-
-        function openModal() {
-            document.getElementById('modalTitle').innerText = "荷物の登録";
-            document.getElementById('saveBtn').innerText = "追加する";
-            document.getElementById('edit-del-id').value = ""; 
-            document.getElementById('add-del-date').value = getYYYYMMDD(displayDate);
-            document.getElementById('add-del-carrier').value = 'yamato';
-            updateTimeOptions(); 
-            document.getElementById('add-del-remark').value = '';
-            document.getElementById('add-del-num').value = '';
-            document.getElementById('addModal').classList.remove('hidden');
-        }
-
-        function openEditModal(id) {
-            let items = JSON.parse(localStorage.getItem('sec_app_deliveries_v5') || '[]');
-            const target = items.find(i => i.id === id);
-            if(!target) return;
-            document.getElementById('modalTitle').innerText = "荷物の編集";
-            document.getElementById('saveBtn').innerText = "保存する";
-            document.getElementById('edit-del-id').value = target.id;
-            document.getElementById('add-del-date').value = target.deliveryDateRaw;
-            document.getElementById('add-del-carrier').value = target.carrier;
-            updateTimeOptions(target.timeSlot); 
-            document.getElementById('add-del-remark').value = target.remark;
-            document.getElementById('add-del-num').value = target.num;
-            document.getElementById('addModal').classList.remove('hidden');
-        }
-
-        function closeModal() { document.getElementById('addModal').classList.add('hidden'); }
-
-        function saveNewItem() {
-            let items = JSON.parse(localStorage.getItem('sec_app_deliveries_v5') || '[]');
-            const editId = document.getElementById('edit-del-id').value;
-            const newItemData = {
-                carrier: document.getElementById('add-del-carrier').value,
-                deliveryDateRaw: document.getElementById('add-del-date').value,
-                timeSlot: document.getElementById('add-del-time').value,
-                remark: document.getElementById('add-del-remark').value,
-                num: document.getElementById('add-del-num').value
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
             };
-            if (editId) {
-                const idx = items.findIndex(i => i.id == editId);
-                if(idx !== -1) items[idx] = { ...items[idx], ...newItemData };
-            } else {
-                newItemData.id = Date.now();
-                items.push(newItemData);
-            }
-            localStorage.setItem('sec_app_deliveries_v5', JSON.stringify(items));
-            renderDashboard();
-            closeModal();
         }
 
-        renderDashboard();
+        function onPointerDown(e) {
+            if (!img.src) return;
+            isDragging = true;
+            const pos = getPos(e);
+            startX = pos.x - imgX;
+            startY = pos.y - imgY;
+        }
+
+        function onPointerMove(e) {
+            if (!isDragging) return;
+            e.preventDefault(); // Prevent scrolling
+            const pos = getPos(e);
+            imgX = pos.x - startX;
+            imgY = pos.y - startY;
+            drawCanvas();
+        }
+
+        function onPointerUp() {
+            isDragging = false;
+        }
+
+        canvas.addEventListener('mousedown', onPointerDown);
+        canvas.addEventListener('mousemove', onPointerMove);
+        window.addEventListener('mouseup', onPointerUp);
+
+        canvas.addEventListener('touchstart', onPointerDown, {passive: false});
+        canvas.addEventListener('touchmove', onPointerMove, {passive: false});
+        window.addEventListener('touchend', onPointerUp);
+
+        // --- Download Logic ---
+        downloadBtn.addEventListener('click', () => {
+            const dataURL = canvas.toDataURL('image/jpeg', 1.0);
+            const link = document.createElement('a');
+            link.download = 'mini_cd_jacket_print.jpg';
+            link.href = dataURL;
+            link.click();
+        });
     </script>
 </body>
 </html>
