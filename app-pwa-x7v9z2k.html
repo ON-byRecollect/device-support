@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ミニCDジャケット ジェネレーター</title>
+    <title>ミニCD ジャケット＆ディスク ジェネレーター</title>
     <style>
         :root {
             --primary: #3b82f6;
-            --bg: #f8fafc;
+            --secondary: #64748b;
+            --bg: #f1f5f9;
             --text: #1e293b;
         }
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-family: '-apple-system', 'BlinkMacSystemFont', 'Helvetica Neue', Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -21,28 +22,47 @@
             align-items: center;
         }
         h1 {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
+            font-size: 1.25rem;
+            margin-bottom: 5px;
+            text-align: center;
         }
         .instruction {
-            font-size: 0.9rem;
-            color: #64748b;
+            font-size: 0.85rem;
+            color: var(--secondary);
             margin-bottom: 20px;
             text-align: center;
+            line-height: 1.5;
         }
         .controls {
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             background: white;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             margin-bottom: 20px;
+        }
+        .toggle-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .toggle-group select {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background-color: #f8fafc;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--text);
+            appearance: none;
+            text-align: center;
         }
         .file-input-wrapper {
             position: relative;
             overflow: hidden;
-            display: inline-block;
+            display: block;
             width: 100%;
             text-align: center;
             background: var(--primary);
@@ -52,71 +72,104 @@
             font-weight: bold;
             margin-bottom: 15px;
             cursor: pointer;
+            transition: opacity 0.2s;
         }
+        .file-input-wrapper:active { opacity: 0.8; }
         .file-input-wrapper input[type="file"] {
             position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-        .slider-group {
-            margin-bottom: 15px;
+            left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer;
         }
         .slider-group label {
             display: block;
             font-size: 0.85rem;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: bold;
         }
-        input[type="range"] {
-            width: 100%;
-        }
-        /* Canvas preview area */
+        input[type="range"] { width: 100%; margin-bottom: 5px; }
+        .hint { font-size: 0.75rem; color: var(--secondary); margin-top: 0; }
+        
         .canvas-container {
             width: 100%;
-            max-width: 400px;
-            /* L-size ratio: 89:127 */
-            aspect-ratio: 89 / 127;
+            max-width: 450px;
             background: #fff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             position: relative;
-            touch-action: none; /* Prevent scrolling when dragging image */
+            touch-action: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
         canvas {
             width: 100%;
-            height: 100%;
+            height: auto;
             display: block;
         }
-        .btn-download {
-            display: block;
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
             width: 100%;
-            max-width: 400px;
-            text-align: center;
-            background: #10b981;
-            color: white;
+            max-width: 450px;
+            margin-top: 20px;
+        }
+        .btn {
+            flex: 1;
             padding: 15px 0;
             border: none;
             border-radius: 8px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
-            text-decoration: none;
+            text-align: center;
+            color: white;
+            transition: opacity 0.2s;
+        }
+        .btn:active { opacity: 0.8; }
+        .btn-download { background: #10b981; }
+        .btn-print { background: #3b82f6; }
+
+        /* 印刷時の専用スタイル */
+        @media print {
+            @page { margin: 0; }
+            body { background: white; padding: 0; margin: 0; display: block; }
+            h1, .instruction, .controls, .action-buttons { display: none !important; }
+            .canvas-container { 
+                box-shadow: none; 
+                max-width: none; 
+                width: 100%; 
+                height: 100vh;
+                display: block;
+            }
+            canvas { 
+                width: 100% !important; 
+                height: 100% !important; 
+                object-fit: contain; 
+                object-position: top left;
+            }
         }
     </style>
 </head>
 <body>
 
-    <h1>ジャケット ジェネレーター</h1>
+    <h1>デザイン ジェネレーター</h1>
     <p class="instruction">
-        画像を選んで位置と大きさを調整し、「保存」を押してください。<br>
-        保存した画像をコンビニで「L判写真プリント」すると実寸になります。
+        用紙サイズと作るパーツを選び、画像を配置してください。<br>
+        コンビニならL判、ご自宅ならA4がおすすめです。
     </p>
 
     <div class="controls">
+        <div class="toggle-group">
+            <select id="paperSelect">
+                <option value="L">用紙：L判 (コンビニ)</option>
+                <option value="A4">用紙：A4 (自宅PC)</option>
+            </select>
+            <select id="targetSelect">
+                <option value="jacket">パーツ：ジャケット</option>
+                <option value="disk">パーツ：ディスク盤面</option>
+            </select>
+        </div>
+
         <div class="file-input-wrapper">
             画像を選択する
             <input type="file" id="imageLoader" accept="image/*">
@@ -125,15 +178,18 @@
         <div class="slider-group">
             <label for="scaleSlider">画像の拡大・縮小</label>
             <input type="range" id="scaleSlider" min="0.1" max="3" step="0.01" value="1">
+            <p class="hint">※画像上を指（マウス）でドラッグして位置を調整できます</p>
         </div>
-        <p style="font-size: 0.8rem; color: #64748b; margin: 0;">※画像上を指でスワイプして位置を移動できます</p>
     </div>
 
     <div class="canvas-container">
         <canvas id="editorCanvas"></canvas>
     </div>
 
-    <button id="downloadBtn" class="btn-download">L判サイズで画像を保存</button>
+    <div class="action-buttons">
+        <button id="downloadBtn" class="btn btn-download">画像を保存</button>
+        <button id="printBtn" class="btn btn-print">直接印刷 (PC用)</button>
+    </div>
 
     <script>
         const canvas = document.getElementById('editorCanvas');
@@ -141,97 +197,153 @@
         const imageLoader = document.getElementById('imageLoader');
         const scaleSlider = document.getElementById('scaleSlider');
         const downloadBtn = document.getElementById('downloadBtn');
+        const printBtn = document.getElementById('printBtn');
+        const paperSelect = document.getElementById('paperSelect');
+        const targetSelect = document.getElementById('targetSelect');
 
-        // L-size dimensions at ~300dpi for high quality print
-        const CANVAS_WIDTH = 1051;
-        const CANVAS_HEIGHT = 1500;
-        canvas.width = CANVAS_WIDTH;
-        canvas.height = CANVAS_HEIGHT;
+        // 解像度の基準 (300dpi想定: 1mm ≒ 11.81px)
+        const PPM = 11.811;
 
-        // Target Jacket dimensions (5.0cm x 4.3cm)
-        // L-size is 8.9cm x 12.7cm.
-        // Ratio calculations:
-        const jacketWidthPx = (5.0 / 8.9) * CANVAS_WIDTH;
-        const jacketHeightPx = (4.3 / 12.7) * CANVAS_HEIGHT;
-        const jacketX = (CANVAS_WIDTH - jacketWidthPx) / 2;
-        const jacketY = 200; // Positioned slightly near the top
+        // 用紙サイズ定義
+        const PAPER_SIZES = {
+            'L':  { w: 89 * PPM, h: 127 * PPM },
+            'A4': { w: 210 * PPM, h: 297 * PPM }
+        };
 
+        // パーツサイズ定義 (mm)
+        const TARGETS = {
+            'jacket': { w: 50 * PPM, h: 43 * PPM, isCircle: false },
+            'disk':   { diameter: 38 * PPM, innerHole: 6 * PPM, isCircle: true }
+        };
+
+        let currentPaper = 'L';
+        let currentTarget = 'jacket';
+        
         let img = new Image();
         let imgX = 0, imgY = 0, imgScale = 1;
         let isDragging = false;
         let startX, startY;
 
-        // Draw the initial blank canvas
-        drawCanvas();
+        function initCanvas() {
+            canvas.width = PAPER_SIZES[currentPaper].w;
+            canvas.height = PAPER_SIZES[currentPaper].h;
+            // 画面表示用の縦横比を調整
+            canvas.style.aspectRatio = `${canvas.width} / ${canvas.height}`;
+            centerImage();
+            drawCanvas();
+        }
 
-        imageLoader.addEventListener('change', handleImage, false);
+        function centerImage() {
+            if (!img.src) return;
+            const target = TARGETS[currentTarget];
+            let targetW, targetH;
+            
+            if (target.isCircle) {
+                targetW = target.diameter;
+                targetH = target.diameter;
+            } else {
+                targetW = target.w;
+                targetH = target.h;
+            }
+
+            imgScale = Math.max(targetW / img.width, targetH / img.height);
+            scaleSlider.value = imgScale;
+            
+            // 用紙の中央やや上に配置
+            const centerX = canvas.width / 2;
+            const centerY = (currentPaper === 'L') ? canvas.height * 0.4 : 200 * PPM;
+            
+            imgX = centerX - (img.width * imgScale) / 2;
+            imgY = centerY - (img.height * imgScale) / 2;
+        }
+
+        paperSelect.addEventListener('change', (e) => { currentPaper = e.target.value; initCanvas(); });
+        targetSelect.addEventListener('change', (e) => { currentTarget = e.target.value; centerImage(); drawCanvas(); });
+
+        imageLoader.addEventListener('change', (e) => {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                img.onload = () => { centerImage(); drawCanvas(); }
+                img.src = event.target.result;
+            }
+            if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
+        });
+
         scaleSlider.addEventListener('input', () => {
             imgScale = parseFloat(scaleSlider.value);
             drawCanvas();
         });
 
-        function handleImage(e) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                img.onload = function() {
-                    // Initial scale to fit the jacket width roughly
-                    imgScale = jacketWidthPx / img.width;
-                    scaleSlider.value = imgScale;
-                    
-                    // Center the image inside the jacket box
-                    imgX = jacketX + (jacketWidthPx - (img.width * imgScale)) / 2;
-                    imgY = jacketY + (jacketHeightPx - (img.height * imgScale)) / 2;
-                    
-                    drawCanvas();
-                }
-                img.src = event.target.result;
-            }
-            if(e.target.files[0]) {
-                reader.readAsDataURL(e.target.files[0]);
-            }
-        }
-
         function drawCanvas() {
-            // 1. Fill white background (L-size paper)
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            const target = TARGETS[currentTarget];
+            const centerX = canvas.width / 2;
+            const centerY = (currentPaper === 'L') ? canvas.height * 0.4 : 200 * PPM; // A4時は上部に余白を取る
+
+            ctx.save();
+
+            // クリッピング領域の作成
+            ctx.beginPath();
+            if (target.isCircle) {
+                ctx.arc(centerX, centerY, target.diameter / 2, 0, Math.PI * 2);
+            } else {
+                ctx.rect(centerX - target.w / 2, centerY - target.h / 2, target.w, target.h);
+            }
+            ctx.clip();
+
+            // 画像の描画
             if (img.src) {
-                // 2. Draw user image inside the jacket area
-                ctx.save();
-                // Create clipping path for the jacket
-                ctx.beginPath();
-                ctx.rect(jacketX, jacketY, jacketWidthPx, jacketHeightPx);
-                ctx.clip();
-                
-                // Draw image
                 ctx.drawImage(img, imgX, imgY, img.width * imgScale, img.height * imgScale);
-                ctx.restore();
             }
 
-            // 3. Draw jacket cut outline (dotted line)
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(jacketX, jacketY, jacketWidthPx, jacketHeightPx);
-            ctx.setLineDash([10, 10]);
-            ctx.lineWidth = 3;
-            ctx.strokeStyle = '#cccccc';
-            ctx.stroke();
+            // ディスクの場合は中央の穴を白で抜く
+            if (target.isCircle) {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, target.innerHole / 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalCompositeOperation = 'source-over';
+            }
             ctx.restore();
 
-            // 4. Draw instructions on the paper
-            ctx.fillStyle = '#333333';
-            ctx.font = '36px "Helvetica Neue", sans-serif';
+            // ガイド線（点線）の描画
+            ctx.save();
+            ctx.beginPath();
+            if (target.isCircle) {
+                ctx.arc(centerX, centerY, target.diameter / 2, 0, Math.PI * 2);
+            } else {
+                ctx.rect(centerX - target.w / 2, centerY - target.h / 2, target.w, target.h);
+            }
+            ctx.setLineDash([15, 15]);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#94a3b8';
+            ctx.stroke();
+
+            // ディスク内径のガイド線
+            if (target.isCircle) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, target.innerHole / 2, 0, Math.PI * 2);
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // ガイダンステキストの描画
+            ctx.fillStyle = '#334155';
+            ctx.font = 'bold 40px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('ジャケット カット用ガイド', CANVAS_WIDTH / 2, jacketY - 40);
+            let titleText = currentPaper === 'L' ? 'L判 (コンビニプリント用)' : 'A4 (自宅プリンター用)';
+            ctx.fillText(titleText, centerX, 100);
             
-            ctx.font = '24px "Helvetica Neue", sans-serif';
-            ctx.fillStyle = '#666666';
-            ctx.fillText('この画像をコンビニの「L判写真プリント」で印刷し、点線に沿って切り取ってください。', CANVAS_WIDTH / 2, CANVAS_HEIGHT - 100);
-            ctx.fillText('※スマホ画面のスクリーンショットではなく、必ず保存したデータをご利用ください。', CANVAS_WIDTH / 2, CANVAS_HEIGHT - 50);
+            ctx.font = '28px sans-serif';
+            ctx.fillStyle = '#64748b';
+            ctx.fillText('点線に沿ってハサミやカッターで切り抜いてください。', centerX, canvas.height - 150);
+            ctx.fillText('※印刷時は「実際のサイズ」または「フチなし」を選択してください。', centerX, canvas.height - 100);
         }
 
-        // --- Touch & Mouse Dragging Logic ---
+        // ドラッグ操作処理
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -243,10 +355,7 @@
                 clientX = e.touches[0].clientX;
                 clientY = e.touches[0].clientY;
             }
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY
-            };
+            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
         }
 
         function onPointerDown(e) {
@@ -259,33 +368,37 @@
 
         function onPointerMove(e) {
             if (!isDragging) return;
-            e.preventDefault(); // Prevent scrolling
+            e.preventDefault();
             const pos = getPos(e);
             imgX = pos.x - startX;
             imgY = pos.y - startY;
             drawCanvas();
         }
 
-        function onPointerUp() {
-            isDragging = false;
-        }
+        function onPointerUp() { isDragging = false; }
 
         canvas.addEventListener('mousedown', onPointerDown);
         canvas.addEventListener('mousemove', onPointerMove);
         window.addEventListener('mouseup', onPointerUp);
-
         canvas.addEventListener('touchstart', onPointerDown, {passive: false});
         canvas.addEventListener('touchmove', onPointerMove, {passive: false});
         window.addEventListener('touchend', onPointerUp);
 
-        // --- Download Logic ---
+        // ダウンロード
         downloadBtn.addEventListener('click', () => {
-            const dataURL = canvas.toDataURL('image/jpeg', 1.0);
             const link = document.createElement('a');
-            link.download = 'mini_cd_jacket_print.jpg';
-            link.href = dataURL;
+            link.download = `mini_cd_${currentTarget}_${currentPaper}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 1.0);
             link.click();
         });
+
+        // 印刷
+        printBtn.addEventListener('click', () => {
+            window.print();
+        });
+
+        // 初期化実行
+        initCanvas();
     </script>
 </body>
 </html>
