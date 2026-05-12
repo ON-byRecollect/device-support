@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ミニCD ジャケットジェネレーター</title>
+    <title>ミニCD ジェネレーター</title>
     <style>
         :root {
             --primary: #3b82f6;
@@ -53,13 +53,13 @@
             border: 2px solid #cbd5e1;
             background-color: white;
             color: var(--text);
-            text-align: center;
             appearance: none;
+            text-align: center;
         }
         .btn-add {
             background-color: var(--primary);
             color: white;
-            padding: 12px 20px;
+            padding: 12px 15px;
             box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
         }
         .btn-add:active { opacity: 0.8; }
@@ -76,22 +76,30 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
-        .editor-panel label { font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
-        input[type="range"] { flex: 1; }
+        .editor-panel label { font-size: 0.85rem; font-weight: bold; width: 100%; color: var(--primary); }
+        input[type="range"] { flex: 1; min-width: 200px; }
+        .btn-change {
+            background-color: #f1f5f9;
+            color: var(--text);
+            border: 1px solid #cbd5e1;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
 
         .canvas-container {
             width: 100%;
             max-width: 450px;
-            background: #fff;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: #e2e8f0; /* 背景をグレーにして用紙を際立たせる */
+            padding: 10px 0;
             position: relative;
-            touch-action: none; /* スマホでの誤スクロール防止 */
         }
         canvas {
             width: 100%;
             height: auto;
             display: block;
+            background: #e2e8f0;
         }
         
         .action-buttons {
@@ -105,15 +113,14 @@
         .btn-download { flex: 1; background: #10b981; color: white; }
         .btn-print { flex: 1; background: #334155; color: white; }
 
-        /* 非表示のファイル入力 */
         #hiddenFileInput { display: none; }
 
         @media print {
             @page { margin: 0; }
             body { background: white; padding: 0; margin: 0; }
             h1, .instruction, .top-controls, .editor-panel, .action-buttons { display: none !important; }
-            .canvas-container { box-shadow: none; max-width: none; width: 100%; height: 100vh; }
-            canvas { width: 100% !important; height: 100% !important; object-fit: contain; object-position: top left; }
+            .canvas-container { padding: 0; max-width: none; width: 100%; height: 100vh; background: white; }
+            canvas { width: 100% !important; height: 100% !important; object-fit: contain; object-position: top left; background: white; }
         }
     </style>
 </head>
@@ -122,20 +129,21 @@
     <h1>ジャケット＆ディスク ジェネレーター</h1>
     <p class="instruction">
         空の枠をタップすると写真を選べます。<br>
-        1セット（表・裏・盤）ごとにデザインを追加できます。
+        余白をスワイプして上下にスクロールできます。
     </p>
 
     <div class="top-controls">
         <select id="paperSelect" class="paper-select">
-            <option value="L">L判 (コンビニ)</option>
-            <option value="A4">A4 (自宅PC)</option>
+            <option value="A4">A4 (自宅PC向け)</option>
+            <option value="L">L判 (コンビニ向け)</option>
         </select>
         <button id="addSetBtn" class="btn-add">＋ 1セット追加</button>
     </div>
 
     <div class="editor-panel">
-        <label for="scaleSlider">🔍 拡大・縮小</label>
+        <label id="activeLabel">選択中: なし</label>
         <input type="range" id="scaleSlider" min="0.05" max="3" step="0.01" value="1">
+        <button id="changeImageBtn" class="btn-change">画像を変更</button>
     </div>
 
     <div class="canvas-container">
@@ -155,10 +163,11 @@
         const paperSelect = document.getElementById('paperSelect');
         const addSetBtn = document.getElementById('addSetBtn');
         const scaleSlider = document.getElementById('scaleSlider');
+        const changeImageBtn = document.getElementById('changeImageBtn');
         const hiddenFileInput = document.getElementById('hiddenFileInput');
+        const activeLabel = document.getElementById('activeLabel');
 
-        // 解像度基準 (300dpi: 1mm ≒ 11.81px)
-        const PPM = 11.811;
+        const PPM = 11.811; // 300dpi (1mm = 11.811px)
 
         const PAPER_SIZES = {
             'L':  { w: 89 * PPM, h: 127 * PPM },
@@ -170,47 +179,67 @@
             disk:   { r: 19 * PPM, innerR: 3 * PPM }
         };
 
-        let currentPaper = 'L';
+        let currentPaper = 'A4';
         let currentSets = 1;
         let items = [];
         let activeId = null;
 
         let isDragging = false;
-        let startX, startY;
-        let pointerDownTime = 0;
+        let dragStartX, dragStartY;
 
         // アイテム生成
         function createItem(id, type, label, cx, cy) {
             return { id, type, label, cx, cy, img: new Image(), scale: 1, offsetX: 0, offsetY: 0 };
         }
 
-        // レイアウト計算 (現在の currentSets に基づいて枠を配置)
         function updateLayout() {
             const newItems = [];
             let idCounter = 0;
 
             if (currentPaper === 'L') {
                 const w = PAPER_SIZES['L'].w;
-                newItems.push(createItem(idCounter++, 'jacket', '表', w/2, 23 * PPM));
-                newItems.push(createItem(idCounter++, 'jacket', '裏', w/2, 67 * PPM));
-                newItems.push(createItem(idCounter++, 'disk', '盤', w/2, 108.5 * PPM));
-                addSetBtn.disabled = true; // L判は1セットのみ
-                addSetBtn.innerText = "L判は1セットまで";
-            } else {
-                // A4サイズ: 1セットを横1列に並べる。最大5セットまで。
+                const pageH = PAPER_SIZES['L'].h;
+                const gap = 15 * PPM; // L判同士の隙間
+                
                 for (let i = 0; i < currentSets; i++) {
-                    const cy = 15 * PPM + (i * 55 * PPM) + 21.5 * PPM; 
-                    newItems.push(createItem(idCounter++, 'jacket', '表', 56 * PPM, cy));
-                    newItems.push(createItem(idCounter++, 'jacket', '裏', 116 * PPM, cy));
-                    newItems.push(createItem(idCounter++, 'disk', '盤', 170 * PPM, cy - 2.5 * PPM));
+                    // 1セットにつきL判2枚を使用
+                    let p1Y = (i * 2) * (pageH + gap);
+                    let p2Y = (i * 2 + 1) * (pageH + gap);
+                    
+                    // 1枚目
+                    newItems.push(createItem(idCounter++, 'jacket', 'フロント(外)', w/2, p1Y + 25*PPM));
+                    newItems.push(createItem(idCounter++, 'jacket', 'フロント(内)', w/2, p1Y + 70*PPM));
+                    newItems.push(createItem(idCounter++, 'disk', '盤面', w/2, p1Y + 110*PPM));
+                    // 2枚目
+                    newItems.push(createItem(idCounter++, 'jacket', 'バック(外)', w/2, p2Y + 40*PPM));
+                    newItems.push(createItem(idCounter++, 'jacket', 'バック(内)', w/2, p2Y + 90*PPM));
                 }
-                addSetBtn.disabled = (currentSets >= 5);
-                addSetBtn.innerText = currentSets >= 5 ? "最大セット数です" : "＋ 1セット追加";
+                canvas.width = w;
+                // 全ページの高さ＋隙間
+                canvas.height = (currentSets * 2) * pageH + Math.max(0, (currentSets * 2 - 1)) * gap;
+                addSetBtn.disabled = (currentSets >= 3);
+                addSetBtn.innerText = currentSets >= 3 ? "最大数です" : "＋ 1セット追加";
+            } else {
+                // A4
+                const w = PAPER_SIZES['A4'].w;
+                const h = PAPER_SIZES['A4'].h;
+                for (let i = 0; i < currentSets; i++) {
+                    let baseY = 30 * PPM + i * 95 * PPM;
+                    newItems.push(createItem(idCounter++, 'jacket', 'F表(外)', 30*PPM, baseY));
+                    newItems.push(createItem(idCounter++, 'jacket', 'F表(内)', 80*PPM, baseY));
+                    newItems.push(createItem(idCounter++, 'jacket', 'B裏(外)', 130*PPM, baseY));
+                    newItems.push(createItem(idCounter++, 'jacket', 'B裏(内)', 180*PPM, baseY));
+                    newItems.push(createItem(idCounter++, 'disk', '盤面', 105*PPM, baseY + 45*PPM));
+                }
+                canvas.width = w;
+                canvas.height = h;
+                addSetBtn.disabled = (currentSets >= 3);
+                addSetBtn.innerText = currentSets >= 3 ? "最大数です" : "＋ 1セット追加";
             }
 
-            // 既存の画像データを引き継ぐ
+            // 画像の引き継ぎ
             newItems.forEach((newItem, i) => {
-                if (i < items.length) {
+                if (i < items.length && items[i].img.src) {
                     newItem.img = items[i].img;
                     newItem.scale = items[i].scale;
                     newItem.offsetX = items[i].offsetX;
@@ -220,45 +249,39 @@
 
             items = newItems;
             if (!items.find(i => i.id === activeId)) activeId = items[0]?.id;
-            
-            canvas.width = PAPER_SIZES[currentPaper].w;
-            canvas.height = PAPER_SIZES[currentPaper].h;
-            canvas.style.aspectRatio = `${canvas.width} / ${canvas.height}`;
-            
-            updateScaleSlider();
+            updateUI();
             drawCanvas();
         }
 
         function getActiveItem() { return items.find(i => i.id === activeId); }
 
-        function updateScaleSlider() {
+        function updateUI() {
             const activeItem = getActiveItem();
-            if (activeItem) scaleSlider.value = activeItem.scale;
+            if (activeItem) {
+                activeLabel.innerText = `選択中: ${activeItem.label}`;
+                scaleSlider.value = activeItem.scale;
+            }
         }
 
-        // 用紙変更
         paperSelect.addEventListener('change', (e) => {
-            const newPaper = e.target.value;
-            if (newPaper === 'L' && currentSets > 1) {
-                if (!confirm("L判は1セットしか配置できません。2セット目以降は削除されますがよろしいですか？")) {
-                    e.target.value = currentPaper;
-                    return;
-                }
-                currentSets = 1;
-            }
-            currentPaper = newPaper;
+            currentPaper = e.target.value;
+            currentSets = 1; // 用紙変更時はセット数をリセット
             updateLayout();
         });
 
-        // セット追加
         addSetBtn.addEventListener('click', () => {
-            if (currentPaper === 'A4' && currentSets < 5) {
+            if (currentSets < 3) {
                 currentSets++;
                 updateLayout();
             }
         });
 
-        // 画像選択ロジック
+        // 画像変更ボタン
+        changeImageBtn.addEventListener('click', () => {
+            if (getActiveItem()) hiddenFileInput.click();
+        });
+
+        // 画像選択処理
         hiddenFileInput.addEventListener('change', (e) => {
             const activeItem = getActiveItem();
             if (!activeItem || !e.target.files[0]) return;
@@ -270,13 +293,13 @@
                     const th = activeItem.type === 'jacket' ? TARGET_SIZE.jacket.h : TARGET_SIZE.disk.r * 2;
                     activeItem.scale = Math.max(tw / activeItem.img.width, th / activeItem.img.height);
                     activeItem.offsetX = 0; activeItem.offsetY = 0;
-                    updateScaleSlider();
+                    updateUI();
                     drawCanvas();
                 }
                 activeItem.img.src = event.target.result;
             }
             reader.readAsDataURL(e.target.files[0]);
-            hiddenFileInput.value = ''; // 連続で同じファイルを選べるようにリセット
+            hiddenFileInput.value = ''; 
         });
 
         scaleSlider.addEventListener('input', () => {
@@ -285,14 +308,26 @@
         });
 
         function drawCanvas() {
-            ctx.fillStyle = '#ffffff';
+            // 全体をグレーで塗りつぶす（用紙の外側）
+            ctx.fillStyle = '#e2e8f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 用紙の白地を描画
+            ctx.fillStyle = '#ffffff';
+            if (currentPaper === 'L') {
+                const pageH = PAPER_SIZES['L'].h;
+                const gap = 15 * PPM;
+                for (let i = 0; i < currentSets * 2; i++) {
+                    ctx.fillRect(0, i * (pageH + gap), PAPER_SIZES['L'].w, pageH);
+                }
+            } else {
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
 
             items.forEach(item => {
                 const isActive = (item.id === activeId);
                 ctx.save();
                 
-                // クリッピング
                 ctx.beginPath();
                 if (item.type === 'jacket') {
                     ctx.rect(item.cx - TARGET_SIZE.jacket.w / 2, item.cy - TARGET_SIZE.jacket.h / 2, TARGET_SIZE.jacket.w, TARGET_SIZE.jacket.h);
@@ -310,16 +345,14 @@
                     const drawH = item.img.height * item.scale;
                     ctx.drawImage(item.img, item.cx + item.offsetX - drawW / 2, item.cy + item.offsetY - drawH / 2, drawW, drawH);
                 } else {
-                    // 空枠のプレースホルダー表示
                     ctx.fillStyle = '#94a3b8';
                     ctx.textAlign = 'center';
                     ctx.font = 'bold 30px sans-serif';
                     ctx.fillText(item.label, item.cx, item.cy - 10);
                     ctx.font = '24px sans-serif';
-                    ctx.fillText('タップして画像追加', item.cx, item.cy + 30);
+                    ctx.fillText('タップで画像追加', item.cx, item.cy + 30);
                 }
 
-                // ディスク穴の切り抜き
                 if (item.type === 'disk') {
                     ctx.globalCompositeOperation = 'destination-out';
                     ctx.beginPath();
@@ -329,7 +362,6 @@
                 }
                 ctx.restore();
 
-                // 枠線
                 ctx.beginPath();
                 if (item.type === 'jacket') {
                     ctx.rect(item.cx - TARGET_SIZE.jacket.w / 2, item.cy - TARGET_SIZE.jacket.h / 2, TARGET_SIZE.jacket.w, TARGET_SIZE.jacket.h);
@@ -365,57 +397,112 @@
             return { x: (cx - rect.left) * scaleX, y: (cy - rect.top) * scaleY };
         }
 
-        function onPointerDown(e) {
+        // --- タッチ・スクロール最適化処理 ---
+        canvas.addEventListener('touchstart', (e) => {
             const pos = getPos(e);
-            pointerDownTime = Date.now();
             let hitItem = items.find(item => hitTest(item, pos.x, pos.y));
 
+            if (hitItem && hitItem.img.src) {
+                // 画像がある枠を触った時のみスクロールをロックし、ドラッグ準備
+                activeId = hitItem.id;
+                updateUI();
+                isDragging = true;
+                dragStartX = pos.x - hitItem.offsetX;
+                dragStartY = pos.y - hitItem.offsetY;
+                e.preventDefault(); 
+            }
+        }, {passive: false});
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                e.preventDefault(); // ドラッグ中はスクロール防止
+                const pos = getPos(e);
+                const activeItem = getActiveItem();
+                if (activeItem) {
+                    activeItem.offsetX = pos.x - dragStartX;
+                    activeItem.offsetY = pos.y - dragStartY;
+                    drawCanvas();
+                }
+            }
+        }, {passive: false});
+
+        canvas.addEventListener('touchend', () => { isDragging = false; });
+        canvas.addEventListener('mousedown', (e) => {
+            const pos = getPos(e);
+            let hitItem = items.find(item => hitTest(item, pos.x, pos.y));
+            if (hitItem && hitItem.img.src) {
+                activeId = hitItem.id;
+                updateUI();
+                isDragging = true;
+                dragStartX = pos.x - hitItem.offsetX;
+                dragStartY = pos.y - hitItem.offsetY;
+            }
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const pos = getPos(e);
+                const activeItem = getActiveItem();
+                if (activeItem) {
+                    activeItem.offsetX = pos.x - dragStartX;
+                    activeItem.offsetY = pos.y - dragStartY;
+                    drawCanvas();
+                }
+            }
+        });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        // --- 画像追加バグ解消のためのClickイベント ---
+        canvas.addEventListener('click', (e) => {
+            if (isDragging) return;
+            const pos = getPos(e);
+            let hitItem = items.find(item => hitTest(item, pos.x, pos.y));
             if (hitItem) {
                 activeId = hitItem.id;
-                updateScaleSlider();
-                if (hitItem.img.src) {
-                    isDragging = true;
-                    startX = pos.x - hitItem.offsetX;
-                    startY = pos.y - hitItem.offsetY;
+                updateUI();
+                drawCanvas();
+                // 空の枠をタップした時のみファイル選択を開く
+                if (!hitItem.img.src) {
+                    hiddenFileInput.click();
                 }
-                drawCanvas();
             }
-        }
-
-        function onPointerMove(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-            const pos = getPos(e);
-            const activeItem = getActiveItem();
-            if (activeItem) {
-                activeItem.offsetX = pos.x - startX;
-                activeItem.offsetY = pos.y - startY;
-                drawCanvas();
-            }
-        }
-
-        function onPointerUp(e) {
-            isDragging = false;
-            // 200ms以内のタップ判定＆画像がない場合はファイル選択起動
-            if (Date.now() - pointerDownTime < 200) {
-                const activeItem = getActiveItem();
-                if (activeItem && !activeItem.img.src) hiddenFileInput.click();
-            }
-        }
-
-        canvas.addEventListener('mousedown', onPointerDown);
-        canvas.addEventListener('mousemove', onPointerMove);
-        window.addEventListener('mouseup', onPointerUp);
-        canvas.addEventListener('touchstart', onPointerDown, {passive: false});
-        canvas.addEventListener('touchmove', onPointerMove, {passive: false});
-        window.addEventListener('touchend', onPointerUp);
-
-        document.getElementById('downloadBtn').addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = `mini_cd_${currentPaper}.jpg`;
-            link.href = canvas.toDataURL('image/jpeg', 1.0);
-            link.click();
         });
+
+        // --- 保存処理（L判分割対応） ---
+        document.getElementById('downloadBtn').addEventListener('click', async () => {
+            if (currentPaper === 'L') {
+                const pageH = PAPER_SIZES['L'].h;
+                const gap = 15 * PPM;
+                const totalPages = currentSets * 2;
+                
+                // L判は物理制限のため、1ページずつ切り出して連続ダウンロード
+                for(let i=0; i<totalPages; i++) {
+                    let tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = PAPER_SIZES['L'].w;
+                    tempCanvas.height = pageH;
+                    let tCtx = tempCanvas.getContext('2d');
+                    
+                    tCtx.fillStyle = '#ffffff';
+                    tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    tCtx.drawImage(canvas, 0, i * (pageH + gap), tempCanvas.width, pageH, 0, 0, tempCanvas.width, pageH);
+                    
+                    let link = document.createElement('a');
+                    let setNum = Math.floor(i/2) + 1;
+                    let pageNum = (i%2) + 1;
+                    link.download = `L判プリント_セット${setNum}_${pageNum}枚目.jpg`;
+                    link.href = tempCanvas.toDataURL('image/jpeg', 1.0);
+                    link.click();
+                    
+                    // ブラウザの連続DLブロックを回避するため少し待機
+                    await new Promise(r => setTimeout(r, 400));
+                }
+            } else {
+                const link = document.createElement('a');
+                link.download = `A4プリント_全${currentSets}セット.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 1.0);
+                link.click();
+            }
+        });
+
         document.getElementById('printBtn').addEventListener('click', () => { window.print(); });
 
         updateLayout();
