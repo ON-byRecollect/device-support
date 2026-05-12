@@ -29,7 +29,7 @@
         .instruction {
             font-size: 0.85rem;
             color: var(--secondary);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: center;
             line-height: 1.5;
         }
@@ -42,22 +42,30 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             margin-bottom: 20px;
         }
-        .toggle-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .toggle-group select {
-            flex: 1;
-            padding: 10px;
+        .paper-select {
+            width: 100%;
+            padding: 12px;
             border-radius: 8px;
-            border: 1px solid #cbd5e1;
+            border: 2px solid #cbd5e1;
             background-color: #f8fafc;
-            font-size: 0.9rem;
+            font-size: 1rem;
             font-weight: bold;
             color: var(--text);
+            margin-bottom: 15px;
             appearance: none;
             text-align: center;
+            cursor: pointer;
+        }
+        .active-indicator {
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #eff6ff;
+            border-radius: 8px;
+            border: 1px dashed var(--primary);
         }
         .file-input-wrapper {
             position: relative;
@@ -94,16 +102,13 @@
             background: #fff;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             position: relative;
-            touch-action: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            touch-action: none; /* スマホでのスクロール誤爆防止 */
         }
         canvas {
             width: 100%;
             height: auto;
             display: block;
+            cursor: pointer;
         }
         
         .action-buttons {
@@ -111,7 +116,7 @@
             gap: 10px;
             width: 100%;
             max-width: 450px;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         .btn {
             flex: 1;
@@ -125,27 +130,18 @@
             color: white;
             transition: opacity 0.2s;
         }
-        .btn:active { opacity: 0.8; }
         .btn-download { background: #10b981; }
         .btn-print { background: #3b82f6; }
 
-        /* 印刷時の専用スタイル */
         @media print {
             @page { margin: 0; }
             body { background: white; padding: 0; margin: 0; display: block; }
             h1, .instruction, .controls, .action-buttons { display: none !important; }
             .canvas-container { 
-                box-shadow: none; 
-                max-width: none; 
-                width: 100%; 
-                height: 100vh;
-                display: block;
+                box-shadow: none; max-width: none; width: 100%; height: 100vh; display: block;
             }
             canvas { 
-                width: 100% !important; 
-                height: 100% !important; 
-                object-fit: contain; 
-                object-position: top left;
+                width: 100% !important; height: 100% !important; object-fit: contain; object-position: top left;
             }
         }
     </style>
@@ -154,31 +150,29 @@
 
     <h1>デザイン ジェネレーター</h1>
     <p class="instruction">
-        用紙サイズと作るパーツを選び、画像を配置してください。<br>
-        コンビニならL判、ご自宅ならA4がおすすめです。
+        好きな枠をタップして選択し、画像を入れてください。<br>
+        すべての枠に別々のデザインを作ることができます。
     </p>
 
     <div class="controls">
-        <div class="toggle-group">
-            <select id="paperSelect">
-                <option value="L">用紙：L判 (コンビニ)</option>
-                <option value="A4">用紙：A4 (自宅PC)</option>
-            </select>
-            <select id="targetSelect">
-                <option value="jacket">パーツ：ジャケット</option>
-                <option value="disk">パーツ：ディスク盤面</option>
-            </select>
+        <select id="paperSelect" class="paper-select">
+            <option value="L">用紙：L判 (最大2セット編集)</option>
+            <option value="A4">用紙：A4 (最大12セット編集)</option>
+        </select>
+
+        <div id="activeIndicator" class="active-indicator">
+            タップして枠を選択してください
         </div>
 
         <div class="file-input-wrapper">
-            画像を選択する
+            選択中の枠に画像を入れる
             <input type="file" id="imageLoader" accept="image/*">
         </div>
         
         <div class="slider-group">
             <label for="scaleSlider">画像の拡大・縮小</label>
-            <input type="range" id="scaleSlider" min="0.1" max="3" step="0.01" value="1">
-            <p class="hint">※画像上を指（マウス）でドラッグして位置を調整できます</p>
+            <input type="range" id="scaleSlider" min="0.05" max="3" step="0.01" value="1">
+            <p class="hint">※枠内の画像を指（マウス）でドラッグして位置を調整できます</p>
         </div>
     </div>
 
@@ -196,183 +190,266 @@
         const ctx = canvas.getContext('2d');
         const imageLoader = document.getElementById('imageLoader');
         const scaleSlider = document.getElementById('scaleSlider');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const printBtn = document.getElementById('printBtn');
         const paperSelect = document.getElementById('paperSelect');
-        const targetSelect = document.getElementById('targetSelect');
+        const activeIndicator = document.getElementById('activeIndicator');
 
         // 解像度の基準 (300dpi想定: 1mm ≒ 11.81px)
         const PPM = 11.811;
 
-        // 用紙サイズ定義
         const PAPER_SIZES = {
             'L':  { w: 89 * PPM, h: 127 * PPM },
             'A4': { w: 210 * PPM, h: 297 * PPM }
         };
 
-        // パーツサイズ定義 (mm)
-        const TARGETS = {
-            'jacket': { w: 50 * PPM, h: 43 * PPM, isCircle: false },
-            'disk':   { diameter: 38 * PPM, innerHole: 6 * PPM, isCircle: true }
+        const TARGET_SIZE = {
+            jacket: { w: 50 * PPM, h: 43 * PPM },
+            disk:   { r: 19 * PPM, innerR: 3 * PPM }
         };
 
+        // アプリケーション状態
         let currentPaper = 'L';
-        let currentTarget = 'jacket';
-        
-        let img = new Image();
-        let imgX = 0, imgY = 0, imgScale = 1;
+        let items = [];
+        let activeId = null;
+        let uidCounter = 0;
+
         let isDragging = false;
         let startX, startY;
 
-        function initCanvas() {
-            canvas.width = PAPER_SIZES[currentPaper].w;
-            canvas.height = PAPER_SIZES[currentPaper].h;
-            // 画面表示用の縦横比を調整
-            canvas.style.aspectRatio = `${canvas.width} / ${canvas.height}`;
-            centerImage();
+        // 個別の枠（アイテム）を生成
+        function createItem(type, cx, cy) {
+            return {
+                id: uidCounter++,
+                type: type,
+                cx: cx,
+                cy: cy,
+                img: new Image(),
+                scale: 1,
+                offsetX: 0,
+                offsetY: 0
+            };
+        }
+
+        // 用紙サイズに合わせた枠の限界敷き詰めレイアウト生成
+        function initLayout() {
+            items = [];
+            const w = PAPER_SIZES[currentPaper].w;
+            const h = PAPER_SIZES[currentPaper].h;
+            canvas.width = w;
+            canvas.height = h;
+            canvas.style.aspectRatio = `${w} / ${h}`;
+
+            if (currentPaper === 'L') {
+                // L判: 2セット (上下に配置)
+                const marginY = 32 * PPM;
+                const spacingY = 63 * PPM;
+                for (let i = 0; i < 2; i++) {
+                    let cy = marginY + (i * spacingY);
+                    items.push(createItem('jacket', 27 * PPM, cy));
+                    items.push(createItem('disk', 70 * PPM, cy));
+                }
+            } else {
+                // A4: 12セット (2ペア × 6行)
+                const startY = 28 * PPM;
+                const spacingY = 46 * PPM; // ジャケット高43mm + 余白3mm
+                for (let r = 0; r < 6; r++) {
+                    let cy = startY + (r * spacingY);
+                    // 1ペア目
+                    items.push(createItem('jacket', 27 * PPM, cy));
+                    items.push(createItem('disk', 73 * PPM, cy));
+                    // 2ペア目
+                    items.push(createItem('jacket', 131 * PPM, cy));
+                    items.push(createItem('disk', 180 * PPM, cy));
+                }
+            }
+            activeId = items[0].id;
+            updateUI();
             drawCanvas();
         }
 
-        function centerImage() {
-            if (!img.src) return;
-            const target = TARGETS[currentTarget];
-            let targetW, targetH;
-            
-            if (target.isCircle) {
-                targetW = target.diameter;
-                targetH = target.diameter;
-            } else {
-                targetW = target.w;
-                targetH = target.h;
-            }
-
-            imgScale = Math.max(targetW / img.width, targetH / img.height);
-            scaleSlider.value = imgScale;
-            
-            // 用紙の中央やや上に配置
-            const centerX = canvas.width / 2;
-            const centerY = (currentPaper === 'L') ? canvas.height * 0.4 : 200 * PPM;
-            
-            imgX = centerX - (img.width * imgScale) / 2;
-            imgY = centerY - (img.height * imgScale) / 2;
+        function getActiveItem() {
+            return items.find(i => i.id === activeId);
         }
 
-        paperSelect.addEventListener('change', (e) => { currentPaper = e.target.value; initCanvas(); });
-        targetSelect.addEventListener('change', (e) => { currentTarget = e.target.value; centerImage(); drawCanvas(); });
+        function updateUI() {
+            const activeItem = getActiveItem();
+            if (activeItem) {
+                const typeName = activeItem.type === 'jacket' ? 'ジャケット' : 'ディスク盤面';
+                activeIndicator.innerText = `現在選択中: ${typeName} (タップで変更)`;
+                scaleSlider.value = activeItem.scale;
+            }
+        }
+
+        function centerImage(item) {
+            if (!item.img.src) return;
+            const tw = item.type === 'jacket' ? TARGET_SIZE.jacket.w : TARGET_SIZE.disk.r * 2;
+            const th = item.type === 'jacket' ? TARGET_SIZE.jacket.h : TARGET_SIZE.disk.r * 2;
+            item.scale = Math.max(tw / item.img.width, th / item.img.height);
+            item.offsetX = 0;
+            item.offsetY = 0;
+            updateUI();
+        }
+
+        paperSelect.addEventListener('change', (e) => {
+            if(confirm("用紙サイズを変更すると、現在の編集データはすべてリセットされます。よろしいですか？")) {
+                currentPaper = e.target.value;
+                initLayout();
+            } else {
+                e.target.value = currentPaper; // キャンセル時は戻す
+            }
+        });
 
         imageLoader.addEventListener('change', (e) => {
+            const activeItem = getActiveItem();
+            if (!activeItem) return;
+            
             const reader = new FileReader();
             reader.onload = function(event) {
-                img.onload = () => { centerImage(); drawCanvas(); }
-                img.src = event.target.result;
+                activeItem.img.onload = () => { centerImage(activeItem); drawCanvas(); }
+                activeItem.img.src = event.target.result;
             }
-            if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
+            if(e.target.files[0]) {
+                reader.readAsDataURL(e.target.files[0]);
+                // 同じ画像を連続で選べるようにリセット
+                imageLoader.value = ''; 
+            }
         });
 
         scaleSlider.addEventListener('input', () => {
-            imgScale = parseFloat(scaleSlider.value);
-            drawCanvas();
+            const activeItem = getActiveItem();
+            if (activeItem) {
+                activeItem.scale = parseFloat(scaleSlider.value);
+                drawCanvas();
+            }
         });
 
         function drawCanvas() {
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            const target = TARGETS[currentTarget];
-            const centerX = canvas.width / 2;
-            const centerY = (currentPaper === 'L') ? canvas.height * 0.4 : 200 * PPM; // A4時は上部に余白を取る
+            items.forEach(item => {
+                const cx = item.cx;
+                const cy = item.cy;
+                const isActive = (item.id === activeId);
 
-            ctx.save();
-
-            // クリッピング領域の作成
-            ctx.beginPath();
-            if (target.isCircle) {
-                ctx.arc(centerX, centerY, target.diameter / 2, 0, Math.PI * 2);
-            } else {
-                ctx.rect(centerX - target.w / 2, centerY - target.h / 2, target.w, target.h);
-            }
-            ctx.clip();
-
-            // 画像の描画
-            if (img.src) {
-                ctx.drawImage(img, imgX, imgY, img.width * imgScale, img.height * imgScale);
-            }
-
-            // ディスクの場合は中央の穴を白で抜く
-            if (target.isCircle) {
-                ctx.globalCompositeOperation = 'destination-out';
+                ctx.save();
+                
+                // クリッピング領域のパス作成
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, target.innerHole / 2, 0, Math.PI * 2);
+                if (item.type === 'jacket') {
+                    ctx.rect(cx - TARGET_SIZE.jacket.w / 2, cy - TARGET_SIZE.jacket.h / 2, TARGET_SIZE.jacket.w, TARGET_SIZE.jacket.h);
+                } else {
+                    ctx.arc(cx, cy, TARGET_SIZE.disk.r, 0, Math.PI * 2);
+                }
+                
+                ctx.save();
+                ctx.clip();
+                
+                // 背景色（薄いグレーを敷いて枠を分かりやすくする）
+                ctx.fillStyle = '#f8fafc';
                 ctx.fill();
-                ctx.globalCompositeOperation = 'source-over';
-            }
-            ctx.restore();
 
-            // ガイド線（点線）の描画
-            ctx.save();
-            ctx.beginPath();
-            if (target.isCircle) {
-                ctx.arc(centerX, centerY, target.diameter / 2, 0, Math.PI * 2);
-            } else {
-                ctx.rect(centerX - target.w / 2, centerY - target.h / 2, target.w, target.h);
-            }
-            ctx.setLineDash([15, 15]);
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#94a3b8';
-            ctx.stroke();
+                // 画像の描画
+                if (item.img.src) {
+                    const drawW = item.img.width * item.scale;
+                    const drawH = item.img.height * item.scale;
+                    const drawX = cx + item.offsetX - drawW / 2;
+                    const drawY = cy + item.offsetY - drawH / 2;
+                    ctx.drawImage(item.img, drawX, drawY, drawW, drawH);
+                }
 
-            // ディスク内径のガイド線
-            if (target.isCircle) {
+                // ディスク穴の切り抜き（白抜き）
+                if (item.type === 'disk') {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, TARGET_SIZE.disk.innerR, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalCompositeOperation = 'source-over';
+                }
+                ctx.restore();
+
+                // 枠線の描画
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, target.innerHole / 2, 0, Math.PI * 2);
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
-            ctx.restore();
+                if (item.type === 'jacket') {
+                    ctx.rect(cx - TARGET_SIZE.jacket.w / 2, cy - TARGET_SIZE.jacket.h / 2, TARGET_SIZE.jacket.w, TARGET_SIZE.jacket.h);
+                } else {
+                    ctx.arc(cx, cy, TARGET_SIZE.disk.r, 0, Math.PI * 2);
+                    ctx.moveTo(cx + TARGET_SIZE.disk.innerR, cy);
+                    ctx.arc(cx, cy, TARGET_SIZE.disk.innerR, 0, Math.PI * 2);
+                }
 
-            // ガイダンステキストの描画
-            ctx.fillStyle = '#334155';
-            ctx.font = 'bold 40px sans-serif';
-            ctx.textAlign = 'center';
-            let titleText = currentPaper === 'L' ? 'L判 (コンビニプリント用)' : 'A4 (自宅プリンター用)';
-            ctx.fillText(titleText, centerX, 100);
-            
-            ctx.font = '28px sans-serif';
-            ctx.fillStyle = '#64748b';
-            ctx.fillText('点線に沿ってハサミやカッターで切り抜いてください。', centerX, canvas.height - 150);
-            ctx.fillText('※印刷時は「実際のサイズ」または「フチなし」を選択してください。', centerX, canvas.height - 100);
+                if (isActive) {
+                    ctx.setLineDash([]);
+                    ctx.lineWidth = 6;
+                    ctx.strokeStyle = '#3b82f6';
+                } else {
+                    ctx.setLineDash([15, 15]);
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = '#94a3b8';
+                }
+                ctx.stroke();
+                ctx.restore();
+            });
         }
 
-        // ドラッグ操作処理
+        // ヒット判定関数群
+        function hitTestJacket(item, px, py) {
+            const w = TARGET_SIZE.jacket.w;
+            const h = TARGET_SIZE.jacket.h;
+            return (px >= item.cx - w/2 && px <= item.cx + w/2 &&
+                    py >= item.cy - h/2 && py <= item.cy + h/2);
+        }
+
+        function hitTestDisk(item, px, py) {
+            const dx = px - item.cx;
+            const dy = py - item.cy;
+            return (dx * dx + dy * dy) <= (TARGET_SIZE.disk.r * TARGET_SIZE.disk.r);
+        }
+
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             let clientX = e.clientX;
             let clientY = e.clientY;
-            
             if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
+                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
             }
             return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
         }
 
         function onPointerDown(e) {
-            if (!img.src) return;
-            isDragging = true;
             const pos = getPos(e);
-            startX = pos.x - imgX;
-            startY = pos.y - imgY;
+            let hitItem = null;
+
+            // 逆順（手前）から当たり判定
+            for (let i = items.length - 1; i >= 0; i--) {
+                const item = items[i];
+                if (item.type === 'jacket' && hitTestJacket(item, pos.x, pos.y)) { hitItem = item; break; }
+                if (item.type === 'disk' && hitTestDisk(item, pos.x, pos.y)) { hitItem = item; break; }
+            }
+
+            if (hitItem) {
+                activeId = hitItem.id;
+                updateUI();
+                if (hitItem.img.src) {
+                    isDragging = true;
+                    startX = pos.x - hitItem.offsetX;
+                    startY = pos.y - hitItem.offsetY;
+                }
+                drawCanvas();
+            }
         }
 
         function onPointerMove(e) {
             if (!isDragging) return;
-            e.preventDefault();
+            e.preventDefault(); // ドラッグ中のスクロール防止
             const pos = getPos(e);
-            imgX = pos.x - startX;
-            imgY = pos.y - startY;
-            drawCanvas();
+            const activeItem = getActiveItem();
+            if (activeItem) {
+                activeItem.offsetX = pos.x - startX;
+                activeItem.offsetY = pos.y - startY;
+                drawCanvas();
+            }
         }
 
         function onPointerUp() { isDragging = false; }
@@ -384,21 +461,17 @@
         canvas.addEventListener('touchmove', onPointerMove, {passive: false});
         window.addEventListener('touchend', onPointerUp);
 
-        // ダウンロード
-        downloadBtn.addEventListener('click', () => {
+        // ボタン動作
+        document.getElementById('downloadBtn').addEventListener('click', () => {
             const link = document.createElement('a');
-            link.download = `mini_cd_${currentTarget}_${currentPaper}.jpg`;
+            link.download = `mini_cd_multi_${currentPaper}.jpg`;
             link.href = canvas.toDataURL('image/jpeg', 1.0);
             link.click();
         });
+        document.getElementById('printBtn').addEventListener('click', () => { window.print(); });
 
-        // 印刷
-        printBtn.addEventListener('click', () => {
-            window.print();
-        });
-
-        // 初期化実行
-        initCanvas();
+        // 初期化
+        initLayout();
     </script>
 </body>
 </html>
