@@ -1,578 +1,359 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ミニCD ジェネレーター</title>
-    <style>
-        :root {
-            --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #a855f7 50%, #ec4899 100%);
-            --clear-panel: rgba(255, 255, 255, 0.7); /* 半透明クリアケース */
-            --glass-blur: blur(10px);
-            --bg-start: #fffbeb; /* 画像の背景に寄せた暖色系 */
-            --bg-end: #f5f5f5;
-            --text: #1e293b;
-            --secondary: #64748b;
-        }
-        body {
-            font-family: '-apple-system', 'BlinkMacSystemFont', 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%);
-            color: var(--text);
-            margin: 0;
-            padding: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        h1 {
-            font-size: 1.1rem;
-            margin-bottom: 3px;
-            text-align: center;
-            color: var(--text);
-        }
-        .instruction {
-            font-size: 0.8rem;
-            color: var(--secondary);
-            margin-bottom: 12px;
-            text-align: center;
-            line-height: 1.4;
-        }
-        .controls-container {
-            width: 100%;
-            max-width: 450px;
-            background: var(--clear-panel);
-            backdrop-filter: var(--glass-blur);
-            -webkit-backdrop-filter: var(--glass-blur);
-            padding: 15px;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 15px;
-            border: 1px solid rgba(255,255,255,0.3);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .top-group {
-            display: flex;
-            gap: 8px;
-        }
-        select, button {
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .paper-select {
-            flex: 1;
-            border: 1px solid rgba(0,0,0,0.1);
-            background-color: white;
-            color: var(--text);
-            appearance: none;
-            text-align: center;
-        }
-        .btn-main {
-            background: var(--primary-gradient);
-            color: white;
-            box-shadow: 0 2px 4px rgba(168, 85, 247, 0.3);
-        }
-        .btn-main:active { transform: translateY(1px); opacity: 0.9; }
-        .btn-main:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AirPods トラブルシューティング</title>
+<meta name="description" content="AirPods の不具合を、質問に答えるだけで対処法まで案内します。">
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1d1d1f;
+    --sub:#6e6e73;
+    --line:#e5e5ea;
+    --fill:#f5f5f7;
+    --accent:#0071e3;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.6;
+  }
+  #root{max-width:640px;margin:0 auto;padding:0 20px calc(64px + env(safe-area-inset-bottom));}
 
-        .editor-panel {
-            background: rgba(255,255,255,0.4);
-            padding: 12px;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .editor-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        #activeLabel { 
-            font-size: 0.8rem; 
-            font-weight: bold; 
-            color: var(--primary-gradient); 
-            background: -webkit-linear-gradient(135deg, #3b82f6, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .slider-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .editor-panel label { font-size: 0.8rem; font-weight: bold; color: var(--secondary); white-space: nowrap; }
-        input[type="range"] { flex: 1; }
-        
-        .btn-change {
-            background-color: white;
-            color: var(--text);
-            border: 1px solid rgba(0,0,0,0.1);
-            padding: 6px 12px;
-            font-size: 0.8rem;
-        }
+  header.site{
+    padding:22px 0 18px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+  }
+  .brand{font-size:15px;font-weight:600;letter-spacing:.01em;}
+  .brand span{color:var(--sub);font-weight:400;}
+  .restart{
+    border:0;background:none;color:var(--accent);
+    font-size:14px;font-family:inherit;cursor:pointer;padding:6px 0;
+  }
+  .restart:disabled{opacity:.3;cursor:default;}
 
-        .canvas-container {
-            width: 100%;
-            max-width: 450px;
-            background: rgba(0,0,0,0.03); /* キャンバス背景も少しクリアに */
-            border-radius: 16px;
-            padding: 8px 0;
-            position: relative;
-        }
-        canvas {
-            width: 100%;
-            height: auto;
-            display: block;
-            border-radius: 8px;
-        }
-        
-        .final-actions {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            max-width: 450px;
-            margin-top: 15px;
-            margin-bottom: 30px;
-        }
-        .btn-final { flex: 1; padding: 12px 0; font-size: 1rem; }
-        .btn-final:nth-child(1) { background-color: #10b981; } /* 保存は緑のまま */
-        .btn-final:nth-child(2) { background-color: #334155; } /* 印刷はダーク */
+  /* 経路トレイル（署名要素）：answeredした選択が積み上がり、タップで戻れる */
+  .trail{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:26px;}
+  .trail button{
+    font-family:inherit;font-size:12.5px;line-height:1;
+    padding:7px 12px;border-radius:999px;
+    border:1px solid var(--line);background:var(--fill);color:var(--sub);
+    cursor:pointer;
+  }
+  .trail button:hover{color:var(--ink);}
+  .trail .sep{color:#c7c7cc;font-size:12px;align-self:center;}
 
-        #hiddenFileInput { display: none; }
+  h1.q{
+    font-size:30px;line-height:1.3;font-weight:600;
+    letter-spacing:-.02em;margin:0 0 10px;
+  }
+  p.hint{margin:0 0 26px;color:var(--sub);font-size:15px;}
 
-        @media print {
-            @page { margin: 0; }
-            body { background: white; padding: 0; margin: 0; }
-            h1, .instruction, .controls-container, .final-actions { display: none !important; }
-            .canvas-container { padding: 0; max-width: none; width: 100%; height: 100vh; background: white; }
-            canvas { width: 100% !important; height: 100% !important; object-fit: contain; object-position: top left; background: white; }
-        }
-    </style>
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{
+    width:100%;text-align:left;font-family:inherit;cursor:pointer;
+    background:var(--fill);border:1px solid transparent;border-radius:var(--radius);
+    padding:16px 46px 16px 18px;position:relative;color:var(--ink);
+    transition:background .15s ease, transform .15s ease;
+  }
+  .opt:hover{background:#ececf0;}
+  .opt:active{transform:scale(.99);}
+  .opt:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .opt .label{font-size:16.5px;font-weight:500;display:block;}
+  .opt .sub{font-size:13.5px;color:var(--sub);display:block;margin-top:3px;}
+  .opt::after{
+    content:"";position:absolute;right:20px;top:50%;
+    width:7px;height:7px;margin-top:-4px;
+    border-right:1.8px solid #b0b0b8;border-top:1.8px solid #b0b0b8;
+    transform:rotate(45deg);
+  }
+
+  /* 対処法画面 */
+  .eyebrow{font-size:12.5px;font-weight:600;color:var(--accent);letter-spacing:.04em;margin:0 0 8px;}
+  .lead{font-size:16px;color:var(--sub);margin:0 0 30px;}
+  ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;}
+  ol.steps li{
+    counter-increment:s;position:relative;
+    padding:0 0 26px 42px;
+  }
+  ol.steps li::before{
+    content:counter(s);
+    position:absolute;left:0;top:1px;
+    width:26px;height:26px;border-radius:50%;
+    background:var(--ink);color:#fff;
+    font-size:13px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;
+  }
+  ol.steps li:not(:last-child)::after{
+    content:"";position:absolute;left:12.5px;top:32px;bottom:6px;width:1px;background:var(--line);
+  }
+  ol.steps p{margin:0;font-size:16px;}
+  ol.steps img{
+    display:block;width:100%;max-width:340px;margin:14px 0 0;
+    border-radius:10px;border:1px solid var(--line);
+  }
+  .note{
+    background:var(--fill);border-radius:var(--radius);
+    padding:16px 18px;font-size:14.5px;color:var(--sub);margin:6px 0 0;
+  }
+  .note strong{color:var(--ink);font-weight:600;}
+
+  .resolve{margin-top:38px;padding-top:26px;border-top:1px solid var(--line);}
+  .resolve h2{font-size:17px;font-weight:600;margin:0 0 14px;}
+  .resolve .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .btn{
+    font-family:inherit;font-size:15px;cursor:pointer;
+    padding:12px 22px;border-radius:999px;border:1px solid var(--line);
+    background:#fff;color:var(--ink);
+  }
+  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  .contact{margin-top:16px;font-size:14px;color:var(--sub);}
+  .contact a{color:var(--accent);text-decoration:none;}
+
+  .fade{animation:fade .28s ease both;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  @media (prefers-reduced-motion:reduce){
+    .fade{animation:none;}
+    *{transition:none !important;}
+  }
+  @media (max-width:420px){
+    h1.q{font-size:25px;}
+  }
+</style>
 </head>
 <body>
+<div id="root"></div>
 
-    <h1>デザイン ジェネレーター</h1>
-    <p class="instruction">
-        空の枠をタップすると写真を選べます。<br>
-        余白をスワイプして上下にスクロールできます。
-    </p>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js" crossorigin></script>
 
-    <div class="controls-container">
-        <div class="top-group">
-            <select id="paperSelect" class="paper-select">
-                <option value="A4">用紙：A4 (自宅PC)</option>
-                <option value="L">用紙：L判 (コンビニ)</option>
-            </select>
-            <button id="addSetBtn" class="btn btn-main">＋ 1セット追加</button>
+<script type="text/babel">
+const { useState, useCallback } = React;
+
+/* ============================================================
+   診断フロー定義
+   ここだけ差し替えれば内容を更新できます。
+   type:'question' … 質問画面 / type:'answer' … 対処法画面
+   画像は images/ フォルダに置き、image:'images/xxx.png' で指定
+   ============================================================ */
+const NODES = {
+  start: {
+    type: 'question',
+    title: 'どのような症状ですか？',
+    hint: '当てはまるものを選んでください。',
+    options: [
+      { label: '接続・ペアリングできない', sub: 'デバイスに表示されない、繋がらない', next: 'connect' },
+      { label: '片方だけ音が出ない',       sub: '左右どちらかが無音',                next: 'oneside' },
+      { label: '音が途切れる・ノイズが入る', sub: '再生が不安定',                    next: 'audio' },
+      { label: '充電できない',             sub: 'ケースやイヤホンが充電されない',    next: 'charge' },
+    ],
+  },
+
+  connect: {
+    type: 'question',
+    title: 'お使いのデバイスは？',
+    hint: '接続しようとしている機器を選んでください。',
+    options: [
+      { label: 'iPhone / iPad',        next: 'reset' },
+      { label: 'Mac',                  next: 'reset' },
+      { label: 'Android・Windows など', sub: 'Apple 以外の機器',  next: 'reset' },
+    ],
+  },
+
+  oneside: {
+    type: 'question',
+    title: 'ケースに戻して再度取り出すと直りますか？',
+    hint: '両方をケースに入れ、10秒待ってから取り出してお試しください。',
+    options: [
+      { label: '直った',            next: 'solved_temp' },
+      { label: '変わらない',        next: 'reset' },
+    ],
+  },
+
+  audio: {
+    type: 'question',
+    title: '途切れるのは特定の場所だけですか？',
+    hint: '電波状況の影響を切り分けます。',
+    options: [
+      { label: '特定の場所・状況だけ', next: 'interference' },
+      { label: 'どこでも途切れる',     next: 'reset' },
+    ],
+  },
+
+  charge: {
+    type: 'question',
+    title: 'ケースのランプは点灯しますか？',
+    hint: 'ケースの蓋を開けたときのランプの状態を選んでください。',
+    options: [
+      { label: '緑または橙に点灯する', next: 'reset' },
+      { label: '何も点灯しない',      next: 'case_dead' },
+    ],
+  },
+
+  /* ---------- 対処法 ---------- */
+  reset: {
+    type: 'answer',
+    eyebrow: '対処法',
+    title: 'AirPods をリセットする',
+    lead: '多くの不具合はリセットで解消します。所要時間は約2分です。',
+    steps: [
+      { text: '両方の AirPods をケースに入れ、蓋を閉じて30秒待ちます。' },
+      { text: '蓋を開けたまま、デバイスの「設定」→「Bluetooth」で AirPods の ⓘ をタップし、「このデバイスの登録を解除」を選びます。' },
+      { text: 'ケースの背面のボタンを15秒以上長押しし、ランプが橙色に点滅してから白色の点滅に変わったら離します。' },
+      { text: '蓋を開けた状態でデバイスに近づけ、画面の案内に沿って接続し直します。' },
+    ],
+    note: '<strong>注意：</strong>リセット後は、以前に接続していた他のデバイスとも再度ペアリングが必要になります。',
+  },
+
+  interference: {
+    type: 'answer',
+    eyebrow: '対処法',
+    title: '電波干渉を避ける',
+    lead: '電子レンジや無線 LAN ルーターの近くでは、通信が不安定になることがあります。',
+    steps: [
+      { text: '発生する場所から数メートル離れて、症状が変わるか確認します。' },
+      { text: '再生する機器を、ポケットではなく体の前側に持ち替えます。' },
+      { text: '改善しない場合は、リセットをお試しください。' },
+    ],
+  },
+
+  solved_temp: {
+    type: 'answer',
+    eyebrow: '確認',
+    title: '一時的な接続の不調でした',
+    lead: '同じ症状が繰り返し起きる場合は、リセットをお試しください。',
+    steps: [
+      { text: 'しばらく使用し、再発しないか確認します。' },
+      { text: '再発する場合は、最初に戻って「接続・ペアリングできない」を選び、リセット手順に進みます。' },
+    ],
+  },
+
+  case_dead: {
+    type: 'answer',
+    eyebrow: '対処法',
+    title: 'ケースを充電する',
+    lead: 'ケースの残量が完全になくなると、ランプが点灯しなくなります。',
+    steps: [
+      { text: '純正または MFi 認証の充電ケーブルを接続し、15分以上そのまま充電します。' },
+      { text: '充電しながら蓋を開け、ランプが点灯するか確認します。' },
+      { text: '別のケーブルとアダプタでも点灯しない場合は、お問い合わせください。' },
+    ],
+  },
+};
+
+const CONTACT_NOTE = '解決しない場合は、ご購入いただいた取引メッセージよりご連絡ください。';
+
+/* ============================================================ */
+
+function Trail({ path, onJump }) {
+  if (path.length === 0) return null;
+  return (
+    <nav className="trail" aria-label="選択した内容">
+      {path.map((step, i) => (
+        <React.Fragment key={i}>
+          {i > 0 && <span className="sep" aria-hidden="true">›</span>}
+          <button onClick={() => onJump(i)}>{step.label}</button>
+        </React.Fragment>
+      ))}
+    </nav>
+  );
+}
+
+function Question({ node, onSelect }) {
+  return (
+    <div className="fade">
+      <h1 className="q">{node.title}</h1>
+      {node.hint && <p className="hint">{node.hint}</p>}
+      <div className="options">
+        {node.options.map((o, i) => (
+          <button key={i} className="opt" onClick={() => onSelect(o)}>
+            <span className="label">{o.label}</span>
+            {o.sub && <span className="sub">{o.sub}</span>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Answer({ node, onBack, onRestart }) {
+  return (
+    <div className="fade">
+      {node.eyebrow && <p className="eyebrow">{node.eyebrow}</p>}
+      <h1 className="q">{node.title}</h1>
+      {node.lead && <p className="lead">{node.lead}</p>}
+      <ol className="steps">
+        {node.steps.map((s, i) => (
+          <li key={i}>
+            <p>{s.text}</p>
+            {s.image && <img src={s.image} alt="" loading="lazy" />}
+          </li>
+        ))}
+      </ol>
+      {node.note && (
+        <p className="note" dangerouslySetInnerHTML={{ __html: node.note }} />
+      )}
+      <div className="resolve">
+        <h2>解決しましたか？</h2>
+        <div className="row">
+          <button className="btn primary" onClick={onRestart}>別の症状を調べる</button>
+          <button className="btn" onClick={onBack}>ひとつ前に戻る</button>
         </div>
-
-        <div class="editor-panel">
-            <div class="editor-header">
-                <label id="activeLabel">選択中: フロント表(外)</label>
-                <button id="changeImageBtn" class="btn-change">画像を変更</button>
-            </div>
-            <div class="slider-group">
-                <label>🔍 拡大・縮小</label>
-                <input type="range" id="scaleSlider" min="0.05" max="3" step="0.01" value="1">
-            </div>
-        </div>
+        <p className="contact">{CONTACT_NOTE}</p>
+      </div>
     </div>
+  );
+}
 
-    <div class="canvas-container">
-        <canvas id="editorCanvas"></canvas>
-    </div>
+function App() {
+  const [path, setPath] = useState([]);           // [{label, id}]
+  const currentId = path.length ? path[path.length - 1].id : 'start';
+  const node = NODES[currentId] || NODES.start;
 
-    <div class="final-actions">
-        <button id="downloadBtn" class="btn btn-final">画像を保存</button>
-        <button id="printBtn" class="btn btn-final">直接印刷</button>
-    </div>
+  const select = useCallback((o) => {
+    setPath(p => [...p, { label: o.label, id: o.next }]);
+    window.scrollTo({ top: 0 });
+  }, []);
 
-    <input type="file" id="hiddenFileInput" accept="image/*">
+  const back = useCallback(() => {
+    setPath(p => p.slice(0, -1));
+    window.scrollTo({ top: 0 });
+  }, []);
 
-    <script>
-        const canvas = document.getElementById('editorCanvas');
-        const ctx = canvas.getContext('2d');
-        const paperSelect = document.getElementById('paperSelect');
-        const addSetBtn = document.getElementById('addSetBtn');
-        const scaleSlider = document.getElementById('scaleSlider');
-        const changeImageBtn = document.getElementById('changeImageBtn');
-        const hiddenFileInput = document.getElementById('hiddenFileInput');
-        const activeLabel = document.getElementById('activeLabel');
+  const jump = useCallback((i) => {
+    setPath(p => p.slice(0, i));
+    window.scrollTo({ top: 0 });
+  }, []);
 
-        const PPM = 11.811; // 300dpi (1mm = 11.811px)
+  const restart = useCallback(() => {
+    setPath([]);
+    window.scrollTo({ top: 0 });
+  }, []);
 
-        const PAPER_SIZES = {
-            'L':  { w: 89 * PPM, h: 127 * PPM },
-            'A4': { w: 210 * PPM, h: 297 * PPM }
-        };
+  return (
+    <React.Fragment>
+      <header className="site">
+        <p className="brand">AirPods <span>トラブルシューティング</span></p>
+        <button className="restart" onClick={restart} disabled={path.length === 0}>
+          最初から
+        </button>
+      </header>
+      <Trail path={path} onJump={jump} />
+      {node.type === 'answer'
+        ? <Answer node={node} onBack={back} onRestart={restart} />
+        : <Question node={node} onSelect={select} />}
+    </React.Fragment>
+  );
+}
 
-        const TARGET_SIZE = {
-            jacket: { w: 50 * PPM, h: 43 * PPM },
-            disk:   { r: 19 * PPM, innerR: 3 * PPM }
-        };
-
-        let currentPaper = 'A4';
-        let currentSets = 1;
-        let items = [];
-        let activeId = null;
-
-        let isDragging = false;
-        let dragStartX, dragStartY;
-
-        // アイテム生成
-        function createItem(id, type, label, cx, cy) {
-            return { id, type, label, cx, cy, img: new Image(), scale: 1, offsetX: 0, offsetY: 0 };
-        }
-
-        function updateLayout() {
-            const newItems = [];
-            let idCounter = 0;
-
-            if (currentPaper === 'L') {
-                const w = PAPER_SIZES['L'].w;
-                const pageH = PAPER_SIZES['L'].h;
-                const gap = 15 * PPM; // L判同士の隙間
-                
-                for (let i = 0; i < currentSets; i++) {
-                    // 1セットにつきL判2枚を使用
-                    let p1Y = (i * 2) * (pageH + gap);
-                    let p2Y = (i * 2 + 1) * (pageH + gap);
-                    
-                    // 1枚目
-                    newItems.push(createItem(idCounter++, 'jacket', 'フロント表(外)', w/2, p1Y + 25*PPM));
-                    newItems.push(createItem(idCounter++, 'jacket', 'フロント表(内)', w/2, p1Y + 70*PPM));
-                    newItems.push(createItem(idCounter++, 'disk', '盤面', w/2, p1Y + 110*PPM));
-                    // 2枚目
-                    newItems.push(createItem(idCounter++, 'jacket', 'バック裏(外)', w/2, p2Y + 40*PPM));
-                    newItems.push(createItem(idCounter++, 'jacket', 'バック裏(内)', w/2, p2Y + 90*PPM));
-                }
-                canvas.width = w;
-                // 全ページの高さ＋隙間
-                canvas.height = (currentSets * 2) * pageH + Math.max(0, (currentSets * 2 - 1)) * gap;
-                addSetBtn.disabled = (currentSets >= 3);
-                addSetBtn.innerText = currentSets >= 3 ? "最大数です" : "＋ 1セット追加";
-            } else {
-                // A4
-                const w = PAPER_SIZES['A4'].w;
-                const h = PAPER_SIZES['A4'].h;
-                for (let i = 0; i < currentSets; i++) {
-                    let baseY = 30 * PPM + i * 95 * PPM;
-                    newItems.push(createItem(idCounter++, 'jacket', 'F表(外)', 30*PPM, baseY));
-                    newItems.push(createItem(idCounter++, 'jacket', 'F表(内)', 80*PPM, baseY));
-                    newItems.push(createItem(idCounter++, 'jacket', 'B裏(外)', 130*PPM, baseY));
-                    newItems.push(createItem(idCounter++, 'jacket', 'B裏(内)', 180*PPM, baseY));
-                    newItems.push(createItem(idCounter++, 'disk', '盤面', 105*PPM, baseY + 45*PPM));
-                }
-                canvas.width = w;
-                canvas.height = h;
-                addSetBtn.disabled = (currentSets >= 3);
-                addSetBtn.innerText = currentSets >= 3 ? "最大数です" : "＋ 1セット追加";
-            }
-
-            // 画像の引き継ぎ
-            newItems.forEach((newItem, i) => {
-                if (i < items.length && items[i].img.src) {
-                    newItem.img = items[i].img;
-                    newItem.scale = items[i].scale;
-                    newItem.offsetX = items[i].offsetX;
-                    newItem.offsetY = items[i].offsetY;
-                }
-            });
-
-            items = newItems;
-            if (!items.find(i => i.id === activeId)) activeId = items[0]?.id;
-            updateUI();
-            drawCanvas();
-        }
-
-        function getActiveItem() { return items.find(i => i.id === activeId); }
-
-        function updateUI() {
-            const activeItem = getActiveItem();
-            if (activeItem) {
-                // CSSグラデーションをテキストに適用するためのスタイル
-                activeLabel.innerText = `選択中: ${activeItem.label}`;
-                scaleSlider.value = activeItem.scale;
-            }
-        }
-
-        paperSelect.addEventListener('change', (e) => {
-            currentPaper = e.target.value;
-            currentSets = 1; // 用紙変更時はセット数をリセット
-            updateLayout();
-        });
-
-        addSetBtn.addEventListener('click', () => {
-            if (currentSets < 3) {
-                currentSets++;
-                updateLayout();
-            }
-        });
-
-        // 画像変更ボタン
-        changeImageBtn.addEventListener('click', () => {
-            if (getActiveItem()) hiddenFileInput.click();
-        });
-
-        // 画像選択処理
-        hiddenFileInput.addEventListener('change', (e) => {
-            const activeItem = getActiveItem();
-            if (!activeItem || !e.target.files[0]) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                activeItem.img.onload = () => {
-                    const tw = activeItem.type === 'jacket' ? TARGET_SIZE.jacket.w : TARGET_SIZE.disk.r * 2;
-                    const th = activeItem.type === 'jacket' ? TARGET_SIZE.jacket.h : TARGET_SIZE.disk.r * 2;
-                    activeItem.scale = Math.max(tw / activeItem.img.width, th / activeItem.img.height);
-                    activeItem.offsetX = 0; activeItem.offsetY = 0;
-                    updateUI();
-                    drawCanvas();
-                }
-                activeItem.img.src = event.target.result;
-            }
-            reader.readAsDataURL(e.target.files[0]);
-            hiddenFileInput.value = ''; 
-        });
-
-        scaleSlider.addEventListener('input', () => {
-            const activeItem = getActiveItem();
-            if (activeItem) { activeItem.scale = parseFloat(scaleSlider.value); drawCanvas(); }
-        });
-
-        function drawCanvas() {
-            // 全体をクリアに（用紙の外側）
-            ctx.fillStyle = 'rgba(0,0,0,0.02)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            // 用紙の白地を描画
-            ctx.fillStyle = '#ffffff';
-            if (currentPaper === 'L') {
-                const pageH = PAPER_SIZES['L'].h;
-                const gap = 15 * PPM;
-                for (let i = 0; i < currentSets * 2; i++) {
-                    ctx.fillRect(0, i * (pageH + gap), PAPER_SIZES['L'].w, pageH);
-                }
-            } else {
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
-
-            items.forEach(item => {
-                const isActive = (item.id === activeId);
-                ctx.save();
-                
-                ctx.beginPath();
-                if (item.type === 'jacket') {
-                    ctx.rect(item.cx - TARGET_SIZE.jacket.w / 2, item.cy - TARGET_SIZE.jacket.h / 2, TARGET_SIZE.jacket.w, TARGET_SIZE.jacket.h);
-                } else {
-                    ctx.arc(item.cx, item.cy, TARGET_SIZE.disk.r, 0, Math.PI * 2);
-                }
-                
-                ctx.save();
-                ctx.clip();
-                
-                // 背景（半透明クリアケース風）
-                ctx.fillStyle = isActive ? 'rgba(59, 130, 246, 0.05)' : 'rgba(255,255,255,0.7)';
-                ctx.fill();
-
-                if (item.img.src) {
-                    const drawW = item.img.width * item.scale;
-                    const drawH = item.img.height * item.scale;
-                    ctx.drawImage(item.img, item.cx + item.offsetX - drawW / 2, item.cy + item.offsetY - drawH / 2, drawW, drawH);
-                } else {
-                    // 画像がない枠のプレースホルダー表示
-                    // ジャケットとディスクで見た目を変える
-                    if(item.type === 'jacket') {
-                        ctx.fillStyle = '#cbd5e1';
-                        ctx.textAlign = 'center';
-                        ctx.font = 'bold 30px sans-serif';
-                        ctx.fillText(item.label, item.cx, item.cy - 10);
-                        ctx.font = '24px sans-serif';
-                        ctx.fillText('タップして画像追加', item.cx, item.cy + 30);
-                    } else {
-                        // ディスク盤面（虹色シルエット風）
-                        const gradient = ctx.createRadialGradient(item.cx, item.cy, item.innerR, item.cx, item.cy, TARGET_SIZE.disk.r);
-                        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)'); // 青
-                        gradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.3)'); // 紫
-                        gradient.addColorStop(1, 'rgba(236, 72, 153, 0.3)'); // ピンク
-                        ctx.fillStyle = gradient;
-                        ctx.beginPath();
-                        ctx.arc(item.cx, item.cy, TARGET_SIZE.disk.r, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                }
-
-                if (item.type === 'disk') {
-                    ctx.globalCompositeOperation = 'destination-out';
-                    ctx.beginPath();
-                    ctx.arc(item.cx, item.cy, TARGET_SIZE.disk.innerR, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.globalCompositeOperation = 'source-over';
-                }
-                ctx.restore();
-
-                // 枠線の描画
-                ctx.beginPath();
-                if (item.type === 'jacket') {
-                    ctx.rect(item.cx - TARGET_SIZE.jacket.w / 2, item.cy - TARGET_SIZE.jacket.h / 2, TARGET_SIZE.jacket.w, TARGET_SIZE.jacket.h);
-                } else {
-                    ctx.arc(item.cx, item.cy, TARGET_SIZE.disk.r, 0, Math.PI * 2);
-                    ctx.moveTo(item.cx + TARGET_SIZE.disk.innerR, item.cy);
-                    ctx.arc(item.cx, item.cy, TARGET_SIZE.disk.innerR, 0, Math.PI * 2);
-                }
-
-                // アクティブ時の枠線を虹色グラデーションに（近似）
-                ctx.lineWidth = isActive ? 6 : 3;
-                if(isActive) {
-                    const lineGrad = ctx.createLinearGradient(item.cx - 25*PPM, item.cy, item.cx + 25*PPM, item.cy);
-                    lineGrad.addColorStop(0, '#3b82f6');
-                    lineGrad.addColorStop(0.5, '#a855f7');
-                    lineGrad.addColorStop(1, '#ec4899');
-                    ctx.strokeStyle = lineGrad;
-                    ctx.setLineDash([]);
-                } else {
-                    ctx.strokeStyle = '#cbd5e1';
-                    ctx.setLineDash([15, 15]);
-                }
-                ctx.stroke();
-                ctx.restore();
-            });
-        }
-
-        function hitTest(item, px, py) {
-            if (item.type === 'jacket') {
-                return (px >= item.cx - TARGET_SIZE.jacket.w/2 && px <= item.cx + TARGET_SIZE.jacket.w/2 &&
-                        py >= item.cy - TARGET_SIZE.jacket.h/2 && py <= item.cy + TARGET_SIZE.jacket.h/2);
-            } else {
-                return ((px - item.cx)**2 + (py - item.cy)**2) <= TARGET_SIZE.disk.r**2;
-            }
-        }
-
-        function getPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            let cx = e.clientX, cy = e.clientY;
-            if (e.touches && e.touches.length > 0) { cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
-            return { x: (cx - rect.left) * scaleX, y: (cy - rect.top) * scaleY };
-        }
-
-        canvas.addEventListener('touchstart', (e) => {
-            const pos = getPos(e);
-            let hitItem = items.find(item => hitTest(item, pos.x, pos.y));
-
-            if (hitItem && hitItem.img.src) {
-                // 画像がある枠を触った時のみスクロールをロックし、ドラッグ準備
-                activeId = hitItem.id;
-                updateUI();
-                isDragging = true;
-                dragStartX = pos.x - hitItem.offsetX;
-                dragStartY = pos.y - hitItem.offsetY;
-                e.preventDefault(); 
-            }
-        }, {passive: false});
-
-        canvas.addEventListener('touchmove', (e) => {
-            if (isDragging) {
-                e.preventDefault(); // ドラッグ中はスクロール防止
-                const pos = getPos(e);
-                const activeItem = getActiveItem();
-                if (activeItem) {
-                    activeItem.offsetX = pos.x - dragStartX;
-                    activeItem.offsetY = pos.y - dragStartY;
-                    drawCanvas();
-                }
-            }
-        }, {passive: false});
-
-        canvas.addEventListener('touchend', () => { isDragging = false; });
-        canvas.addEventListener('mousedown', (e) => {
-            const pos = getPos(e);
-            let hitItem = items.find(item => hitTest(item, pos.x, pos.y));
-            if (hitItem && hitItem.img.src) {
-                activeId = hitItem.id;
-                updateUI();
-                isDragging = true;
-                dragStartX = pos.x - hitItem.offsetX;
-                dragStartY = pos.y - hitItem.offsetY;
-            }
-        });
-        canvas.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                const pos = getPos(e);
-                const activeItem = getActiveItem();
-                if (activeItem) {
-                    activeItem.offsetX = pos.x - dragStartX;
-                    activeItem.offsetY = pos.y - dragStartY;
-                    drawCanvas();
-                }
-            }
-        });
-        window.addEventListener('mouseup', () => { isDragging = false; });
-
-        // --- 画像追加バグ解消のためのClickイベント ---
-        canvas.addEventListener('click', (e) => {
-            if (isDragging) return;
-            const pos = getPos(e);
-            let hitItem = items.find(item => hitTest(item, pos.x, pos.y));
-            if (hitItem) {
-                activeId = hitItem.id;
-                updateUI();
-                drawCanvas();
-                // 空の枠をタップした時のみファイル選択を開く
-                if (!hitItem.img.src) {
-                    hiddenFileInput.click();
-                }
-            }
-        });
-
-        // --- 保存処理（L判分割対応） ---
-        document.getElementById('downloadBtn').addEventListener('click', async () => {
-            if (currentPaper === 'L') {
-                const pageH = PAPER_SIZES['L'].h;
-                const gap = 15 * PPM;
-                const totalPages = currentSets * 2;
-                
-                for(let i=0; i<totalPages; i++) {
-                    let tempCanvas = document.createElement('canvas');
-                    tempCanvas.width = PAPER_SIZES['L'].w;
-                    tempCanvas.height = pageH;
-                    let tCtx = tempCanvas.getContext('2d');
-                    
-                    tCtx.fillStyle = '#ffffff';
-                    tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-                    tCtx.drawImage(canvas, 0, i * (pageH + gap), tempCanvas.width, pageH, 0, 0, tempCanvas.width, pageH);
-                    
-                    let link = document.createElement('a');
-                    let setNum = Math.floor(i/2) + 1;
-                    let pageNum = (i%2) + 1;
-                    link.download = `L判プリント_セット${setNum}_${pageNum}枚目.jpg`;
-                    link.href = tempCanvas.toDataURL('image/jpeg', 1.0);
-                    link.click();
-                    
-                    // ブラウザの連続DLブロックを回避するため少し待機
-                    await new Promise(r => setTimeout(r, 400));
-                }
-            } else {
-                const link = document.createElement('a');
-                link.download = `A4プリント_全${currentSets}セット.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 1.0);
-                link.click();
-            }
-        });
-
-        document.getElementById('printBtn').addEventListener('click', () => { window.print(); });
-
-        updateLayout();
-    </script>
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
 </body>
 </html>
