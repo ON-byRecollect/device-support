@@ -125,12 +125,40 @@
 <body>
 <div id="root"></div>
 
+<script>
+/* 白画面を防ぐため、エラーを画面に出す */
+window.__showError = function(title, detail){
+  var el = document.getElementById('root');
+  if (!el) return;
+  el.innerHTML = '<div style="padding:26px 0;font-family:-apple-system,sans-serif">'
+    + '<p style="font-size:13px;color:#c7500f;font-weight:600;margin:0 0 8px">読み込みエラー</p>'
+    + '<h1 style="font-size:22px;margin:0 0 12px">' + title + '</h1>'
+    + '<pre style="white-space:pre-wrap;word-break:break-all;background:#f5f5f7;border-radius:12px;'
+    + 'padding:14px 16px;font-size:12.5px;color:#6e6e73;margin:0">' + detail + '</pre></div>';
+};
+window.addEventListener('error', function(e){
+  var src = e.target && e.target.src;
+  if (src) { window.__showError('ファイルを読み込めませんでした', src); return; }
+  window.__showError('スクリプトエラー', (e.message || '') + '\n' + (e.filename || '') + ' ' + (e.lineno || ''));
+}, true);
+</script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js" crossorigin></script>
 <script src="flow.js"></script>
+<script>
+/* 依存が揃っているかを先に確認する */
+(function(){
+  var miss = [];
+  if (typeof React === 'undefined')     miss.push('React（unpkg.com）');
+  if (typeof ReactDOM === 'undefined')  miss.push('ReactDOM（unpkg.com）');
+  if (typeof Babel === 'undefined')     miss.push('Babel（unpkg.com）');
+  if (typeof NODES === 'undefined')     miss.push('flow.js（同じ階層に置かれているか確認してください）');
+  if (miss.length) window.__showError('必要なファイルが読み込めていません', '・' + miss.join('\n・'));
+})();
+</script>
 
-<script type="text/babel">
+<script type="text/babel" data-presets="react">
 const { useState, useCallback, useMemo, useEffect } = React;
 
 
@@ -254,7 +282,7 @@ function Unresolved({ code, onBack, onRestart }){
     <div className="fade">
       <p className="eyebrow">お問い合わせ</p>
       <h1 className="q">担当者が状況を確認します</h1>
-      <p className="lead">下のコードを取引メッセージにそのまま貼り付けてお送りください。ここまでに選んだ内容を確認でき、やり取りが一度で済みます。</p>
+      <p className="lead">下のコードを取引メッセージにそのまま貼り付けてお送りください。ここまでに選んだ内容が担当者側で確認でき、やり取りが一度で済みます。</p>
 
       <div className="codecard">
         <p className="clabel">エラーコード</p>
@@ -279,7 +307,7 @@ function Unresolved({ code, onBack, onRestart }){
 function App(){
   const [route, setRoute] = useState(parseHash);
 
-  /* URLを唯一の状態とする。ブラウザの戻る/進むもそのまま機能する */
+  /* URL を唯一の状態とする。ブラウザの戻る/進むもそのまま機能する */
   useEffect(function(){
     const onChange = function(){ setRoute(parseHash()); window.scrollTo({top:0}); };
     window.addEventListener('hashchange', onChange);
