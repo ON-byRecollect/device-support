@@ -128,198 +128,11 @@
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js" crossorigin></script>
+<script src="flow.js"></script>
 
 <script type="text/babel">
-const { useState, useCallback, useMemo } = React;
+const { useState, useCallback, useMemo, useEffect } = React;
 
-/* ============================================================
-   診断フロー定義
-   type:'question' … 質問画面
-   type:'answer'   … 対処法画面（steps / variants / image / note）
-   type:'pending'  … 原稿準備中のプレースホルダ
-   画像は images/ に配置。未配置のあいだは自動で仮ボックスを表示。
-   ============================================================ */
-const NODES = {
-
-  /* ---------- 製品選択 ---------- */
-  start: {
-    type:'question',
-    title:'製品を選んでください',
-    hint:'お困りの製品はどちらですか。',
-    product:true,
-    options:[
-      { label:'AirPods', sub:'すべてのモデル', next:'ap.menu' },
-      { label:'Apple Watch', sub:'すべてのモデル', next:'aw.menu' },
-    ],
-  },
-
-  /* ================= AirPods ================= */
-  'ap.menu': {
-    type:'question',
-    title:'AirPods のどの症状ですか？',
-    hint:'当てはまるものを選んでください。手順だけを見たい場合は一番下から選べます。',
-    options:[
-      { label:'接続・ペアリングができない', sub:'端末に表示されない、繋がらない', next:'ap.pair' },
-      { label:'「探す」に表示されない', sub:'設定が完了していないと表示される', next:'a.setup' },
-      { label:'「AirPods の不一致」と表示される', sub:'一部のパーツが見つからない', next:'ap.mismatch' },
-      { label:'初期化の手順を見る', sub:'症状にかかわらず手順だけ確認する', next:'ap.resetway' },
-    ],
-  },
-
-  'ap.pair': {
-    type:'question',
-    title:'接続したときに警告メッセージは出ましたか？',
-    hint:'初回の接続時に画面へ表示されたものを選んでください。',
-    options:[
-      { label:'「ほかの人の Apple ID に関連付けられた持ち物に接続しています」', next:'a.owner' },
-      { label:'警告は出ないが、うまく接続できない', next:'a.setup' },
-      { label:'そもそも端末側に AirPods が表示されない', next:'ap.resetway' },
-    ],
-  },
-
-  'ap.mismatch': {
-    type:'question',
-    title:'初回の接続時に警告メッセージは表示されましたか？',
-    hint:'「AirPods の不一致」が出る原因は2通りあります。',
-    options:[
-      { label:'表示された', sub:'他の Apple Account と紐付いています', next:'a.owner' },
-      { label:'表示されていない', sub:'初回接続に失敗している可能性があります', next:'a.setup' },
-    ],
-  },
-
-  'ap.resetway': {
-    type:'question',
-    title:'AirPods は端末に接続できていますか？',
-    hint:'接続状態によって初期化の手順が変わります。',
-    options:[
-      { label:'接続できている', sub:'設定アプリに AirPods が表示される', next:'a.reset_settings' },
-      { label:'接続できていない', sub:'設定アプリに表示されない', next:'a.reset_findmy' },
-    ],
-  },
-
-  /* ================= Apple Watch ================= */
-  'aw.menu': {
-    type:'question',
-    title:'Apple Watch のどの症状ですか？',
-    hint:'当てはまるものを選んでください。',
-    options:[
-      { label:'バンドが取り付け・取り外しできない', next:'a.band' },
-      { label:'付属の充電器で充電できない', next:'a.aw_charge' },
-      { label:'初期化の手順を見る', next:'a.aw_reset' },
-    ],
-  },
-
-  /* ================= 対処法 ================= */
-
-  'a.reset_settings': {
-    type:'answer',
-    eyebrow:'初期化の手順',
-    title:'設定アプリからリセットする',
-    lead:'AirPods 本体を充電ケースへ収納し、蓋を開けた状態で以下の手順を実行してください。',
-    steps:[
-      { text:'設定アプリを開き、接続されている AirPods のアイコンをタップします。' },
-      { text:'AirPods の設定ページの最下部にある「このデバイスの登録を解除」をタップします。',
-        image:'images/reset-settings-1.png', caption:'設定 → AirPods → このデバイスの登録を解除' },
-      { text:'リセットが完了したら、Bluetooth の端末一覧からお使いの AirPods が削除されていることを確認し、充電ケースの蓋を閉じて30秒待機します。' },
-      { text:'再び充電ケースの蓋を開け、その状態で充電ケースのリセットボタンを操作します。',
-        image:'images/reset-settings-2.png', caption:'世代ごとの操作方法',
-        variants:[
-          { name:'AirPods Pro 第1世代 / 第2世代', text:'背面のボタンを15秒以上、押し続けてください。' },
-          { name:'AirPods Pro 第3世代', text:'正面の LED ランプ付近を、トリプルタップを3回以上繰り返してください。' },
-          { name:'AirPods 第4世代', text:'正面の LED ランプ付近を、トリプルタップを3回以上繰り返してください。' },
-        ],
-        after:'いずれの世代でも、リセットが完了すると正面の LED ランプがオレンジ色に点滅し、完了を知らせる通知音が鳴ります。' },
-      { text:'探すアプリを開き、お使いの端末が表示されなければ正常にリセットが完了しています。' },
-    ],
-    note:'<strong>探すアプリに端末が残っている場合：</strong>「探すアプリからリセットする」の手順を実行してください。',
-    nextLink:{ label:'探すアプリからリセットする', to:'a.reset_findmy' },
-  },
-
-  'a.reset_findmy': {
-    type:'answer',
-    eyebrow:'初期化の手順',
-    title:'探すアプリからリセットする',
-    lead:'AirPods 本体を両耳とも充電ケースへ収納し、蓋を開いた状態で以下の手順を実行してください。',
-    steps:[
-      { text:'探すアプリを開き、接続されている AirPods のアイコンをタップします。' },
-      { text:'AirPods の設定ページの最下部にある「解除」をタップします。',
-        image:'images/reset-findmy-1.png', caption:'探す → デバイスを探す → AirPods → 解除' },
-      { text:'リセットが完了したら、充電ケースの蓋を閉じて30秒以上待機します。完了には数分かかる場合があります。',
-        image:'images/reset-findmy-2.png' },
-      { text:'解除が完了しない場合は、充電残量が十分に残っていることを確認のうえ、「AirPods の設定が完了できない」の手順を実行してください。' },
-    ],
-    nextLink:{ label:'AirPods の設定が完了できない', to:'a.setup' },
-  },
-
-  'a.setup': {
-    type:'answer',
-    eyebrow:'対処法',
-    title:'AirPods の設定が完了できない',
-    lead:'探すアプリ上で「AirPods の設定が完了していません」と表示される場合は、設定が正しく完了していない可能性があります。',
-    steps:[
-      { text:'AirPods の接続完了には時間がかかることがあります。充電ケースを充電ケーブルに挿した状態で、接続中の端末を1m以内に置き、数分待ってください。' },
-      { text:'一部の AirPods の「探す」機能は、最新のソフトウェアバージョンでのみ動作します。最新バージョンの iOS または iPadOS がインストールされていることを確認してください。',
-        image:'images/setup-incomplete-1.png', caption:'設定 → 一般 → ソフトウェアアップデート' },
-      { text:'接続している端末の設定が、正しく完了しているかを確認してください。' },
-      { text:'Apple Account の2ファクタ認証を有効にしていない場合は、有効にします。' },
-      { text:'iCloud キーチェーンをまだ有効にしていない場合は、有効にします。',
-        image:'images/setup-incomplete-2.png', caption:'設定 → Apple Account → サインインとセキュリティ / iCloud' },
-      { text:'しばらく経っても改善されない場合は、「設定アプリからリセットする」を実行し、再度接続をし直してください。' },
-    ],
-    nextLink:{ label:'設定アプリからリセットする', to:'a.reset_settings' },
-  },
-
-  'a.owner': {
-    type:'answer',
-    eyebrow:'ご連絡が必要です',
-    title:'前の所有者の Apple Account に紐付いています',
-    lead:'他の Apple Account と紐付いている場合、初回接続時に警告メッセージが表示されます。',
-    callout:'この場合、遠隔でのリセットを依頼する必要があります。お手数ですが、ご購入いただいた取引メッセージよりご連絡ください。',
-    steps:[
-      { text:'表示された警告メッセージの内容をご確認ください。',
-        image:'images/mismatch.png', caption:'「ほかの人の Apple ID に関連付けられた持ち物に接続しています」' },
-      { text:'取引メッセージより、警告が表示された旨をお知らせください。こちらで遠隔リセットを実行します。' },
-      { text:'警告メッセージが表示されていないにもかかわらず「AirPods の不一致」と表示される場合は、OS の不具合などが理由で初回の接続に失敗している可能性があります。',
-        after:'その場合は「AirPods の設定が完了できない」の手順をお試しください。' },
-    ],
-    nextLink:{ label:'AirPods の設定が完了できない', to:'a.setup' },
-  },
-
-  'a.band': {
-    type:'answer',
-    eyebrow:'対処法',
-    title:'バンドを取り換える',
-    lead:'バンドの着脱は、力を加えずゆっくりとスライドさせるのがコツです。',
-    steps:[
-      { text:'取り付けるときは力を加えず、ゆっくりと矢印の方向にスライドしてください。',
-        after:'取り付けられないときは、もう一度正しい向きかを確認してください。' },
-      { text:'取り外すときは、リリースボタンを押し込みながら、力を加えずゆっくりと矢印の方向にスライドしてください。',
-        after:'取り外せないときは、ボタンが奥まで沈み込んでいるかを確認してください。',
-        image:'images/band-replace.png', caption:'バンドの着脱方向' },
-      { text:'イラストの向きで着脱ができない場合は、反対方向から同じ方法で再度お試しください。' },
-    ],
-  },
-
-  'a.aw_charge': { type:'pending', title:'付属の充電器で充電できない' },
-  'a.aw_reset':  { type:'pending', title:'Apple Watch を初期化する' },
-};
-
-const CONTACT = 'ご購入いただいた取引メッセージよりご連絡ください。';
-
-/* ---------- エラーコード（暫定仕様） ----------
-   選択した選択肢の番号を連結して36進数に変換し、末尾に検査文字を付与。
-   管理者サイト側で逆変換すると、通過した選択肢を復元できます。
-   ※ 分岐を変更すると過去のコードの意味が変わるため、
-      本番運用前に方式を確定させます。
------------------------------------------------- */
-function makeCode(path){
-  const digits = path.map(s => String(s.idx)).join('');
-  const n = parseInt('1' + digits, 10);
-  const body = n.toString(36).toUpperCase().padStart(4,'0');
-  const sum = [...body].reduce((a,c)=>a+c.charCodeAt(0),0) % 36;
-  const check = sum.toString(36).toUpperCase();
-  return 'TS-' + body + '-' + check;
-}
 
 /* ---------- 画像（未配置なら仮ボックス） ---------- */
 function Figure({ src, caption }){
@@ -464,33 +277,39 @@ function Unresolved({ code, onBack, onRestart }){
 }
 
 function App(){
-  const [path, setPath] = useState([]);      // [{label, id, idx}]
-  const [unresolved, setUnresolved] = useState(false);
+  const [route, setRoute] = useState(parseHash);
 
-  const currentId = path.length ? path[path.length-1].id : 'start';
+  /* URL を唯一の状態とする。ブラウザの戻る/進むもそのまま機能する */
+  useEffect(function(){
+    const onChange = function(){ setRoute(parseHash()); window.scrollTo({top:0}); };
+    window.addEventListener('hashchange', onChange);
+    return function(){ window.removeEventListener('hashchange', onChange); };
+  }, []);
+
+  const segs = route.segs, unresolved = route.unres;
+  const nav = useCallback(function(nextSegs, nextUnres){
+    const h = buildHash(nextSegs, nextUnres);
+    if (location.hash === h) { setRoute({ segs:nextSegs, unres:nextUnres }); window.scrollTo({top:0}); }
+    else { location.hash = h; }
+  }, []);
+
+  const path = useMemo(()=>deriveTrail(segs), [segs]);
+  const currentId = segs.length ? segs[segs.length-1] : 'start';
   const node = NODES[currentId] || NODES.start;
   const code = useMemo(()=>makeCode(path), [path]);
 
-  const go = (label, id, idx) => {
-    setUnresolved(false);
-    setPath(p => [...p, { label:label, id:id, idx:idx }]);
-    window.scrollTo({ top:0 });
-  };
-  const select = useCallback((o,i)=>go(o.label, o.next, i), []);
-  const goto = useCallback((id,label)=>go(label, id, 9), []);
-  const back = useCallback(()=>{
-    if (unresolved) { setUnresolved(false); return; }
-    setPath(p=>p.slice(0,-1)); window.scrollTo({top:0});
-  }, [unresolved]);
-  const jump = useCallback((i)=>{ setUnresolved(false); setPath(p=>p.slice(0,i)); window.scrollTo({top:0}); }, []);
-  const restart = useCallback(()=>{ setUnresolved(false); setPath([]); window.scrollTo({top:0}); }, []);
+  const select  = useCallback((o)=>nav(segs.concat([o.next]), false), [segs, nav]);
+  const goto    = useCallback((id)=>nav(segs.concat([id]), false), [segs, nav]);
+  const back    = useCallback(()=>{ unresolved ? nav(segs, false) : nav(segs.slice(0,-1), false); }, [segs, unresolved, nav]);
+  const jump    = useCallback((i)=>nav(segs.slice(0,i), false), [segs, nav]);
+  const restart = useCallback(()=>nav([], false), [nav]);
 
   let body;
   if (unresolved) {
     body = <Unresolved code={code} onBack={back} onRestart={restart} />;
   } else if (node.type === 'answer') {
     body = <Answer node={node} onBack={back} onRestart={restart} onGoto={goto}
-             onUnresolved={()=>{ setUnresolved(true); window.scrollTo({top:0}); }} />;
+             onUnresolved={()=>nav(segs, true)} />;
   } else if (node.type === 'pending') {
     body = <Pending node={node} onBack={back} />;
   } else {
