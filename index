@@ -279,7 +279,7 @@ function Unresolved({ code, onBack, onRestart }){
 function App(){
   const [route, setRoute] = useState(parseHash);
 
-  /* URL を唯一の状態とする。ブラウザの戻る/進むもそのまま機能する */
+  /* URLを唯一の状態とする。ブラウザの戻る/進むもそのまま機能する */
   useEffect(function(){
     const onChange = function(){ setRoute(parseHash()); window.scrollTo({top:0}); };
     window.addEventListener('hashchange', onChange);
