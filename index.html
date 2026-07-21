@@ -76,6 +76,18 @@
   ol.steps .quiet{color:var(--sub);font-size:14.5px;margin-top:10px;}
 
   .variants{display:flex;flex-direction:column;gap:8px;margin:14px 0 0;}
+  .navpath{
+    display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 0;
+    padding:8px 12px;background:#f0f4f9;border-radius:9px;font-size:13px;color:#3a3a3c;
+  }
+  .navpath .seg{white-space:nowrap;}
+  .navpath .arw{color:#a1a1a6;font-size:11px;}
+  .steplink{
+    display:inline-block;margin-top:10px;font-size:14px;color:var(--accent);
+    text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:7px 14px;
+  }
+  ol.steps .reset-hi > p:first-child{font-weight:600;}
+  li.reset::before{background:var(--accent) !important;}
   .variant{background:var(--fill);border-radius:12px;padding:14px 16px;}
   .variant .vname{font-size:15px;font-weight:600;margin:0 0 4px;}
   .variant .vtext{font-size:14px;color:var(--sub);margin:0;}
@@ -190,11 +202,43 @@ function Trail({ path, onJump }){
   );
 }
 
-function Question({ node, onSelect }){
+function StepList({ steps, onGoto }){
+  return (
+    <ol className="steps">
+      {steps.map((s,i)=>(
+        <li key={i} className={s.reset ? 'reset' : ''}>
+          <p>{s.text}</p>
+          {s.nav && (
+            <div className="navpath">
+              {s.nav.map((seg,j)=>(
+                <React.Fragment key={j}>
+                  {j>0 && <span className="arw" aria-hidden="true">›</span>}
+                  <span className="seg">{seg}</span>
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+          <Figure src={s.image} caption={s.caption} />
+          {s.after && <p className="quiet">{s.after}</p>}
+          {s.linkTo && (
+            <a className="steplink" href="#" onClick={(e)=>{e.preventDefault(); onGoto(s.linkTo);}}>
+              {s.linkLabel || '手順を見る'} →
+            </a>
+          )}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function Question({ node, onSelect, onGoto }){
   return (
     <div className="fade">
+      {node.eyebrow && <p className="eyebrow">{node.eyebrow}</p>}
       <h1 className="q">{node.title}</h1>
       {node.hint && <p className="hint">{node.hint}</p>}
+      {node.lead && <p className="lead">{node.lead}</p>}
+      {node.steps && <StepList steps={node.steps} onGoto={onGoto} />}
       <div className="options">
         {node.options.map((o,i)=>(
           <button key={i} className={'opt' + (node.product ? ' product' : '')} onClick={()=>onSelect(o,i)}>
@@ -215,25 +259,18 @@ function Answer({ node, onBack, onRestart, onUnresolved, onGoto }){
       {node.lead && <p className="lead">{node.lead}</p>}
       {node.callout && <div className="callout"><p>{node.callout}</p></div>}
 
-      <ol className="steps">
-        {node.steps.map((s,i)=>(
-          <li key={i}>
-            <p>{s.text}</p>
-            {s.variants && (
-              <div className="variants">
-                {s.variants.map((v,j)=>(
-                  <div className="variant" key={j}>
-                    <p className="vname">{v.name}</p>
-                    <p className="vtext">{v.text}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-            <Figure src={s.image} caption={s.caption} />
-            {s.after && <p className="quiet">{s.after}</p>}
-          </li>
-        ))}
-      </ol>
+      <StepList steps={node.steps} onGoto={onGoto} />
+
+      {node.variants && (
+        <div className="variants" style={{marginTop:'20px'}}>
+          {node.variants.map((v,j)=>(
+            <div className="variant" key={j}>
+              <p className="vname">{v.name}</p>
+              <p className="vtext">{v.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {node.note && <p className="note" dangerouslySetInnerHTML={{__html:node.note}} />}
 
@@ -341,7 +378,7 @@ function App(){
   } else if (node.type === 'pending') {
     body = <Pending node={node} onBack={back} />;
   } else {
-    body = <Question node={node} onSelect={select} />;
+    body = <Question node={node} onSelect={select} onGoto={goto} />;
   }
 
   return (
