@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>返品ページ作成（管理者用）</title>
+<style>
+  :root{--ink:#1d1d1f;--sub:#6e6e73;--line:#e5e5ea;--fill:#f5f5f7;--accent:#0071e3;--ok:#1f8b4c;--warn:#c7500f;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:#fff;color:var(--ink);line-height:1.6;
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:680px;margin:0 auto;padding:26px 20px 90px;}
+  h1{font-size:22px;font-weight:600;margin:0 0 4px;}
+  .sub{color:var(--sub);font-size:14px;margin:0 0 8px;}
+  .warn{background:#fdf6f1;border-left:3px solid var(--warn);border-radius:0 10px 10px 0;padding:12px 15px;font-size:13.5px;margin:0 0 26px;}
+  fieldset{border:1px solid var(--line);border-radius:14px;padding:18px;margin:0 0 18px;}
+  legend{font-size:13px;font-weight:600;color:var(--accent);padding:0 8px;}
+  label{display:block;font-size:13.5px;font-weight:600;margin:14px 0 6px;}
+  label:first-of-type{margin-top:4px;}
+  .hint{font-size:12.5px;color:var(--sub);font-weight:400;margin:0 0 6px;}
+  input[type=text],textarea{width:100%;font-family:inherit;font-size:15px;padding:11px 13px;border:1px solid var(--line);
+    border-radius:10px;background:#fff;color:var(--ink);}
+  input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  textarea{resize:vertical;min-height:80px;line-height:1.6;}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  button{font-family:inherit;font-size:15px;cursor:pointer;border:0;border-radius:10px;padding:12px 20px;}
+  .primary{background:var(--accent);color:#fff;}
+  .ghost{background:var(--fill);color:var(--ink);border:1px solid var(--line);}
+  .primary:disabled{opacity:.4;cursor:default;}
+  .preview{margin-top:8px;}
+  .preview img{max-width:180px;border:1px solid var(--line);border-radius:8px;display:block;}
+  .out{margin-top:22px;padding-top:22px;border-top:1px solid var(--line);display:none;}
+  .out.show{display:block;}
+  .out h2{font-size:15px;margin:0 0 14px;}
+  .kv{background:var(--fill);border-radius:10px;padding:12px 14px;margin:0 0 10px;font-size:13px;word-break:break-all;}
+  .kv .k{color:var(--sub);font-size:11.5px;display:block;margin-bottom:3px;}
+  .kv .v{font-family:ui-monospace,Menlo,monospace;}
+  .copybtn{margin-left:8px;font-size:12px;padding:5px 10px;border-radius:8px;background:#fff;border:1px solid var(--line);cursor:pointer;}
+  .step{font-size:13.5px;color:var(--sub);margin:2px 0;}
+  .ok{color:var(--ok);font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>返品ページ作成</h1>
+  <p class="sub">管理者用。入力内容をパスコードで暗号化し、購入者に渡すファイルとリンクを作成します。</p>
+  <div class="warn">このページはブラウザ内だけで処理し、入力内容やパスコードはどこにも送信されません。作成後、出力ファイルを <span class="mono">return/</span> に置いてください。</div>
+
+  <fieldset>
+    <legend>案内の内容</legend>
+
+    <label>ページ見出し</label>
+    <input type="text" id="title" value="返品のご案内">
+
+    <label>冒頭のあいさつ<span class="hint">（任意）</span></label>
+    <textarea id="intro" placeholder="この度はご不便をおかけしました。返送の手順をご案内します。"></textarea>
+
+    <label>共通メッセージ<span class="hint">（全員に同じ固定文面。注意事項など）</span></label>
+    <textarea id="common" placeholder="・返送は商品到着後7日以内にお願いします。&#10;・付属品を含めてご返送ください。"></textarea>
+
+    <label>返送の手順<span class="hint">（1行に1ステップ。空行は無視されます）</span></label>
+    <textarea id="steps" placeholder="下記のバーコードを印刷、またはスマホに表示してください。&#10;コンビニのレジで発送手続きをしてください。&#10;控えを受け取り、追跡番号を取引メッセージでお知らせください。"></textarea>
+
+    <label>強調したい注意事項<span class="hint">（任意。オレンジの枠で目立たせます）</span></label>
+    <textarea id="caution" placeholder="バーコードの有効期限は発行から14日間です。"></textarea>
+  </fieldset>
+
+  <fieldset>
+    <legend>個別のバーコード画像</legend>
+    <label>画像を選択<span class="hint">（この購入者専用の配送バーコード。画像は暗号化され、単体で置かれることはありません）</span></label>
+    <input type="file" id="barcode" accept="image/*">
+    <div class="preview" id="preview"></div>
+    <label>バーコードの説明<span class="hint">（任意）</span></label>
+    <input type="text" id="barcodeCaption" placeholder="ヤマト運輸 / 着払い伝票">
+  </fieldset>
+
+  <fieldset>
+    <legend>パスコード</legend>
+    <label>購入者に伝えるパスコード<span class="hint">（このパスコードがないと内容は読めません。取引メッセージで本人にだけ伝えてください）</span></label>
+    <div class="row">
+      <input type="text" id="pass" class="mono" placeholder="XXXX-XXXX">
+      <button type="button" class="ghost" id="genPass">自動生成</button>
+    </div>
+  </fieldset>
+
+  <div class="row">
+    <button type="button" class="primary" id="make">暗号化してファイルを作成</button>
+  </div>
+
+  <div class="out" id="out">
+    <h2 class="ok">作成しました</h2>
+    <div class="step">下の手順で仕上げてください。</div>
+    <ol style="padding-left:18px;font-size:13.5px;color:var(--sub)">
+      <li>「ファイルを保存」で <span class="mono">.json</span> をダウンロード</li>
+      <li>そのファイルを、リポジトリの <span class="mono">return/</span> フォルダに置く</li>
+      <li>下の「購入者に送るリンク」と「パスコード」を、取引メッセージで本人に伝える</li>
+    </ol>
+
+    <div class="kv"><span class="k">保存するファイル名</span><span class="v" id="outFname"></span></div>
+    <div class="kv"><span class="k">購入者に送るリンク</span><span class="v" id="outUrl"></span>
+      <button type="button" class="copybtn" data-copy="outUrl">コピー</button></div>
+    <div class="kv"><span class="k">パスコード（本人にだけ）</span><span class="v" id="outPass"></span>
+      <button type="button" class="copybtn" data-copy="outPass">コピー</button></div>
+
+    <div class="row" style="margin-top:14px">
+      <button type="button" class="primary" id="download">ファイルを保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var barcodeDataUrl = '';
+
+  // 画像プレビュー＆data URL化
+  $('barcode').addEventListener('change', function(e){
+    var file = e.target.files[0]; if (!file) { barcodeDataUrl=''; $('preview').innerHTML=''; return; }
+    var r = new FileReader();
+    r.onload = function(){ barcodeDataUrl = r.result; $('preview').innerHTML = '<img src="'+barcodeDataUrl+'">'; };
+    r.readAsDataURL(file);
+  });
+
+  // パスコード自動生成（紛らわしい文字を除外、XXXX-XXXX 形式）
+  $('genPass').addEventListener('click', function(){
+    var A='ABCDEFGHJKMNPQRSTUVWXYZ23456789', s='';
+    var buf=new Uint8Array(8); crypto.getRandomValues(buf);
+    for (var i=0;i<8;i++){ s+=A[buf[i]%A.length]; if(i===3) s+='-'; }
+    $('pass').value = s;
+  });
+
+  // 鍵名（URLに載る推測不可能なランダム名）
+  function randKey(){
+    var buf=new Uint8Array(10); crypto.getRandomValues(buf);
+    return Array.from(buf).map(function(b){return ('0'+b.toString(16)).slice(-2);}).join('');
+  }
+
+  function bytesToB64(bytes){ var bin=''; bytes.forEach(function(b){bin+=String.fromCharCode(b);}); return btoa(bin); }
+
+  async function encrypt(plain, pass){
+    var enc=new TextEncoder();
+    var salt=crypto.getRandomValues(new Uint8Array(16));
+    var iv=crypto.getRandomValues(new Uint8Array(12));
+    var iter=250000;
+    var km=await crypto.subtle.importKey('raw',enc.encode(pass),'PBKDF2',false,['deriveKey']);
+    var key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:iter,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt']);
+    var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,enc.encode(plain));
+    return { v:1, iter:iter, salt:bytesToB64(salt), iv:bytesToB64(iv), ct:bytesToB64(new Uint8Array(ct)) };
+  }
+
+  var lastBox=null, lastKey='', lastFname='';
+
+  $('make').addEventListener('click', async function(){
+    var pass=$('pass').value.trim();
+    if (!pass){ alert('パスコードを入力するか、自動生成してください。'); return; }
+
+    var stepsArr = $('steps').value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
+    var data = {
+      title: $('title').value.trim() || '返品のご案内',
+      intro: $('intro').value.trim(),
+      common: $('common').value.trim(),
+      steps: stepsArr,
+      caution: $('caution').value.trim(),
+      barcode: barcodeDataUrl,
+      barcodeCaption: $('barcodeCaption').value.trim()
+    };
+
+    $('make').disabled = true; $('make').textContent = '暗号化中…';
+    try {
+      var box = await encrypt(JSON.stringify(data), pass);
+      var key = randKey();
+      lastBox = box; lastKey = key; lastFname = key + '.json';
+
+      var base = location.href.replace(/return-admin\.html.*$/, '').replace(/[?#].*$/,'');
+      var url = base + 'return.html#' + key;
+
+      $('outFname').textContent = 'return/' + lastFname;
+      $('outUrl').textContent = url;
+      $('outPass').textContent = pass;
+      $('out').classList.add('show');
+      $('out').scrollIntoView({ behavior:'smooth' });
+    } catch(e) {
+      alert('暗号化に失敗しました：' + e.message);
+    } finally {
+      $('make').disabled = false; $('make').textContent = '暗号化してファイルを作成';
+    }
+  });
+
+  $('download').addEventListener('click', function(){
+    if (!lastBox) return;
+    var blob = new Blob([JSON.stringify(lastBox)], { type:'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = lastFname; a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  document.querySelectorAll('.copybtn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var text = $(btn.dataset.copy).textContent;
+      navigator.clipboard && navigator.clipboard.writeText(text).then(function(){
+        var o=btn.textContent; btn.textContent='コピーしました'; setTimeout(function(){btn.textContent=o;},1500);
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
