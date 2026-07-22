@@ -74,7 +74,7 @@ const NODES = {
     title:'ほかの人の Apple ID に関連付けられています',
     lead:'ほかの人の Apple Account と紐付いている場合、初回接続時に警告メッセージが表示されます。',
     steps:[
-      { text:'表示された警告メッセージの内容をご確認ください。', image:'images/error-cards.png', caption:'「探す」アプリに表示される警告' },
+      { text:'表示された警告メッセージの内容をご確認ください。', image:'images/owner-warning.png', caption:'初回接続時に表示される警告メッセージ' },
       { text:'この場合、表示されているアカウントの持ち主に、遠隔での Apple ID の関連付け解除を依頼する必要があります。', image:'images/airpods-remove-account.png', caption:'前の所有者側での解除画面' },
     ],
     callout:'お手元での解除はできません。ご購入いただいた取引メッセージより、警告が表示された旨をご連絡ください。こちらで対応いたします。',
@@ -280,7 +280,12 @@ function RESET(kind){
         nav:['設定','Bluetooth'] },
       { text:'自分のデバイス一覧から AirPods の「i マーク」をタップし、「このデバイスの登録を解除」をタップしてください。' },
       { text:'自分のデバイス一覧から AirPods が削除されたことを確認したら、充電ケースの蓋を開けてください。' },
-      { text:op, image:(kind==='button'?'images/reset-button.png':'images/reset-tap.png'), reset:true },
+      (kind === 'button')
+        ? { text:op, image:'images/reset-button.png', reset:true }
+        : { text:op, reset:true, images:[
+            { src:'images/reset-tap.png',   caption:'縦長タイプ' },
+            { src:'images/reset-tap-2.png', caption:'横長タイプ' },
+          ] },
       { text:'30秒ほど待機して再び蓋を開けると、LED ランプが白く点滅し、接続できる状態になります。' },
       { text:'接続していた iPhone で「探す」アプリを開いてください。',
         nav:['探す','デバイスを探す'] },
