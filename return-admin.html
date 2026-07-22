@@ -123,7 +123,7 @@
     r.readAsDataURL(file);
   });
 
-  // パスコード自動生成（紛らわしい文字を除外、XXXX-XXXX 形式）
+  // パスコードの自動生成（紛らわしい文字を除外、XXXX-XXXX 形式）
   $('genPass').addEventListener('click', function(){
     var A='ABCDEFGHJKMNPQRSTUVWXYZ23456789', s='';
     var buf=new Uint8Array(8); crypto.getRandomValues(buf);
