@@ -11,7 +11,7 @@
    type:'question' … 質問画面
    type:'answer'   … 対処法画面（steps / variants / image / note）
    type:'pending'  … 原稿準備中のプレースホルダ
-   画像は images/ に配置。未配置のあいだは自動で仮ボックスを表示。
+   画像は images/ に配置。未配置のあいだ自動で仮ボックスを表示。
    ============================================================ */
 const NODES = {
 
