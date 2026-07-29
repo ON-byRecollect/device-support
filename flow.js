@@ -74,7 +74,6 @@ const NODES = {
 
   'a.owner': {
     type:'answer',
-    eyebrow:'出品者による遠隔操作が必要です',
     title:'Apple ID が正常に解除できていない可能性があります',
     lead:'ほかの人の Apple Account と紐付いている場合、初回接続時に警告メッセージが表示されます。',
     steps:[
@@ -84,7 +83,7 @@ const NODES = {
 
   'a.mismatch2': {
     type:'answer',
-    eyebrow:'対処法',
+    eyebrow:'所要時間 約3分',
     title:'警告メッセージが表示されない場合',
     lead:'AirPods を iPhone にペアリングした初回接続時に警告メッセージが表示されない場合は、OS の不具合や iPhone 側の設定によって、初回の接続に失敗している可能性があります。',
     steps:[
@@ -96,7 +95,7 @@ const NODES = {
   /* ---------- 設定が完了していません ---------- */
   'a.setup': {
     type:'answer',
-    eyebrow:'対処法',
+    eyebrow:'所要時間 約3分',
     title:'AirPods の設定が完了していません',
     lead:'この警告が表示されている場合は、設定が正しく完了できていない可能性があります。',
     steps:[
@@ -117,7 +116,6 @@ const NODES = {
   /* ---------- エラーは表示されない ---------- */
   'a.noerror': {
     type:'answer',
-    eyebrow:'ご連絡が必要です',
     title:'エラーが表示されない場合',
     lead:'「デバイスを探す」でいずれのエラーも表示されない場合について、ご案内します。',
     steps:[
@@ -129,7 +127,7 @@ const NODES = {
   /* ---------- 高度なトラブルシューティング ---------- */
   'a.advanced': {
     type:'answer',
-    eyebrow:'対処法',
+    eyebrow:'所要時間 約10分',
     title:'AirPods の高度なトラブルシューティング',
     lead:'AirPods の設定が完了できない原因として、Apple Account や「探す」ネットワーク、iPhone 側の接続エラーが考えられます。以下の手順に従って実行してください。',
     steps:[
@@ -184,7 +182,7 @@ const NODES = {
   /* ---------- ファームウェアをアップデートする ---------- */
   'a.firmware': {
     type:'answer',
-    eyebrow:'手順',
+    eyebrow:'所要時間 約10分',
     title:'AirPods のファームウェアをアップデートする',
     lead:'ファームウェアは、AirPods を iPhone に接続した状態で自動的に更新されます。',
     steps:[
@@ -224,7 +222,7 @@ const NODES = {
   /* ---------- 探すアプリからリセットする（共通・末端の受け皿） ---------- */
   'a.findmy_reset': {
     type:'answer',
-    eyebrow:'手順',
+    eyebrow:'所要時間 約3分',
     title:'探すアプリからリセットする',
     lead:'本体リセットだけでは「デバイスを探す」から削除されない場合に、この手順で解除します。',
     steps:[
@@ -249,9 +247,9 @@ const NODES = {
       { label:'バンドの着脱が行えない', next:'a.aw.band' },
     ],
   },
-  'a.aw.charge': { type:'answer', draft:true, eyebrow:'対処法', title:'Apple Watch の充電ができない',
+  'a.aw.charge': { type:'answer', draft:true, eyebrow:'所要時間 約3分', title:'Apple Watch の充電ができない',
     lead:'（本文作成中）', steps:[{ text:'【本文作成中】' }] },
-  'a.aw.band': { type:'answer', draft:true, eyebrow:'対処法', title:'バンドの着脱が行えない',
+  'a.aw.band': { type:'answer', draft:true, eyebrow:'所要時間 約3分', title:'バンドの着脱が行えない',
     lead:'（本文作成中）', steps:[{ text:'【本文作成中】' }] },
 };
 
@@ -273,7 +271,7 @@ function RESET(kind){
 
   return {
     type:'answer',
-    eyebrow:'リセットの手順',
+    eyebrow:'所要時間 約5分',
     title:title,
     lead:'AirPods 本体をリセットします。手順1〜4で登録を解除し、手順5から本体をリセットします。',
     steps:[
@@ -445,6 +443,53 @@ function decodeJourneyCode(input){
   return { ok:true, version:version, steps:steps, ids:steps.map(function(s){ return s.id; }) };
 }
 
+/* ---------- 購入者向け結合コード（エラーコード＋訪問履歴を1つに） ----------
+   購入者には1つの不透明なコードに見え、エラーコードと訪問履歴の区別がつかない。
+   内部は 'L'（CS_ALPHA に無くコード中に出ない文字）で経路部と履歴部を区切る。
+   管理者側は decodeFullCode で経路と全行程に分解できる。 */
+function makeFullCode(pathIds, journeyIds){
+  const pathBody = (pathIds || []).map(function(id){ return KEYS[id] || 'X'; }).join('');
+  const jBody = (journeyIds || []).map(journeyKey).join('');
+  const core = FLOW_VERSION + pathBody + 'L' + jBody;
+  return 'TS-' + core + '-' + checksum(core);
+}
+function decodeFullCode(input){
+  const raw = String(input || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+  const m = raw.match(/^TS(.+)$/);
+  if (!m) return { ok:false, reason:'形式が違います' };
+  const rest = m[1];
+  if (rest.length < 2) return { ok:false, reason:'コードが短すぎます' };
+  const core  = rest.slice(0, -1);
+  const check = rest.slice(-1);
+  if (checksum(core) !== check) return { ok:false, reason:'コードが正しくありません（入力ミスの可能性があります）' };
+  if (core.indexOf('L') < 0) return { ok:false, reason:'結合コードではありません' };
+  const version  = core[0];
+  const afterVer = core.slice(1);
+  const li       = afterVer.indexOf('L');
+  const pathBody = afterVer.slice(0, li);
+  const jBody    = afterVer.slice(li + 1);
+  // 経路部
+  const segs = [];
+  for (const ch of pathBody) {
+    const id = KEY_TO_ID[ch];
+    if (!id) return { ok:false, reason:'未知の経路キー: ' + ch };
+    segs.push(id);
+  }
+  // 履歴部
+  const steps = [], seen = [];
+  for (const ch of jBody) {
+    if (ch === '0') { steps.push({ id:'start', title:'（最初の画面）', back:false }); seen.push('start'); continue; }
+    const id = KEY_TO_ID[ch];
+    if (!id) return { ok:false, reason:'未知の履歴キー: ' + ch };
+    const back = seen.indexOf(id) >= 0;
+    steps.push({ id:id, title:(NODES[id] ? NODES[id].title : id), back:back });
+    seen.push(id);
+  }
+  return { ok:true, version:version,
+    path:{ segs:segs, trail:deriveTrail(segs) },
+    journey:{ steps:steps } };
+}
+
 
   global.NODES       = NODES;
   global.CONTACT     = CONTACT;
@@ -457,4 +502,6 @@ function decodeJourneyCode(input){
   global.decodeCode  = decodeCode;
   global.makeJourneyCode   = makeJourneyCode;
   global.decodeJourneyCode = decodeJourneyCode;
+  global.makeFullCode      = makeFullCode;
+  global.decodeFullCode    = decodeFullCode;
 })(window);
