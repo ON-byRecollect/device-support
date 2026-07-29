@@ -131,6 +131,34 @@
     border:1px solid var(--line);background:#fff;color:var(--ink);
   }
   .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .form{margin:6px 0 0;}
+  .fld{margin:0 0 22px;}
+  .flabel{display:block;font-size:14.5px;font-weight:600;color:var(--ink);margin:0 0 8px;}
+  .flabel .req{font-size:10.5px;font-weight:600;color:var(--warn);margin-left:8px;
+    border:1px solid var(--warn);border-radius:5px;padding:1px 6px;vertical-align:2px;}
+  .fselect,.ftext{width:100%;font-family:inherit;font-size:15px;color:var(--ink);
+    border:1px solid var(--line);border-radius:12px;background:var(--fill);padding:12px 14px;}
+  .fselect:focus,.ftext:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff;}
+  .ftext{resize:vertical;line-height:1.6;}
+  .ftext::placeholder{color:#b0b0b8;}
+  .checks{display:flex;flex-direction:column;gap:8px;}
+  .chk{display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:14.5px;line-height:1.5;
+    border:1px solid var(--line);border-radius:12px;background:var(--fill);padding:12px 14px;}
+  .chk.on{border-color:var(--accent);background:#eef5ff;}
+  .chk input{margin:2px 0 0;width:18px;height:18px;flex-shrink:0;accent-color:var(--accent);}
+  .linkbtn{margin-top:12px;font-family:inherit;font-size:14px;cursor:pointer;
+    background:#fff;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:11px 18px;}
+  .submit{width:100%;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;
+    background:var(--accent);color:#fff;border:0;border-radius:12px;padding:15px;margin-top:6px;}
+  .submit:disabled{background:#c7c7cc;cursor:not-allowed;}
+  .review{background:var(--fill);border-radius:14px;padding:2px 18px;margin:0;}
+  .rrow{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);}
+  .rrow:last-child{border-bottom:0;}
+  .rk{flex:0 0 84px;font-size:13px;color:var(--sub);font-weight:600;padding-top:1px;}
+  .rv{flex:1;font-size:15px;white-space:pre-wrap;word-break:break-word;}
+  .summary{background:var(--fill);border-radius:14px;padding:14px 18px;margin:0 0 4px;}
+  .summary .shead{font-size:12.5px;color:var(--sub);font-weight:600;margin:0 0 8px;letter-spacing:.04em;}
+  .summary .sline{font-size:14.5px;margin:0 0 6px;white-space:pre-wrap;word-break:break-word;}
   .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
 
   .codecard{
@@ -391,6 +419,173 @@ function Unresolved({ code, journey, onBack, onRestart }){
   );
 }
 
+function Form({ node, code, journey, onBack, onRestart, onGoto }){
+  const [phase, setPhase] = useState('input');
+  const [timing, setTiming] = useState('');
+  const [symptom, setSymptom] = useState('');
+  const [condition, setCondition] = useState('');
+  const [tried, setTried] = useState([]);
+  const [triedOther, setTriedOther] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const OTHER = 'その他';
+  const NOTYET = 'まだ試していない';
+  const TRIED_OPTIONS = [
+    'AirPods の OS バージョンアップデート',
+    'AirPods の接続解除／再接続',
+    'AirPods のリセット（初期化を伴う再ペアリング）',
+    'iPhone（ペアリング端末）の OS バージョンアップデート',
+    'iPhone（ペアリング端末）の再起動',
+    OTHER,
+    NOTYET,
+  ];
+  const toggleTried = (label) => {
+    setTried(prev => prev.includes(label) ? prev.filter(x=>x!==label) : prev.concat([label]));
+  };
+  const hasOther = tried.indexOf(OTHER) >= 0;
+  const hasNotYet = tried.indexOf(NOTYET) >= 0;
+
+  const valid =
+    timing !== '' &&
+    symptom.trim() !== '' &&
+    condition.trim() !== '' &&
+    tried.length > 0 &&
+    (!hasOther || triedOther.trim() !== '');
+
+  const triedText = tried.map(t => t === OTHER ? ('その他（' + triedOther.trim() + '）') : t).join(' / ');
+  const summaryLines = [
+    '─ 申告内容 ─',
+    '■ タイミング: ' + timing,
+    '■ 症状: ' + symptom.trim(),
+    '■ 発生条件: ' + condition.trim(),
+    '■ 試したこと: ' + triedText,
+  ];
+  const copyText = [code, (journey ? '訪問履歴: ' + journey : null), ''].concat(summaryLines)
+    .filter(x => x !== null).join('\n');
+  const copy = () => {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(copyText).then(()=>{
+      setCopied(true); setTimeout(()=>setCopied(false), 2000);
+    }).catch(()=>{});
+  };
+
+  if (phase === 'input') {
+    return (
+      <div className="fade">
+        {node.eyebrow && <p className="eyebrow">{node.eyebrow}</p>}
+        <h1 className="q">{node.title}</h1>
+        {node.lead && <p className="lead">{node.lead}</p>}
+
+        <div className="form">
+          <div className="fld">
+            <label className="flabel">不具合を確認したタイミング<span className="req">必須</span></label>
+            <select className="fselect" value={timing} onChange={e=>setTiming(e.target.value)}>
+              <option value="">選択してください</option>
+              <option value="受取り評価前の動作確認中">受取り評価前の動作確認中</option>
+              <option value="受取り評価後の使用中">受取り評価後の使用中</option>
+            </select>
+          </div>
+
+          <div className="fld">
+            <label className="flabel">不具合の具体的な症状<span className="req">必須</span></label>
+            <textarea className="ftext" rows="3" value={symptom} onChange={e=>setSymptom(e.target.value)}
+              placeholder="例：装着時にノイズが聴こえる。通話で使用した際、相手に声が届いていない。など" />
+          </div>
+
+          <div className="fld">
+            <label className="flabel">不具合の発生する条件<span className="req">必須</span></label>
+            <textarea className="ftext" rows="3" value={condition} onChange={e=>setCondition(e.target.value)}
+              placeholder="例：外部音取込み機能をONにした時。室内では問題ないが、屋外で通話をした時だけ声を拾わない。など" />
+          </div>
+
+          <div className="fld">
+            <label className="flabel">不具合を解決するために試されたこと<span className="req">必須・複数可</span></label>
+            <div className="checks">
+              {TRIED_OPTIONS.map((opt,i)=>(
+                <label key={i} className={'chk' + (tried.indexOf(opt)>=0 ? ' on' : '')}>
+                  <input type="checkbox" checked={tried.indexOf(opt)>=0} onChange={()=>toggleTried(opt)} />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+            {hasOther &&
+              <textarea className="ftext" rows="2" value={triedOther} onChange={e=>setTriedOther(e.target.value)}
+                placeholder="試された内容をご入力ください（必須）" style={{marginTop:'10px'}} />}
+            {hasNotYet &&
+              <button className="linkbtn" onClick={()=>onGoto(node.resetLink)}>
+                リセット・OS アップデートの手順を見る →
+              </button>}
+          </div>
+
+          <button className="submit" disabled={!valid} onClick={()=>{ if(valid) setPhase('confirm'); }}>
+            入力内容を確認する
+          </button>
+        </div>
+
+        <div className="resolve">
+          <div className="row"><button className="btn" onClick={onBack}>ひとつ前に戻る</button></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === 'confirm') {
+    return (
+      <div className="fade">
+        <p className="eyebrow">入力内容の確認</p>
+        <h1 className="q">この内容でよろしいですか？</h1>
+        <p className="lead">内容をご確認ください。修正する場合は「内容を修正する」を選んでください。</p>
+
+        <div className="review">
+          <div className="rrow"><span className="rk">タイミング</span><span className="rv">{timing}</span></div>
+          <div className="rrow"><span className="rk">症状</span><span className="rv">{symptom.trim()}</span></div>
+          <div className="rrow"><span className="rk">発生条件</span><span className="rv">{condition.trim()}</span></div>
+          <div className="rrow"><span className="rk">試したこと</span><span className="rv">{triedText}</span></div>
+        </div>
+
+        <div className="resolve">
+          <div className="row">
+            <button className="btn" onClick={()=>setPhase('input')}>内容を修正する</button>
+            <button className="btn primary" onClick={()=>setPhase('done')}>この内容で確定する</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade">
+      <p className="eyebrow">お問い合わせ</p>
+      <h1 className="q">ご協力ありがとうございます</h1>
+      <p className="lead">下のコードと申告内容を取引メッセージにそのまま貼り付けてお送りください。出品者側で確認でき、やり取りが一度で済みます。</p>
+
+      <div className="codecard">
+        <p className="clabel">エラーコード</p>
+        <p className="code">{code}</p>
+        {journey && <p className="jcode">訪問履歴: {journey}</p>}
+        <button className="copy" onClick={copy}>{copied ? 'コピーしました' : 'コードと申告内容をコピー'}</button>
+      </div>
+
+      <div className="summary">
+        {summaryLines.map((l,i)=><p key={i} className={i===0 ? 'shead' : 'sline'}>{l}</p>)}
+      </div>
+
+      <p className="note">
+        ご入力頂いた情報を元に、問題を解決するための適切な対応と最適な方法をご提案させて頂きます。<br/>
+        原則、24時間以内にメッセージへ返信をさせて頂きます。<br/>
+        ご不便をおかけしてしまい大変恐縮ではございますが、しばらくお待ちください。
+      </p>
+
+      <div className="resolve">
+        <div className="row">
+          <button className="btn" onClick={()=>setPhase('confirm')}>入力内容に戻る</button>
+          <button className="btn" onClick={onRestart}>最初から調べ直す</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App(){
   const [route, setRoute] = useState(parseHash);
   const journeyRef = useRef([]);   // セッション中に訪れた画面の記録（戻り・寄り道も全部）
@@ -435,6 +630,9 @@ function App(){
              onUnresolved={()=>nav(segs, true)} />;
   } else if (node.type === 'pending') {
     body = <Pending node={node} onBack={back} />;
+  } else if (node.type === 'form') {
+    body = <Form node={node} code={code} journey={makeJourneyCode(journeyRef.current)}
+             onBack={back} onRestart={restart} onGoto={goto} />;
   } else {
     body = <Question node={node} onSelect={select} onGoto={goto} />;
   }
