@@ -119,6 +119,8 @@
   .ph .phname{display:block;font-size:13px;color:var(--sub);margin-top:6px;font-weight:500;}
 
   .note{background:var(--fill);border-radius:var(--radius);padding:16px 18px;font-size:14.5px;color:var(--sub);margin:6px 0 0;}
+  .optcode{margin-top:30px;padding-top:24px;border-top:1px solid var(--line);}
+  .optlead{font-size:13px;color:var(--sub);line-height:1.75;margin:0 0 16px;}
   .note strong{color:var(--ink);font-weight:600;}
 
   .pending{border:1px dashed var(--line);border-radius:var(--radius);padding:24px 20px;color:var(--sub);font-size:15px;}
@@ -330,7 +332,7 @@ function Question({ node, onSelect, onGoto, onBack, canBack }){
   );
 }
 
-function Answer({ node, onBack, onRestart, onUnresolved, onGoto }){
+function Answer({ node, onBack, onRestart, onUnresolved, onResolved, onGoto }){
   return (
     <div className="fade">
       {node.eyebrow && <p className="eyebrow">{node.eyebrow}</p>}
@@ -367,7 +369,7 @@ function Answer({ node, onBack, onRestart, onUnresolved, onGoto }){
       <div className="resolve ask">
         <h2>解決しましたか？</h2>
         <div className="row">
-          <button className="btn primary" onClick={onRestart}>解決した</button>
+          <button className="btn primary" onClick={onResolved}>解決した</button>
           <button className="btn" onClick={onUnresolved}>解決しない</button>
         </div>
       </div>
@@ -413,6 +415,46 @@ function Unresolved({ code, onBack, onRestart }){
         取引メッセージを通じて、24時間以内に返信をさせて頂きます。<br/>
         ご不便をおかけして申し訳ございませんが、しばらくお待ちください。
       </p>
+
+      <div className="resolve">
+        <div className="row">
+          <button className="btn" onClick={onBack}>ひとつ前に戻る</button>
+          <button className="btn" onClick={onRestart}>最初から調べ直す</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Resolved({ code, onBack, onRestart }){
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(code).then(()=>{
+      setCopied(true); setTimeout(()=>setCopied(false), 2000);
+    }).catch(()=>{});
+  };
+  return (
+    <div className="fade">
+      <h1 className="q">解決できて何よりです</h1>
+      <p className="lead">お手元で問題が解決したとのこと、私どもも大変嬉しく思います。</p>
+
+      <p className="note">
+        今回の件は、取引メッセージでのご報告は不要です。このまま対応完了とさせていただきます。<br/><br/>
+        最後までご対応いただき、誠にありがとうございました。今後も安心してお使いいただけましたら幸いです。
+      </p>
+
+      <div className="optcode">
+        <p className="optlead">
+          今後の応対品質向上を目的として、差し支えなければご協力ください（任意）。<br/>
+          発生したトラブルの内容と、解決までに行っていただいた操作を確認するため、下のコードをコピーして取引メッセージに貼り付けていただけますと幸いです。
+        </p>
+        <div className="codecard">
+          <p className="clabel">情報コード（任意）</p>
+          <p className="code">{code}</p>
+          <button className="copy" onClick={copy}>{copied ? 'コピーしました' : 'コードをコピー'}</button>
+        </div>
+      </div>
 
       <div className="resolve">
         <div className="row">
@@ -603,10 +645,10 @@ function App(){
     return function(){ window.removeEventListener('hashchange', onChange); };
   }, []);
 
-  const segs = route.segs, unresolved = route.unres;
-  const nav = useCallback(function(nextSegs, nextUnres){
-    const h = buildHash(nextSegs, nextUnres);
-    if (location.hash === h) { setRoute({ segs:nextSegs, unres:nextUnres }); window.scrollTo({top:0}); }
+  const segs = route.segs, unresolved = route.unres, resolved = route.res;
+  const nav = useCallback(function(nextSegs, nextUnres, nextRes){
+    const h = buildHash(nextSegs, nextUnres, nextRes);
+    if (location.hash === h) { setRoute({ segs:nextSegs, unres:nextUnres, res:nextRes }); window.scrollTo({top:0}); }
     else { location.hash = h; }
   }, []);
 
@@ -625,16 +667,18 @@ function App(){
 
   const select  = useCallback((o)=>nav(segs.concat([o.next]), false), [segs, nav]);
   const goto    = useCallback((id)=>nav(segs.concat([id]), false), [segs, nav]);
-  const back    = useCallback(()=>{ unresolved ? nav(segs, false) : nav(segs.slice(0,-1), false); }, [segs, unresolved, nav]);
+  const back    = useCallback(()=>{ (unresolved || resolved) ? nav(segs, false, false) : nav(segs.slice(0,-1), false); }, [segs, unresolved, resolved, nav]);
   const jump    = useCallback((i)=>nav(segs.slice(0,i+1), false), [segs, nav]);
   const restart = useCallback(()=>nav([], false), [nav]);
 
   let body;
   if (unresolved) {
     body = <Unresolved code={makeFullCode(segs, journeyRef.current)} onBack={back} onRestart={restart} />;
+  } else if (resolved) {
+    body = <Resolved code={makeFullCode(segs, journeyRef.current)} onBack={back} onRestart={restart} />;
   } else if (node.type === 'answer') {
     body = <Answer node={node} onBack={back} onRestart={restart} onGoto={goto}
-             onUnresolved={()=>nav(segs, true)} />;
+             onUnresolved={()=>nav(segs, true)} onResolved={()=>nav(segs, false, true)} />;
   } else if (node.type === 'pending') {
     body = <Pending node={node} onBack={back} />;
   } else if (node.type === 'form') {
@@ -648,7 +692,7 @@ function App(){
     <React.Fragment>
       <header className="site">
         <p className="brand">Apple製品 <span>トラブルシューティング</span></p>
-        {!(unresolved || formFinal) &&
+        {!(unresolved || resolved || formFinal) &&
           <button className="restart" onClick={restart} disabled={!path.length}>最初から</button>}
       </header>
       <Trail path={path} onJump={jump} />
