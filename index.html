@@ -52,14 +52,6 @@
   }
   .opt.product{padding:22px 46px 22px 20px;background:#fff;border-color:var(--line);}
   .opt.product .label{font-size:19px;font-weight:600;}
-  .opt.hasicon{padding-left:58px;}
-  .opt .ico{
-    position:absolute;left:20px;top:50%;width:24px;height:24px;margin-top:-12px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;
-    font-family:-apple-system,sans-serif;line-height:1;
-  }
-  .opt .ico.warn{background:#f5a623;}
-  .opt .ico.alert{background:#ff2d55;}
 
   .eyebrow{font-size:12.5px;font-weight:600;color:var(--accent);letter-spacing:.04em;margin:0 0 8px;}
   .lead{font-size:16px;color:var(--sub);margin:0 0 28px;}
@@ -103,6 +95,10 @@
   figure{margin:14px 0 0;}
   figure img{display:block;width:100%;border-radius:10px;border:1px solid var(--line);}
   figcaption{font-size:12.5px;color:var(--sub);margin-top:6px;}
+  .figrow{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin:14px 0 0;}
+  .figrow .figitem{margin:0;text-align:center;flex:0 1 auto;}
+  .figrow .figitem img{width:auto;height:auto;max-height:190px;max-width:100%;}
+  .figrow .figitem figcaption{margin-top:6px;}
   .ph{
     border:1px dashed #c7c7cc;border-radius:10px;background:repeating-linear-gradient(
       45deg,#fafafa,#fafafa 8px,#f2f2f4 8px,#f2f2f4 16px);
@@ -146,7 +142,7 @@
 <div id="root"></div>
 
 <script>
-/* 白画面を防ぐためエラーを画面に出す */
+/* 白画面を防ぐため、エラーを画面に出す */
 window.__showError = function(title, detail){
   var el = document.getElementById('root');
   if (!el) return;
@@ -181,18 +177,37 @@ window.addEventListener('error', function(e){
 <script type="text/babel" data-presets="react">
 const { useState, useCallback, useMemo, useEffect } = React;
 
+/* 画像表示スイッチ。false の間はサイト内のすべての画像を表示しない。
+   正しい画像がそろったら true に戻すだけで元どおり表示される。 */
+const SHOW_IMAGES = false;
+
 
 /* ---------- 画像（未配置なら仮ボックス） ---------- */
-function Figure({ src, caption }){
+function FigureItem({ src, caption }){
   const [failed, setFailed] = useState(false);
   if (!src) return null;
   return (
-    <figure>
+    <figure className="figitem">
       {failed
         ? <div className="ph">画像を配置してください<span className="phname">{src}</span></div>
         : <img src={src} alt={caption || ''} loading="lazy" onError={()=>setFailed(true)} />}
       {caption && <figcaption>{caption}</figcaption>}
     </figure>
+  );
+}
+
+function Figure({ src, caption, images }){
+  if (!SHOW_IMAGES) return null;   // 画像を一時的にすべて非表示
+  /* images:[{src,caption}] があれば複数、無ければ従来の単一 image を表示 */
+  const list = (images && images.length)
+    ? images.map(it => (typeof it === 'string' ? { src:it } : it))
+    : (src ? [{ src, caption }] : []);
+  if (!list.length) return null;
+  if (list.length === 1) return <FigureItem src={list[0].src} caption={list[0].caption} />;
+  return (
+    <div className="figrow">
+      {list.map((it,i)=><FigureItem key={i} src={it.src} caption={it.caption} />)}
+    </div>
   );
 }
 
@@ -226,7 +241,7 @@ function StepList({ steps, onGoto }){
               ))}
             </div>
           )}
-          <Figure src={s.image} caption={s.caption} />
+          <Figure src={s.image} caption={s.caption} images={s.images} />
           {s.after && <p className="quiet">{s.after}</p>}
           {s.linkTo && (
             <a className="steplink" href="#" onClick={(e)=>{e.preventDefault(); onGoto(s.linkTo);}}>
@@ -249,10 +264,7 @@ function Question({ node, onSelect, onGoto }){
       {node.steps && <StepList steps={node.steps} onGoto={onGoto} />}
       <div className="options">
         {node.options.map((o,i)=>(
-          <button key={i}
-            className={'opt' + (node.product ? ' product' : '') + (o.icon ? ' hasicon' : '')}
-            onClick={()=>onSelect(o,i)}>
-            {o.icon && <span className={'ico ' + o.icon} aria-hidden="true">!</span>}
+          <button key={i} className={'opt' + (node.product ? ' product' : '')} onClick={()=>onSelect(o,i)}>
             <span className="label">{o.label}</span>
             {o.sub && <span className="sub">{o.sub}</span>}
           </button>
