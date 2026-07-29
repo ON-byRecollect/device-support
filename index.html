@@ -30,6 +30,10 @@
     border:1px solid var(--line);background:var(--fill);color:var(--sub);cursor:pointer;
   }
   .trail button:hover{color:var(--ink);}
+  .trail .current{
+    font-size:12.5px;line-height:1;padding:7px 12px;border-radius:999px;
+    border:1px solid var(--line);background:#fff;color:var(--ink);font-weight:600;
+  }
   .trail .sep{color:#c7c7cc;font-size:12px;align-self:center;}
 
   h1.q{font-size:30px;line-height:1.3;font-weight:600;letter-spacing:-.02em;margin:0 0 10px;}
@@ -129,6 +133,11 @@
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
     font-size:30px;font-weight:600;letter-spacing:.12em;margin:0;
   }
+  .codecard .jcode{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12px;color:#a1a1a6;letter-spacing:.06em;margin:14px 0 0;
+    word-break:break-all;line-height:1.5;
+  }
   .copy{margin-top:16px;background:#fff;color:var(--ink);border:0;border-radius:999px;
     padding:10px 20px;font-family:inherit;font-size:14px;cursor:pointer;}
 
@@ -175,7 +184,7 @@ window.addEventListener('error', function(e){
 </script>
 
 <script type="text/babel" data-presets="react">
-const { useState, useCallback, useMemo, useEffect } = React;
+const { useState, useCallback, useMemo, useEffect, useRef } = React;
 
 /* 画像表示スイッチ。false の間はサイト内のすべての画像を表示しない。
    正しい画像がそろったら true に戻すだけで元どおり表示される。 */
@@ -215,12 +224,17 @@ function Trail({ path, onJump }){
   if (!path.length) return null;
   return (
     <nav className="trail" aria-label="選択した内容">
-      {path.map((s,i)=>(
-        <React.Fragment key={i}>
-          {i>0 && <span className="sep" aria-hidden="true">›</span>}
-          <button onClick={()=>onJump(i)}>{s.label}</button>
-        </React.Fragment>
-      ))}
+      {path.map((s,i)=>{
+        const isCurrent = i === path.length - 1;
+        return (
+          <React.Fragment key={i}>
+            {i>0 && <span className="sep" aria-hidden="true">›</span>}
+            {isCurrent
+              ? <span className="current" aria-current="step">{s.label}</span>
+              : <button onClick={()=>onJump(i)}>{s.label}</button>}
+          </React.Fragment>
+        );
+      })}
     </nav>
   );
 }
@@ -330,11 +344,12 @@ function Pending({ node, onBack }){
   );
 }
 
-function Unresolved({ code, onBack, onRestart }){
+function Unresolved({ code, journey, onBack, onRestart }){
   const [copied, setCopied] = useState(false);
   const copy = () => {
     if (!navigator.clipboard) return;
-    navigator.clipboard.writeText(code).then(()=>{
+    const text = journey ? (code + '\n訪問履歴: ' + journey) : code;
+    navigator.clipboard.writeText(text).then(()=>{
       setCopied(true); setTimeout(()=>setCopied(false), 2000);
     }).catch(()=>{});
   };
@@ -347,6 +362,7 @@ function Unresolved({ code, onBack, onRestart }){
       <div className="codecard">
         <p className="clabel">エラーコード</p>
         <p className="code">{code}</p>
+        {journey && <p className="jcode">訪問履歴: {journey}</p>}
         <button className="copy" onClick={copy}>{copied ? 'コピーしました' : 'コードをコピー'}</button>
       </div>
 
@@ -368,6 +384,7 @@ function Unresolved({ code, onBack, onRestart }){
 
 function App(){
   const [route, setRoute] = useState(parseHash);
+  const journeyRef = useRef([]);   // セッション中に訪れた画面の記録（戻り・寄り道も全部）
 
   /* URL を唯一の状態とする。ブラウザの戻る/進むもそのまま機能する */
   useEffect(function(){
@@ -388,15 +405,22 @@ function App(){
   const node = NODES[currentId] || NODES.start;
   const code = useMemo(()=>makeCode(path), [path]);
 
+  /* セッション中の訪問履歴を記録（戻ってどの枝に寄ったかまで全部残す）。
+     画面が変わるたびに現在ノードを追記。ページ再読み込みでリセットされる。 */
+  useEffect(function(){
+    const j = journeyRef.current;
+    if (j[j.length-1] !== currentId) j.push(currentId);
+  }, [currentId]);
+
   const select  = useCallback((o)=>nav(segs.concat([o.next]), false), [segs, nav]);
   const goto    = useCallback((id)=>nav(segs.concat([id]), false), [segs, nav]);
   const back    = useCallback(()=>{ unresolved ? nav(segs, false) : nav(segs.slice(0,-1), false); }, [segs, unresolved, nav]);
-  const jump    = useCallback((i)=>nav(segs.slice(0,i), false), [segs, nav]);
+  const jump    = useCallback((i)=>nav(segs.slice(0,i+1), false), [segs, nav]);
   const restart = useCallback(()=>nav([], false), [nav]);
 
   let body;
   if (unresolved) {
-    body = <Unresolved code={code} onBack={back} onRestart={restart} />;
+    body = <Unresolved code={code} journey={makeJourneyCode(journeyRef.current)} onBack={back} onRestart={restart} />;
   } else if (node.type === 'answer') {
     body = <Answer node={node} onBack={back} onRestart={restart} onGoto={goto}
              onUnresolved={()=>nav(segs, true)} />;
