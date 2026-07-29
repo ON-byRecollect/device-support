@@ -45,7 +45,7 @@
 <body>
 <div class="wrap">
   <h1>コード確認</h1>
-  <p class="sub">購入者から届いたコードを入力すると通った経路を確認できます。エラーコード（TS-）と訪問履歴コード（TSH-）のどちらでも、両方まとめて貼り付けてもかまいません。TSH- があれば戻り・寄り道を含む全行程も表示します。</p>
+  <p class="sub">購入者から届いたコードを貼り付けると、選んだ経路と全行程（戻り・寄り道を含む）を確認できます。購入者側の画面では1つのコードに見えますが、ここでエラーコードと訪問履歴に分解して表示します。（旧形式の TS- / TSH- コードもそのまま入力できます。）</p>
 
   <div class="field">
     <input id="code" placeholder="TS-112D-U" autocomplete="off" autocapitalize="characters" spellcheck="false">
@@ -109,7 +109,20 @@
 
   function render(){
     var up = (input.value || '').toUpperCase();
-    /* 履歴コード（TSH-）を先に抜き出し、残りからエラーコード（TS-）を抜き出す */
+
+    /* まず購入者向けの結合コード（TS-…）を試す。分解できれば経路＋全行程を表示 */
+    var cm0 = up.match(/TS[-0-9A-Z]+/);
+    if (cm0) {
+      var full = decodeFullCode(cm0[0]);
+      if (full.ok) {
+        out.innerHTML =
+          renderPath({ ok:true, version:full.version, segs:full.path.segs, trail:full.path.trail, note:'' }) +
+          renderJourney({ ok:true, steps:full.journey.steps });
+        return;
+      }
+    }
+
+    /* 旧形式（エラーコード TS- ／履歴コード TSH- が分離）フォールバック */
     var jm = up.match(/TSH[-0-9A-Z]+/);
     var journeyCode = jm ? jm[0] : null;
     var rest = journeyCode ? up.replace(journeyCode, ' ') : up;
@@ -117,7 +130,7 @@
     var errCode = cm ? cm[0] : null;
 
     if (!errCode && !journeyCode) {
-      out.innerHTML = '<div class="err">TS- または TSH- から始まるコードを入力してください</div>';
+      out.innerHTML = '<div class="err">コードを入力してください</div>';
       return;
     }
 
