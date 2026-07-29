@@ -405,6 +405,41 @@ function decodeCode(input){
   return { ok:true, version:version, segs:segs, trail:deriveTrail(segs) };
 }
 
+/* ---------- 訪問履歴コード（そのセッションで訪れた画面を順番どおり保持） ----------
+   TSH- + 改訂番号 + 各ノードのキー連結 + - + 検査文字
+   ・最初の画面（製品選択／最初から）は '0' で表す
+   ・同じノードが再度現れたら「その画面へ戻った」ことを示す（寄り道の判別に使う）
+   ・エラーコード（TS-）は最終地点、こちら（TSH-）は道のり全体を表す
+------------------------------------------------------------------- */
+function journeyKey(id){ return id === 'start' ? '0' : (KEYS[id] || 'X'); }
+function makeJourneyCode(ids){
+  const body = (ids || []).map(journeyKey).join('');
+  const core = FLOW_VERSION + (body || '0');
+  return 'TSH-' + core + '-' + checksum(core);
+}
+function decodeJourneyCode(input){
+  const raw = String(input || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+  const m = raw.match(/^TSH(.+)$/);
+  if (!m) return { ok:false, reason:'形式が違います（TSH- から始まる履歴コードを入力してください）' };
+  const rest = m[1];
+  if (rest.length < 2) return { ok:false, reason:'コードが短すぎます' };
+  const core  = rest.slice(0, -1);
+  const check = rest.slice(-1);
+  if (checksum(core) !== check) return { ok:false, reason:'コードが正しくありません（入力ミスの可能性があります）' };
+  const version = core[0];
+  const body = core.slice(1);
+  const steps = [], seen = [];
+  for (const ch of body) {
+    if (ch === '0') { steps.push({ id:'start', title:'（最初の画面）', back:false }); seen.push('start'); continue; }
+    const id = KEY_TO_ID[ch];
+    if (!id) return { ok:false, reason:'未知のノードが含まれています（コード：' + ch + '）' };
+    const back = seen.indexOf(id) >= 0;   // 既出＝その画面へ戻ってきた
+    steps.push({ id:id, title:(NODES[id] ? NODES[id].title : id), back:back });
+    seen.push(id);
+  }
+  return { ok:true, version:version, steps:steps, ids:steps.map(function(s){ return s.id; }) };
+}
+
 
   global.NODES       = NODES;
   global.CONTACT     = CONTACT;
@@ -415,4 +450,6 @@ function decodeCode(input){
   global.deriveTrail = deriveTrail;
   global.makeCode    = makeCode;
   global.decodeCode  = decodeCode;
+  global.makeJourneyCode   = makeJourneyCode;
+  global.decodeJourneyCode = decodeJourneyCode;
 })(window);
