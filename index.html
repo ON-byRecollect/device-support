@@ -124,6 +124,7 @@
   .pending{border:1px dashed var(--line);border-radius:var(--radius);padding:24px 20px;color:var(--sub);font-size:15px;}
 
   .resolve{margin-top:38px;padding-top:26px;border-top:1px solid var(--line);}
+  .resolve.ask{margin-top:22px;padding-top:22px;}
   .resolve h2{font-size:17px;font-weight:600;margin:0 0 14px;}
   .row{display:flex;gap:10px;flex-wrap:wrap;}
   .btn{
@@ -187,7 +188,7 @@
 <div id="root"></div>
 
 <script>
-/* 白画面を防ぐためエラー画面に出す */
+/* 白画面を防ぐためエラーを画面に出す */
 window.__showError = function(title, detail){
   var el = document.getElementById('root');
   if (!el) return;
@@ -361,11 +362,13 @@ function Answer({ node, onBack, onRestart, onUnresolved, onGoto }){
       )}
 
       <div className="resolve">
+        <div className="row"><button className="btn" onClick={onBack}>ひとつ前に戻る</button></div>
+      </div>
+      <div className="resolve ask">
         <h2>解決しましたか？</h2>
         <div className="row">
           <button className="btn primary" onClick={onRestart}>解決した</button>
           <button className="btn" onClick={onUnresolved}>解決しない</button>
-          <button className="btn" onClick={onBack}>ひとつ前に戻る</button>
         </div>
       </div>
     </div>
@@ -405,9 +408,10 @@ function Unresolved({ code, onBack, onRestart }){
       </div>
 
       <p className="note">
-        ご入力頂いた情報を元に、問題を解決するための適切な対応と最適な方法をご提案させて頂きます。<br/>
-        原則、24時間以内にメッセージへ返信をさせて頂きます。<br/>
-        ご不便をおかけしてしまい大変恐縮ではございますが、しばらくお待ちください。
+        ご入力頂いた情報を元に、問題を解決するために最適な方法をご案内させて頂きます。<br/>
+        適切な対応を行うための内容確認、確実な情報提供を行うため、検証にお時間を頂戴いたします。<br/><br/>
+        取引メッセージを通じて、24時間以内に返信をさせて頂きます。<br/>
+        ご不便をおかけして申し訳ございませんが、しばらくお待ちください。
       </p>
 
       <div className="resolve">
@@ -420,8 +424,9 @@ function Unresolved({ code, onBack, onRestart }){
   );
 }
 
-function Form({ node, code, onBack, onRestart, onGoto }){
+function Form({ node, code, onBack, onRestart, onGoto, onFinalChange }){
   const [phase, setPhase] = useState('input');
+  useEffect(function(){ if (onFinalChange) onFinalChange(phase === 'done'); }, [phase]);
   const [timing, setTiming] = useState('');
   const [symptom, setSymptom] = useState('');
   const [condition, setCondition] = useState('');
@@ -570,9 +575,10 @@ function Form({ node, code, onBack, onRestart, onGoto }){
       </div>
 
       <p className="note">
-        ご入力頂いた情報を元に、問題を解決するための適切な対応と最適な方法をご提案させて頂きます。<br/>
-        原則、24時間以内にメッセージへ返信をさせて頂きます。<br/>
-        ご不便をおかけしてしまい大変恐縮ではございますが、しばらくお待ちください。
+        ご入力頂いた情報を元に、問題を解決するために最適な方法をご案内させて頂きます。<br/>
+        適切な対応を行うための内容確認、確実な情報提供を行うため、検証にお時間を頂戴いたします。<br/><br/>
+        取引メッセージを通じて、24時間以内に返信をさせて頂きます。<br/>
+        ご不便をおかけして申し訳ございませんが、しばらくお待ちください。
       </p>
 
       <div className="resolve">
@@ -588,6 +594,7 @@ function Form({ node, code, onBack, onRestart, onGoto }){
 function App(){
   const [route, setRoute] = useState(parseHash);
   const journeyRef = useRef([]);   // セッション中に訪れた画面の記録（戻り・寄り道も全部）
+  const [formFinal, setFormFinal] = useState(false);   // フォームが完了フェーズ（＝最終ページ）か
 
   /* URL を唯一の状態とする。ブラウザの戻る/進むもそのまま機能する */
   useEffect(function(){
@@ -613,6 +620,7 @@ function App(){
   useEffect(function(){
     const j = journeyRef.current;
     if (j[j.length-1] !== currentId) j.push(currentId);
+    setFormFinal(false);
   }, [currentId]);
 
   const select  = useCallback((o)=>nav(segs.concat([o.next]), false), [segs, nav]);
@@ -631,7 +639,7 @@ function App(){
     body = <Pending node={node} onBack={back} />;
   } else if (node.type === 'form') {
     body = <Form node={node} code={makeFullCode(segs, journeyRef.current)}
-             onBack={back} onRestart={restart} onGoto={goto} />;
+             onBack={back} onRestart={restart} onGoto={goto} onFinalChange={setFormFinal} />;
   } else {
     body = <Question node={node} onSelect={select} onGoto={goto} onBack={back} canBack={segs.length > 0} />;
   }
@@ -640,7 +648,8 @@ function App(){
     <React.Fragment>
       <header className="site">
         <p className="brand">Apple製品 <span>トラブルシューティング</span></p>
-        <button className="restart" onClick={restart} disabled={!path.length && !unresolved}>最初から</button>
+        {!(unresolved || formFinal) &&
+          <button className="restart" onClick={restart} disabled={!path.length}>最初から</button>}
       </header>
       <Trail path={path} onJump={jump} />
       {body}
