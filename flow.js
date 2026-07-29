@@ -1,5 +1,5 @@
 /* ============================================================
-   flow.js — 診断フローの定義とエラーコード変換
+   flow.js — 診断フローの定義とエラーコードの変換
    index.html（購入者向け）と admin.html（確認用）の両方から
    読み込まれます。分岐を編集するときはこのファイルだけを直します。
    ============================================================ */
@@ -305,18 +305,21 @@ const CONTACT = 'ご購入いただいた取引メッセージよりご連絡く
 /* ---------- URL（ハッシュルーティング） ----------
    #/ap.menu/ap.pair/a.owner  … 選んだ順にノードIDを連ねた形
    #/a.reset_settings         … 途中の手順へ直接リンクすることも可能
-   末尾に /unresolved が付くとエラーコード画面
+   末尾に /unresolved でエラーコード画面、/resolved で解決完了画面
 -------------------------------------------------- */
 function parseHash(){
   const raw = (location.hash || '').replace(/^#\/?/, '');
-  if (!raw) return { segs:[], unres:false };
+  if (!raw) return { segs:[], unres:false, res:false };
   let parts = raw.split('/').filter(Boolean);
-  let unres = false;
-  if (parts[parts.length-1] === 'unresolved') { unres = true; parts.pop(); }
-  return { segs: parts.filter(p => NODES[p]), unres: unres };   // 不正なIDは捨てる
+  let unres = false, res = false;
+  const last = parts[parts.length-1];
+  if (last === 'unresolved') { unres = true; parts.pop(); }
+  else if (last === 'resolved') { res = true; parts.pop(); }
+  return { segs: parts.filter(p => NODES[p]), unres: unres, res: res };   // 不正なIDは捨てる
 }
-function buildHash(segs, unres){
-  return '#/' + (unres ? segs.concat(['unresolved']) : segs).join('/');
+function buildHash(segs, unres, res){
+  const suffix = unres ? ['unresolved'] : (res ? ['resolved'] : []);
+  return '#/' + segs.concat(suffix).join('/');
 }
 /* ノードIDの並びから、経路トレイル（表示名・選択肢番号）を復元する */
 function deriveTrail(segs){
