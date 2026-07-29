@@ -19,7 +19,7 @@ const NODES = {
   start: {
     type:'question',
     title:'製品を選んでください',
-    hint:'製品ごとにご案内いたします。',
+    hint:'モデルごとに詳しくご案内いたします。',
     product:true,
     options:[
       { label:'AirPods', sub:'すべてのモデル', next:'ap.menu' },
@@ -31,7 +31,7 @@ const NODES = {
   'ap.menu': {
     type:'question',
     title:'症状を選んでください',
-    hint:'症状ごとに解決策をご提案いたします。',
+    hint:'具体的な解決策をご案内いたします。',
     options:[
       { label:'「デバイスを探す」が使えない', next:'ap.findmy' },
       { label:'リセットの手順を確認したい', next:'ap.gen' },
@@ -48,8 +48,8 @@ const NODES = {
   /* ---------- 探すアプリが正常に使えない（A〜D 振り分け） ---------- */
   'ap.findmy': {
     type:'question',
-    title:'「デバイスを探す」を開いてください',
-    hint:'エラー表示の内容を選んでください。',
+    title:'エラー内容を選んでください',
+    hint:'「デバイスを探す」アプリ内に表示されている警告文から現在の状況を把握することで、適切な解決策をご案内いたします。',
     options:[
       { label:'AirPods の設定が完了していません', sub:'一部の機能が使用できません', icon:'warn', next:'a.setup' },
       { label:'AirPods の不一致', sub:'一部のパーツが見つかりません', icon:'alert', next:'ap.mismatch' },
@@ -65,8 +65,8 @@ const NODES = {
     title:'AirPods を iPhone にペアリングした際に、警告メッセージは表示されましたか？',
     hint:'「ほかの人の Apple ID に関連付けられた持ち物に接続しています」という内容のメッセージです。',
     options:[
-      { label:'表示された', sub:'前の所有者の Apple Account に紐付いています', next:'a.owner' },
-      { label:'表示されていない', sub:'接続時の不具合の可能性があります', next:'a.mismatch2' },
+      { label:'表示された', next:'a.owner' },
+      { label:'表示されていない', next:'a.mismatch2' },
     ],
   },
 
@@ -98,7 +98,7 @@ const NODES = {
     type:'answer',
     eyebrow:'対処法',
     title:'AirPods の設定が完了していません',
-    lead:'接続しペアリングしている iPhone の「デバイスを探す」の一覧で、この警告が表示されている場合は、設定が正しく完了できていない可能性があります。',
+    lead:'この警告が表示されている場合は、設定が正しく完了できていない可能性があります。',
     steps:[
       { text:'一部の AirPods の「探す」機能は、ペアリングしている iPhone のソフトウェアが最新バージョンのときのみ動作します。最新バージョンの iOS がインストールされていることを確認してください。', image:'images/setup-incomplete-detail.png', caption:'「探す」アプリに表示される設定未完了',
         nav:['設定','一般','ソフトウェアアップデート'] },
@@ -209,7 +209,7 @@ const NODES = {
   'ap.gen': {
     type:'question',
     title:'製品のモデルを選んでください',
-    hint:'モデルごとにリセットする操作が異なります。',
+    hint:'モデルごとの適切な手順をご案内いたします。',
     options:[
       { label:'AirPods 第4世代', sub:'アクティブノイズキャンセリング非搭載モデル', next:'a.rs.tap' },
       { label:'AirPods 第4世代', sub:'アクティブノイズキャンセリング搭載モデル', next:'a.rs.tap' },
@@ -282,7 +282,12 @@ function RESET(kind){
         nav:['設定','Bluetooth'] },
       { text:'自分のデバイス一覧から AirPods の「i マーク」をタップし、「このデバイスの登録を解除」をタップしてください。' },
       { text:'自分のデバイス一覧から AirPods が削除されたことを確認したら、充電ケースの蓋を開けてください。' },
-      { text:op, image:(kind==='button'?'images/reset-button.png':'images/reset-tap.png'), reset:true },
+      (kind === 'button')
+        ? { text:op, image:'images/reset-button.png', reset:true }
+        : { text:op, reset:true, images:[
+            { src:'images/reset-tap.png',   caption:'縦長タイプ' },
+            { src:'images/reset-tap-2.png', caption:'横長タイプ' },
+          ] },
       { text:'30秒ほど待機して再び蓋を開けると、LED ランプが白く点滅し、接続できる状態になります。' },
       { text:'接続していた iPhone で「探す」アプリを開いてください。',
         nav:['探す','デバイスを探す'] },
