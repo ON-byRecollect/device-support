@@ -18,8 +18,8 @@ const NODES = {
   /* ---------- 製品選択 ---------- */
   start: {
     type:'question',
-    title:'お困りの製品を選んでください',
-    hint:'当てはまるものを選んでください。',
+    title:'製品を選んでください',
+    hint:'製品ごとにご案内いたします。',
     product:true,
     options:[
       { label:'AirPods', sub:'すべてのモデル', next:'ap.menu' },
@@ -30,8 +30,8 @@ const NODES = {
   /* ================= AirPods 入口 ================= */
   'ap.menu': {
     type:'question',
-    title:'現在の状況を教えてください',
-    hint:'当てはまるものを選んでください。',
+    title:'症状を選んでください',
+    hint:'症状ごとに解決策をご提案いたします。',
     options:[
       { label:'「デバイスを探す」が使えない', next:'ap.findmy' },
       { label:'リセットの手順を確認したい', next:'ap.gen' },
@@ -208,8 +208,8 @@ const NODES = {
   /* ================= リセット：機種選択 ================= */
   'ap.gen': {
     type:'question',
-    title:'お使いの機種を選んでください',
-    hint:'機種によって、本体をリセットする操作が異なります。',
+    title:'製品のモデルを選んでください',
+    hint:'モデルごとにリセットする操作が異なります。',
     options:[
       { label:'AirPods 第4世代', sub:'アクティブノイズキャンセリング非搭載モデル', next:'a.rs.tap' },
       { label:'AirPods 第4世代', sub:'アクティブノイズキャンセリング搭載モデル', next:'a.rs.tap' },
