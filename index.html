@@ -56,6 +56,14 @@
   }
   .opt.product{padding:22px 46px 22px 20px;background:#fff;border-color:var(--line);}
   .opt.product .label{font-size:19px;font-weight:600;}
+  .opt.has-icon{padding-left:56px;}
+  .opt-ic{
+    position:absolute;left:18px;top:50%;transform:translateY(-50%);
+    width:24px;height:24px;border-radius:50%;color:#fff;font-weight:700;font-size:15px;
+    display:flex;align-items:center;justify-content:center;line-height:1;
+  }
+  .opt-ic.warn{background:#f5a623;}
+  .opt-ic.alert{background:#e0322c;}
 
   .eyebrow{font-size:12.5px;font-weight:600;color:var(--accent);letter-spacing:.04em;margin:0 0 8px;}
   .lead{font-size:16px;color:var(--sub);margin:0 0 28px;}
@@ -278,7 +286,8 @@ function Question({ node, onSelect, onGoto }){
       {node.steps && <StepList steps={node.steps} onGoto={onGoto} />}
       <div className="options">
         {node.options.map((o,i)=>(
-          <button key={i} className={'opt' + (node.product ? ' product' : '')} onClick={()=>onSelect(o,i)}>
+          <button key={i} className={'opt' + (node.product ? ' product' : '') + (o.icon ? ' has-icon' : '')} onClick={()=>onSelect(o,i)}>
+            {o.icon && <span className={'opt-ic ' + o.icon} aria-hidden="true">!</span>}
             <span className="label">{o.label}</span>
             {o.sub && <span className="sub">{o.sub}</span>}
           </button>
