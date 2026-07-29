@@ -146,7 +146,7 @@
     border:1px solid var(--line);border-radius:12px;background:var(--fill);padding:12px 14px;}
   .chk.on{border-color:var(--accent);background:#eef5ff;}
   .chk input{margin:2px 0 0;width:18px;height:18px;flex-shrink:0;accent-color:var(--accent);}
-  .linkbtn{margin-top:12px;font-family:inherit;font-size:14px;cursor:pointer;
+  .linkbtn{align-self:flex-start;margin-top:4px;font-family:inherit;font-size:14px;cursor:pointer;
     background:#fff;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:11px 18px;}
   .submit{width:100%;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;
     background:var(--accent);color:#fff;border:0;border-radius:12px;padding:15px;margin-top:6px;}
@@ -304,7 +304,7 @@ function StepList({ steps, onGoto }){
   );
 }
 
-function Question({ node, onSelect, onGoto }){
+function Question({ node, onSelect, onGoto, onBack, canBack }){
   return (
     <div className="fade">
       {node.eyebrow && <p className="eyebrow">{node.eyebrow}</p>}
@@ -321,6 +321,10 @@ function Question({ node, onSelect, onGoto }){
           </button>
         ))}
       </div>
+      {canBack &&
+        <div className="resolve">
+          <div className="row"><button className="btn" onClick={onBack}>ひとつ前に戻る</button></div>
+        </div>}
     </div>
   );
 }
@@ -502,19 +506,21 @@ function Form({ node, code, journey, onBack, onRestart, onGoto }){
             <label className="flabel">不具合を解決するために試されたこと<span className="req">必須・複数可</span></label>
             <div className="checks">
               {TRIED_OPTIONS.map((opt,i)=>(
-                <label key={i} className={'chk' + (tried.indexOf(opt)>=0 ? ' on' : '')}>
-                  <input type="checkbox" checked={tried.indexOf(opt)>=0} onChange={()=>toggleTried(opt)} />
-                  <span>{opt}</span>
-                </label>
+                <React.Fragment key={i}>
+                  <label className={'chk' + (tried.indexOf(opt)>=0 ? ' on' : '')}>
+                    <input type="checkbox" checked={tried.indexOf(opt)>=0} onChange={()=>toggleTried(opt)} />
+                    <span>{opt}</span>
+                  </label>
+                  {opt === OTHER && hasOther &&
+                    <textarea className="ftext" rows="2" value={triedOther} onChange={e=>setTriedOther(e.target.value)}
+                      placeholder="試された内容をご入力ください（必須）" />}
+                  {opt === NOTYET && hasNotYet &&
+                    <button className="linkbtn" onClick={()=>onGoto(node.resetLink)}>
+                      リセット・OS アップデートの手順を見る →
+                    </button>}
+                </React.Fragment>
               ))}
             </div>
-            {hasOther &&
-              <textarea className="ftext" rows="2" value={triedOther} onChange={e=>setTriedOther(e.target.value)}
-                placeholder="試された内容をご入力ください（必須）" style={{marginTop:'10px'}} />}
-            {hasNotYet &&
-              <button className="linkbtn" onClick={()=>onGoto(node.resetLink)}>
-                リセット・OS アップデートの手順を見る →
-              </button>}
           </div>
 
           <button className="submit" disabled={!valid} onClick={()=>{ if(valid) setPhase('confirm'); }}>
@@ -533,8 +539,8 @@ function Form({ node, code, journey, onBack, onRestart, onGoto }){
     return (
       <div className="fade">
         <p className="eyebrow">入力内容の確認</p>
-        <h1 className="q">この内容でよろしいですか？</h1>
-        <p className="lead">内容をご確認ください。修正する場合は「内容を修正する」を選んでください。</p>
+        <h1 className="q">入力内容を確認してください</h1>
+        <p className="lead">修正する場合は「内容を修正する」を選んでください。</p>
 
         <div className="review">
           <div className="rrow"><span className="rk">タイミング</span><span className="rv">{timing}</span></div>
@@ -634,7 +640,7 @@ function App(){
     body = <Form node={node} code={code} journey={makeJourneyCode(journeyRef.current)}
              onBack={back} onRestart={restart} onGoto={goto} />;
   } else {
-    body = <Question node={node} onSelect={select} onGoto={goto} />;
+    body = <Question node={node} onSelect={select} onGoto={goto} onBack={back} canBack={segs.length > 0} />;
   }
 
   return (
