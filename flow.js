@@ -33,16 +33,19 @@ const NODES = {
     title:'症状を選んでください',
     hint:'具体的な解決策をご案内いたします。',
     options:[
-      { label:'「デバイスを探す」が使えない', next:'ap.findmy' },
+      { label:'デバイスを探すが使えない', next:'ap.findmy' },
       { label:'リセットの手順を確認したい', next:'ap.gen' },
-      { label:'その他', next:'ap.other' },
+      { label:'その他の不具合', next:'ap.other' },
     ],
   },
 
-  /* その他（受け皿・準備中。中身は後日追加） */
+  /* その他の不具合（問診フォーム。UIは index.html の Form コンポーネント） */
   'ap.other': {
-    type:'answer', draft:true, eyebrow:'準備中', title:'その他',
-    lead:'（準備中）', steps:[{ text:'この項目は現在準備中です。' }],
+    type:'form',
+    eyebrow:'その他の不具合',
+    title:'その他の不具合',
+    lead:'現在の状況を正確に把握することで、適切な解決策をご案内いたします。発生している不具合の症状や、不具合を確認したタイミング、発生条件等を可能な限り詳しくご入力ください。',
+    resetLink:'ap.gen',
   },
 
   /* ---------- 探すアプリが正常に使えない（A〜D 振り分け） ---------- */
@@ -62,8 +65,8 @@ const NODES = {
   /* ---------- 不一致（はい/いいえ） ---------- */
   'ap.mismatch': {
     type:'question',
-    title:'AirPods を iPhone にペアリングした際に、警告メッセージは表示されましたか？',
-    hint:'「ほかの人の Apple ID に関連付けられた持ち物に接続しています」という内容のメッセージです。',
+    title:'ペアリング時の状況を選んでください',
+    hint:'AirPods を iPhone にペアリングした際の状況を把握することで、適切な解決策をご案内いたします。',
     options:[
       { label:'表示された', next:'a.owner' },
       { label:'表示されていない', next:'a.mismatch2' },
@@ -72,14 +75,12 @@ const NODES = {
 
   'a.owner': {
     type:'answer',
-    eyebrow:'ご連絡が必要です',
-    title:'ほかの人の Apple ID に関連付けられています',
+    eyebrow:'出品者による遠隔操作が必要です',
+    title:'Apple ID が正常に解除できていない可能性があります',
     lead:'ほかの人の Apple Account と紐付いている場合、初回接続時に警告メッセージが表示されます。',
     steps:[
-      { text:'表示された警告メッセージの内容をご確認ください。', image:'images/owner-warning.png', caption:'「ほかの人の Apple ID に関連付けられた持ち物に接続しています」' },
-      { text:'この場合、表示されているアカウントの持ち主に、遠隔での Apple ID の関連付け解除を依頼する必要があります。', image:'images/airpods-remove-account.png', caption:'前の所有者側での解除画面' },
+      { text:'現在の状態では、お手元での解除ができません。ページ下部の「解決しない」を選択して表示される案内に従ってください。' },
     ],
-    callout:'お手元での解除はできません。ご購入いただいた取引メッセージより、警告が表示された旨をご連絡ください。こちらで対応いたします。',
   },
 
   'a.mismatch2': {
