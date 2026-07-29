@@ -30,11 +30,19 @@ const NODES = {
   /* ================= AirPods 入口 ================= */
   'ap.menu': {
     type:'question',
-    title:'症状を選んでください',
+    title:'現在の状況を教えてください',
     hint:'当てはまるものを選んでください。',
     options:[
       { label:'「デバイスを探す」が使えない', next:'ap.findmy' },
+      { label:'リセットの手順を確認したい', next:'ap.gen' },
+      { label:'その他', next:'ap.other' },
     ],
+  },
+
+  /* その他（受け皿・準備中。中身は後日追加） */
+  'ap.other': {
+    type:'answer', draft:true, eyebrow:'準備中', title:'その他',
+    lead:'（準備中）', steps:[{ text:'この項目は現在準備中です。' }],
   },
 
   /* ---------- 探すアプリが正常に使えない（A〜D 振り分け） ---------- */
@@ -354,6 +362,7 @@ const KEYS = {
   'a.findmy_reset':'J',
   'a.aw.charge'  : 'K',
   'a.aw.band'    : 'M',
+  'ap.other'     : 'N',
 };const KEY_TO_ID = Object.keys(KEYS).reduce(function(m,id){ m[KEYS[id]] = id; return m; }, {});
 
 /* フロー改訂番号。文言や手順を大きく変えたときだけ上げる。
