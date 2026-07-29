@@ -38,13 +38,14 @@
   .final{background:var(--fill);border-radius:14px;padding:16px 18px;margin-top:4px;}
   .final .t{font-size:16px;font-weight:600;margin:0 0 4px;}
   .final a{color:var(--accent);font-size:14px;text-decoration:none;}
+  .back{color:var(--ng);font-size:12px;font-weight:600;margin-left:6px;}
   .foot{margin-top:34px;padding-top:20px;border-top:1px solid var(--line);color:var(--sub);font-size:13px;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>コード確認</h1>
-  <p class="sub">購入者から届いたエラーコードを入力すると通った経路を確認できます。</p>
+  <p class="sub">購入者から届いたコードを入力すると通った経路を確認できます。エラーコード（TS-）と訪問履歴コード（TSH-）のどちらでも、両方まとめて貼り付けてもかまいません。TSH- があれば戻り・寄り道を含む全行程も表示します。</p>
 
   <div class="field">
     <input id="code" placeholder="TS-112D-U" autocomplete="off" autocapitalize="characters" spellcheck="false">
@@ -68,10 +69,7 @@
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
 
-  function render(){
-    var r = decodeCode(input.value);
-    if (!r.ok) { out.innerHTML = '<div class="err">' + esc(r.reason) + '</div>'; return; }
-
+  function renderPath(r){
     var html = '<div class="meta">';
     html += '<span class="chip">フロー改訂 ' + esc(r.version) + '</span>';
     if (r.version !== FLOW_VERSION) {
@@ -80,12 +78,9 @@
     html += '<span class="chip">経路 ' + r.segs.length + ' ステップ</span>';
     html += '</div>';
 
-    if (!r.segs.length) {
-      html += '<div class="err">' + esc(r.note) + '</div>';
-      out.innerHTML = html; return;
-    }
+    if (!r.segs.length) { return html + '<div class="err">' + esc(r.note) + '</div>'; }
 
-    html += '<h2>購入者が選んだ内容</h2><ol>';
+    html += '<h2>購入者が選んだ内容（最終経路）</h2><ol>';
     r.trail.forEach(function(s){
       html += '<li><p class="lb">' + esc(s.label) + '</p><p class="id">' + esc(s.id) +
               (s.idx === 9 ? '（関連リンク・直接リンク経由）' : '') + '</p></li>';
@@ -98,7 +93,43 @@
     html += '<p class="t">' + esc(last.title) + '</p>';
     html += '<a href="index.html' + buildHash(r.segs, false) + '" target="_blank" rel="noopener">同じ画面を開く →</a>';
     html += '</div>';
+    return html;
+  }
 
+  function renderJourney(j){
+    var html = '<h2>たどった道のり（全行程・戻りや寄り道も含む）</h2><ol>';
+    j.steps.forEach(function(s){
+      html += '<li><p class="lb">' + esc(s.title) +
+              (s.back ? '<span class="back">↩ この画面へ戻った</span>' : '') +
+              '</p><p class="id">' + esc(s.id) + '</p></li>';
+    });
+    html += '</ol>';
+    return html;
+  }
+
+  function render(){
+    var up = (input.value || '').toUpperCase();
+    /* 履歴コード（TSH-）を先に抜き出し、残りからエラーコード（TS-）を抜き出す */
+    var jm = up.match(/TSH[-0-9A-Z]+/);
+    var journeyCode = jm ? jm[0] : null;
+    var rest = journeyCode ? up.replace(journeyCode, ' ') : up;
+    var cm = rest.match(/TS[-0-9A-Z]+/);
+    var errCode = cm ? cm[0] : null;
+
+    if (!errCode && !journeyCode) {
+      out.innerHTML = '<div class="err">TS- または TSH- から始まるコードを入力してください</div>';
+      return;
+    }
+
+    var html = '';
+    if (errCode) {
+      var r = decodeCode(errCode);
+      html += r.ok ? renderPath(r) : '<div class="err">エラーコード：' + esc(r.reason) + '</div>';
+    }
+    if (journeyCode) {
+      var j = decodeJourneyCode(journeyCode);
+      html += j.ok ? renderJourney(j) : '<div class="err">履歴コード：' + esc(j.reason) + '</div>';
+    }
     out.innerHTML = html;
   }
 
