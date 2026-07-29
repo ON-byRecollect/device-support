@@ -11,7 +11,7 @@
     --fill:#f5f5f7; --accent:#0071e3; --warn:#c7500f; --radius:14px;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);overflow-x:hidden;}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
     -webkit-font-smoothing:antialiased; line-height:1.6;
@@ -25,13 +25,14 @@
   .restart:disabled{opacity:.3;cursor:default;}
 
   .trail{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:26px;}
+  .trail button, .trail .current{max-width:100%;text-align:left;overflow-wrap:anywhere;}
   .trail button{
-    font-family:inherit;font-size:12.5px;line-height:1;padding:7px 12px;border-radius:999px;
+    font-family:inherit;font-size:12.5px;line-height:1.3;padding:7px 12px;border-radius:14px;
     border:1px solid var(--line);background:var(--fill);color:var(--sub);cursor:pointer;
   }
   .trail button:hover{color:var(--ink);}
   .trail .current{
-    font-size:12.5px;line-height:1;padding:7px 12px;border-radius:999px;
+    font-size:12.5px;line-height:1.3;padding:7px 12px;border-radius:14px;
     border:1px solid var(--line);background:#fff;color:var(--ink);font-weight:600;
   }
   .trail .sep{color:#c7c7cc;font-size:12px;align-self:center;}
@@ -170,7 +171,8 @@
   .codecard .clabel{font-size:12.5px;color:#a1a1a6;margin:0 0 10px;letter-spacing:.04em;}
   .codecard .code{
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:30px;font-weight:600;letter-spacing:.12em;margin:0;
+    font-size:23px;font-weight:600;letter-spacing:.06em;margin:0;
+    word-break:break-all;overflow-wrap:anywhere;line-height:1.4;
   }
   .codecard .jcode{
     font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -183,14 +185,14 @@
   .fade{animation:fade .28s ease both;}
   @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
   @media (prefers-reduced-motion:reduce){.fade{animation:none;} *{transition:none !important;}}
-  @media (max-width:420px){h1.q{font-size:25px;} .codecard .code{font-size:25px;}}
+  @media (max-width:420px){h1.q{font-size:25px;} .codecard .code{font-size:20px;}}
 </style>
 </head>
 <body>
 <div id="root"></div>
 
 <script>
-/* 白画面を防ぐため、エラーを画面に出す */
+/* 白画面を防ぐためエラーを画面に出す */
 window.__showError = function(title, detail){
   var el = document.getElementById('root');
   if (!el) return;
