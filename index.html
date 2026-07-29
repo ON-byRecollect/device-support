@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Apple製品 トラブルシューティング</title>
 <meta name="description" content="質問に答えるだけで、AirPods や Apple Watch の不具合の対処法をご案内します。">
 <style>
@@ -140,7 +140,7 @@
   .flabel{display:block;font-size:14.5px;font-weight:600;color:var(--ink);margin:0 0 8px;}
   .flabel .req{font-size:10.5px;font-weight:600;color:var(--warn);margin-left:8px;
     border:1px solid var(--warn);border-radius:5px;padding:1px 6px;vertical-align:2px;}
-  .fselect,.ftext{width:100%;font-family:inherit;font-size:15px;color:var(--ink);
+  .fselect,.ftext{width:100%;font-family:inherit;font-size:16px;color:var(--ink);
     border:1px solid var(--line);border-radius:12px;background:var(--fill);padding:12px 14px;}
   .fselect:focus,.ftext:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff;}
   .ftext{resize:vertical;line-height:1.6;}
@@ -438,17 +438,18 @@ function Resolved({ code, onBack, onRestart }){
   };
   return (
     <div className="fade">
-      <h1 className="q">解決できて何よりです</h1>
-      <p className="lead">お手元で問題が解決したとのこと、私どもも大変嬉しく思います。</p>
+      <h1 className="q">ご協力ありがとうございます</h1>
+      <p className="lead">問題が解決したとのこと、大変嬉しく思います。</p>
 
-      <p className="note">
-        今回の件は、取引メッセージでのご報告は不要です。このまま対応完了とさせていただきます。<br/><br/>
-        最後までご対応いただき、誠にありがとうございました。今後も安心してお使いいただけましたら幸いです。
+      <p className="lead">
+        取引メッセージでのご報告は不要です。<br/>
+        このまま対応完了とさせていただきます。 最後までご対応いただき、ありがとうございました。<br/>
+        今後も安心してお使いいただけましたら幸いです。
       </p>
 
       <div className="optcode">
         <p className="optlead">
-          今後の応対品質向上を目的として、差し支えなければご協力ください（任意）。<br/>
+          差し支えなければ、今後の応対品質向上へご協力ください。<br/>
           発生したトラブルの内容と、解決までに行っていただいた操作を確認するため、下のコードをコピーして取引メッセージに貼り付けていただけますと幸いです。
         </p>
         <div className="codecard">
