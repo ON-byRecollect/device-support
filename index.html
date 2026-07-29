@@ -385,25 +385,22 @@ function Pending({ node, onBack }){
   );
 }
 
-function Unresolved({ code, journey, onBack, onRestart }){
+function Unresolved({ code, onBack, onRestart }){
   const [copied, setCopied] = useState(false);
   const copy = () => {
     if (!navigator.clipboard) return;
-    const text = journey ? (code + '\n訪問履歴: ' + journey) : code;
-    navigator.clipboard.writeText(text).then(()=>{
+    navigator.clipboard.writeText(code).then(()=>{
       setCopied(true); setTimeout(()=>setCopied(false), 2000);
     }).catch(()=>{});
   };
   return (
     <div className="fade">
-      <p className="eyebrow">お問い合わせ</p>
       <h1 className="q">ご協力ありがとうございます</h1>
       <p className="lead">下のコードを取引メッセージにそのまま貼り付けてお送りください。ここまでに選んだ内容が出品者側で確認でき、やり取りが一度で済みます。</p>
 
       <div className="codecard">
         <p className="clabel">エラーコード</p>
         <p className="code">{code}</p>
-        {journey && <p className="jcode">訪問履歴: {journey}</p>}
         <button className="copy" onClick={copy}>{copied ? 'コピーしました' : 'コードをコピー'}</button>
       </div>
 
@@ -423,7 +420,7 @@ function Unresolved({ code, journey, onBack, onRestart }){
   );
 }
 
-function Form({ node, code, journey, onBack, onRestart, onGoto }){
+function Form({ node, code, onBack, onRestart, onGoto }){
   const [phase, setPhase] = useState('input');
   const [timing, setTiming] = useState('');
   const [symptom, setSymptom] = useState('');
@@ -464,8 +461,7 @@ function Form({ node, code, journey, onBack, onRestart, onGoto }){
     '■ 発生条件: ' + condition.trim(),
     '■ 試したこと: ' + triedText,
   ];
-  const copyText = [code, (journey ? '訪問履歴: ' + journey : null), ''].concat(summaryLines)
-    .filter(x => x !== null).join('\n');
+  const copyText = [code, ''].concat(summaryLines).join('\n');
   const copy = () => {
     if (!navigator.clipboard) return;
     navigator.clipboard.writeText(copyText).then(()=>{
@@ -538,7 +534,6 @@ function Form({ node, code, journey, onBack, onRestart, onGoto }){
   if (phase === 'confirm') {
     return (
       <div className="fade">
-        <p className="eyebrow">入力内容の確認</p>
         <h1 className="q">入力内容を確認してください</h1>
         <p className="lead">修正する場合は「内容を修正する」を選んでください。</p>
 
@@ -561,14 +556,12 @@ function Form({ node, code, journey, onBack, onRestart, onGoto }){
 
   return (
     <div className="fade">
-      <p className="eyebrow">お問い合わせ</p>
       <h1 className="q">ご協力ありがとうございます</h1>
       <p className="lead">下のコードと申告内容を取引メッセージにそのまま貼り付けてお送りください。出品者側で確認でき、やり取りが一度で済みます。</p>
 
       <div className="codecard">
         <p className="clabel">エラーコード</p>
         <p className="code">{code}</p>
-        {journey && <p className="jcode">訪問履歴: {journey}</p>}
         <button className="copy" onClick={copy}>{copied ? 'コピーしました' : 'コードと申告内容をコピー'}</button>
       </div>
 
@@ -630,14 +623,14 @@ function App(){
 
   let body;
   if (unresolved) {
-    body = <Unresolved code={code} journey={makeJourneyCode(journeyRef.current)} onBack={back} onRestart={restart} />;
+    body = <Unresolved code={makeFullCode(segs, journeyRef.current)} onBack={back} onRestart={restart} />;
   } else if (node.type === 'answer') {
     body = <Answer node={node} onBack={back} onRestart={restart} onGoto={goto}
              onUnresolved={()=>nav(segs, true)} />;
   } else if (node.type === 'pending') {
     body = <Pending node={node} onBack={back} />;
   } else if (node.type === 'form') {
-    body = <Form node={node} code={code} journey={makeJourneyCode(journeyRef.current)}
+    body = <Form node={node} code={makeFullCode(segs, journeyRef.current)}
              onBack={back} onRestart={restart} onGoto={goto} />;
   } else {
     body = <Question node={node} onSelect={select} onGoto={goto} onBack={back} canBack={segs.length > 0} />;
