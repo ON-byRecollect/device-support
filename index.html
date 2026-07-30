@@ -695,8 +695,8 @@ function App(){
     <React.Fragment>
       <header className="site">
         <p className="brand">Apple製品 <span>トラブルシューティング</span></p>
-        {!(unresolved || resolved || formFinal) &&
-          <button className="restart" onClick={restart} disabled={!path.length}>最初から</button>}
+        {path.length > 0 && !(unresolved || resolved || formFinal) &&
+          <button className="restart" onClick={restart}>最初から</button>}
       </header>
       <Trail path={path} onJump={jump} />
       {body}
