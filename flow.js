@@ -22,8 +22,8 @@ const NODES = {
     hint:'モデルごとに詳しくご案内いたします。',
     product:true,
     options:[
-      { label:'AirPods', sub:'すべてのモデル', next:'ap.menu' },
-      { label:'Apple Watch', sub:'すべてのモデル', next:'aw.menu' },
+      { label:'AirPods', sub:'すべてのモデル', next:'ap.menu', image:'images/product-airpods.png' },
+      { label:'Apple Watch', sub:'すべてのモデル', next:'aw.menu', image:'images/product-apple-watch.png' },
     ],
   },
 
