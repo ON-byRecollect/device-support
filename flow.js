@@ -39,12 +39,24 @@ const NODES = {
     ],
   },
 
-  /* その他の不具合（問診フォーム。UIは index.html の Form コンポーネント） */
+  /* その他の不具合（問診フォーム。UIは index.html の Form コンポーネント）
+     tried / phSymptom / phCondition は製品ごとに異なる文言。
+     以前は Form 側に直接書かれていたが、Apple Watch 版（aw.other）を足すにあたり
+     ノード側へ移した。表示内容は移設前と同一。 */
   'ap.other': {
     type:'form',
     title:'その他の不具合',
     lead:'現在の状況を正確に把握することで、適切な解決策をご案内いたします。発生している不具合の症状や、不具合を確認したタイミング、発生条件等を可能な限り詳しくご入力ください。',
     resetLink:'ap.gen',
+    tried:[
+      'AirPods の OS バージョンアップデート',
+      'AirPods の接続解除／再接続',
+      'AirPods のリセット（初期化を伴う再ペアリング）',
+      'iPhone（ペアリング端末）の OS バージョンアップデート',
+      'iPhone（ペアリング端末）の再起動',
+    ],
+    phSymptom:'例：装着時にノイズが聴こえる。通話で使用した際、相手に声が届いていない。など',
+    phCondition:'例：外部音取込み機能をONにした時。室内では問題ないが、屋外で通話をした時だけ声を拾わない。など',
   },
 
   /* ---------- 探すアプリが正常に使えない（A〜D 振り分け） ---------- */
@@ -245,7 +257,28 @@ const NODES = {
     options:[
       { label:'Apple Watch の充電ができない', next:'a.aw.charge' },
       { label:'バンドの着脱が行えない', next:'a.aw.band' },
+      { label:'その他の不具合', next:'aw.other' },
     ],
+  },
+
+  /* Apple Watch 版「その他の不具合」。AirPods 版（ap.other）と同じ構成で、
+     選択肢と例文だけを Apple Watch 向けに置き換えている。
+     Apple Watch にはリセット手順のページが無いため resetLink は持たせない
+     （「まだ試していない」を選んでも手順へのリンクは表示されない）。 */
+  'aw.other': {
+    type:'form',
+    title:'その他の不具合',
+    lead:'現在の状況を正確に把握することで、適切な解決策をご案内いたします。発生している不具合の症状や、不具合を確認したタイミング、発生条件等を可能な限り詳しくご入力ください。',
+    tried:[
+      'Apple Watch の OS バージョンアップデート',
+      'Apple Watch の再起動',
+      'Apple Watch の接続解除／再接続',
+      'Apple Watch のリセット（初期化を伴う再ペアリング）',
+      'iPhone（ペアリング端末）の OS バージョンアップデート',
+      'iPhone（ペアリング端末）の再起動',
+    ],
+    phSymptom:'例：画面が反応しない。心拍数が計測できない。など',
+    phCondition:'例：運動中に使用した時。室内では問題ないが、屋外で使用した時だけ計測が止まる。など',
   },
   /* ---------- 充電ができない：症状の切り分け ----------
      ID は 'a.' 始まりだが type は question。
@@ -451,7 +484,7 @@ function deriveTrail(segs){
      L … 結合コードで経路部と履歴部を区切る文字
      X … makeCode の `KEYS[s.id] || 'X'` フォールバック用。
           正規のキーにすると KEYS の登録漏れが検出できなくなる
-   次に使える文字：V W Y Z / 6 7 8 9
+   次に使える文字：W Y Z / 6 7 8 9
 --------------------------------------------------------- */
 const KEYS = {
   'ap.menu'      : '1',
@@ -476,6 +509,7 @@ const KEYS = {
   'a.aw.verify'  : 'R',
   'a.aw.batt.bolt':'S',
   'a.aw.batt.none':'T',
+  'aw.other'     : 'V',
 };const KEY_TO_ID = Object.keys(KEYS).reduce(function(m,id){ m[KEYS[id]] = id; return m; }, {});
 
 /* フロー改訂番号。文言や手順を大きく変えたときだけ上げる。
