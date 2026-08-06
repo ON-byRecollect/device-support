@@ -57,11 +57,13 @@
   }
   .opt.product{padding:22px 46px 22px 20px;background:#fff;border-color:var(--line);}
   .opt.product .label{font-size:19px;font-weight:600;}
-  .opt.has-icon{padding-left:56px;}
+  .opt.has-icon{padding-left:56px;}    /* 18 + 24 + 14 */
+  .opt.has-icon2{padding-left:86px;}   /* 18 + 24 + 6 + 24 + 14（アイコン2つ） */
+  /* アイコンは入れ物ごと絶対配置し、中を横並びにする。1つのときの見た目は従来どおり */
+  .opt-ics{position:absolute;left:18px;top:50%;transform:translateY(-50%);display:flex;gap:6px;}
   .opt-ic{
-    position:absolute;left:18px;top:50%;transform:translateY(-50%);
     width:24px;height:24px;border-radius:50%;color:#fff;font-weight:700;font-size:15px;
-    display:flex;align-items:center;justify-content:center;line-height:1;
+    display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;
   }
   .opt-ic.warn{background:#f5a623;}
   .opt-ic.alert{background:#e0322c;}
@@ -72,6 +74,26 @@
     position:absolute;left:20px;top:50%;transform:translateY(-50%);
     width:64px;height:64px;object-fit:contain;
   }
+
+  /* ノード直下の画像。枠線・角丸は付けない（絵の中に枠が描かれているものがあるため） */
+  .nodefig{display:block;width:100%;height:auto;margin:0 0 26px;}
+  /* 画面上のアイコン等、小さく見せる画像。1枚でも横いっぱいに伸ばさない */
+  .nodefigs{display:flex;gap:14px;align-items:flex-start;margin:0 0 26px;}
+  .nodefigs img{flex:0 1 180px;min-width:0;max-width:180px;height:auto;}
+  ol.steps .nodefigs{margin:14px 0 0;}
+
+  /* 手順が1つだけのページは番号バッジを出さず、そのぶん左を詰める */
+  ol.steps.single > li{padding-left:0;}
+  ol.steps.single > li::before{display:none;}
+
+  /* 本文中の矢印。画像やアイコンフォントは使わず、線＋回転した正方形の2辺で作る */
+  .ic-arrow{display:inline-block;position:relative;width:22px;height:2px;
+    background:var(--accent);vertical-align:middle;margin:0 2px;}
+  .ic-arrow::after{content:"";position:absolute;right:0;top:-3px;width:7px;height:7px;
+    border-top:2px solid var(--accent);border-right:2px solid var(--accent);transform:rotate(45deg);}
+  /* 本文中のバンドリリースボタン */
+  .ic-btn{display:inline-block;width:24px;height:10px;border-radius:999px;
+    background:#e0322c;vertical-align:middle;margin:0 2px;}
 
   .eyebrow{font-size:12.5px;font-weight:600;color:var(--accent);letter-spacing:.04em;margin:0 0 8px;}
   .lead{font-size:16px;color:var(--sub);margin:0 0 28px;}
@@ -287,12 +309,38 @@ function Trail({ path, onJump }){
   );
 }
 
+/* ノード直下の画像。手順ページ・質問ページのどちらでも、本文と選択肢（手順）の間に出る。
+   image … 1枚を本文幅いっぱいに。images … 画面上のアイコン等を小さく横並びに。
+   steps[].image（Figure 経由）と違い SHOW_IMAGES の影響を受けず常に表示される。 */
+function NodeFigure({ node }){
+  if (node.image) return <img className="nodefig" src={node.image} alt={node.imageAlt || ''} />;
+  if (node.images && node.images.length) {
+    return (
+      <div className="nodefigs">
+        {node.images.map((f,i)=><img key={i} src={f.src} alt={f.alt || ''} />)}
+      </div>
+    );
+  }
+  return null;
+}
+
+/* 手順の本文に置いた {arrow} {btn} を小さな図形に置き換える。
+   データ側は素のテキストのままにしておきたいので HTML の埋め込みは使わない。 */
+function withMarks(text){
+  return String(text).split(/(\{arrow\}|\{btn\})/).map(function(part,i){
+    if (part === '{arrow}') return <span key={i} className="ic-arrow" role="img" aria-label="矢印" />;
+    if (part === '{btn}')   return <span key={i} className="ic-btn" role="img" aria-label="バンドリリースボタン" />;
+    return part;
+  });
+}
+
 function StepList({ steps, onGoto }){
+  /* 手順が1つだけのときは番号を出さない（順序の情報を持たないため） */
   return (
-    <ol className="steps">
+    <ol className={'steps' + (steps.length === 1 ? ' single' : '')}>
       {steps.map((s,i)=>(
         <li key={i} className={s.reset ? 'reset' : ''}>
-          <p>{s.text}</p>
+          <p>{withMarks(s.text)}</p>
           {s.nav && (
             <div className="navpath">
               {s.nav.map((seg,j)=>(
@@ -303,6 +351,8 @@ function StepList({ steps, onGoto }){
               ))}
             </div>
           )}
+          {/* pic は SHOW_IMAGES の影響を受けない手順内画像 */}
+          {s.pic && <div className="nodefigs"><img src={s.pic} alt="" /></div>}
           <Figure src={s.image} caption={s.caption} images={s.images} />
           {s.after && <p className="quiet">{s.after}</p>}
           {s.linkTo && (
@@ -323,18 +373,27 @@ function Question({ node, onSelect, onGoto, onBack, canBack }){
       <h1 className="q">{node.title}</h1>
       {node.hint && <p className="hint">{node.hint}</p>}
       {node.lead && <p className="lead">{node.lead}</p>}
+      <NodeFigure node={node} />
       {node.steps && <StepList steps={node.steps} onGoto={onGoto} />}
       <div className="options">
-        {node.options.map((o,i)=>(
-          <button key={i} className={'opt' + (node.product ? ' product' : '') + (o.icon ? ' has-icon' : '') + (o.image ? ' has-img' : '')} onClick={()=>onSelect(o,i)}>
-            {o.icon && <span className={'opt-ic ' + o.icon} aria-hidden="true">!</span>}
+        {node.options.map((o,i)=>{
+          const icons = o.icon ? (Array.isArray(o.icon) ? o.icon : [o.icon]) : [];
+          return (
+          <button key={i} className={'opt' + (node.product ? ' product' : '')
+              + (icons.length ? ' has-icon' : '') + (icons.length > 1 ? ' has-icon2' : '')
+              + (o.image ? ' has-img' : '')} onClick={()=>onSelect(o,i)}>
+            {icons.length > 0 &&
+              <span className="opt-ics" aria-hidden="true">
+                {icons.map((ic,j)=><span key={j} className={'opt-ic ' + ic}>!</span>)}
+              </span>}
             {/* 製品画像。隣の label が製品名を読み上げるため alt は空にして装飾扱いにする。
                 手順画像用の SHOW_IMAGES とは無関係で、常に表示する。 */}
             {o.image && <img className="opt-img" src={o.image} alt="" />}
             <span className="label">{o.label}</span>
             {o.sub && <span className="sub">{o.sub}</span>}
           </button>
-        ))}
+          );
+        })}
       </div>
       {canBack &&
         <div className="resolve">
@@ -351,6 +410,7 @@ function Answer({ node, onBack, onRestart, onUnresolved, onResolved, onGoto }){
       <h1 className="q">{node.title}</h1>
       {node.lead && <p className="lead">{node.lead}</p>}
       {node.callout && <div className="callout"><p>{node.callout}</p></div>}
+      <NodeFigure node={node} />
 
       <StepList steps={node.steps} onGoto={onGoto} />
 

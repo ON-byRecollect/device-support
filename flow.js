@@ -67,7 +67,8 @@ const NODES = {
     options:[
       { label:'AirPods の設定が完了していません', sub:'一部の機能が使用できません', icon:'warn', next:'a.setup' },
       { label:'AirPods の不一致', sub:'一部のパーツが見つかりません', icon:'alert', next:'ap.mismatch' },
-      { label:'両方とも表示される', sub:'いずれの表示が同時、もしくは入れ違いで出ている', next:'ap.mismatch' },
+      /* icon は配列でも指定できる。上2つのアイコンを両方並べて「両方とも」を視覚的に示す */
+      { label:'両方とも表示される', sub:'いずれの表示が同時、もしくは入れ違いで出ている', icon:['warn','alert'], next:'ap.mismatch' },
       { label:'いずれのエラーも表示されない', sub:'エラー表示がない', next:'a.noerror' },
     ],
   },
@@ -78,6 +79,9 @@ const NODES = {
     type:'question',
     title:'ペアリング時の状況を選んでください',
     hint:'AirPods を iPhone にペアリングした際の状況を把握することで、適切な解決策をご案内いたします。',
+    /* image … ノード直下の画像。本文幅いっぱいに出る。
+       steps[].image（Figure 経由）と違い SHOW_IMAGES の影響を受けず常に表示される。 */
+    image:'images/dialog-owner-warning.png',
     options:[
       { label:'表示された', next:'a.owner' },
       { label:'表示されていない', next:'a.mismatch2' },
@@ -224,12 +228,17 @@ const NODES = {
       { label:'AirPods 第4世代', sub:'アクティブノイズキャンセリング非搭載モデル', next:'a.rs.tap' },
       { label:'AirPods 第4世代', sub:'アクティブノイズキャンセリング搭載モデル', next:'a.rs.tap' },
       { label:'AirPods Pro 第2世代', next:'a.rs.button' },
-      { label:'AirPods Pro 第3世代', next:'a.rs.tap' },
+      { label:'AirPods Pro 第3世代', next:'a.rs.pro3' },
     ],
   },
 
-  'a.rs.tap':    RESET('tap'),
-  'a.rs.button': RESET('button'),
+  /* リセット手順の3ページ。本文はすべて RESET() から作られ、違うのは
+     操作方法（kind）と手順5に出す充電ケースの画像だけ。
+     **3ページとも見出しが「AirPods をリセットする」で同じなので、
+     編集するときはタイトル文字列ではなく必ずこの ID で指定すること。** */
+  'a.rs.tap':    RESET('tap',    'images/airpods4-case-led.png'),        // AirPods 第4世代
+  'a.rs.pro3':   RESET('tap',    'images/airpods-pro3-case-led.png'),    // AirPods Pro 第3世代
+  'a.rs.button': RESET('button', 'images/airpods-pro2-case-button.png'), // AirPods Pro 第2世代
 
   /* ---------- 探すアプリからリセットする（共通・末端の受け皿） ---------- */
   'a.findmy_reset': {
@@ -289,9 +298,9 @@ const NODES = {
     title:'現在の状況を選んでください',
     hint:'サイドボタンを長押しした際の症状を把握することで、適切な解決策をご案内いたします。',
     options:[
-      { label:'電源が入らず起動しない',            next:'a.aw.voltage' },
-      { label:'電源は入るが設定に移行できない',     next:'aw.screen' },
-      { label:'電源が入り起動できるが充電されない', next:'a.aw.verify' },
+      { label:'電源が入らない',                                 next:'a.aw.voltage' },
+      { label:'電源は入るが充電がされず、初期設定が行えない',     next:'aw.screen' },
+      { label:'電源が入り初期設定までは完了したが充電がされない', next:'a.aw.verify' },
     ],
   },
 
@@ -341,6 +350,12 @@ const NODES = {
     eyebrow:'所要時間 約2時間',
     title:'起動に必要なバッテリーが不足しています',
     lead:'Apple Watchの起動、ペアリングには充電ケーブルに接続した状態、もしくはバッテリー残量が50%以上残っている必要があります。',
+    /* images … ノード直下の画像（複数）。画面上のアイコンの見え方を小さく横並びで示す。
+       丸で囲まれた表示と囲まれていない表示の両方があるため2枚並べる。 */
+    images:[
+      { src:'images/aw-charge-bolt-circle.png' },
+      { src:'images/aw-charge-bolt.png' },
+    ],
     steps:[
       { text:'画面に赤い稲妻アイコンが表示されたら、最低でも2時間以上は充電し続けてください。' },
       { text:'起動、ペアリングに必要な充電が蓄積されると、接続手順を案内するアニメーションが表示されます。' },
@@ -356,6 +371,9 @@ const NODES = {
     eyebrow:'所要時間 約30分',
     title:'起動に必要なバッテリーが不足しています',
     lead:'Apple Watchの起動、ペアリングには充電ケーブルに接続した状態、もしくはバッテリー残量が50%以上残っている必要があります。',
+    images:[
+      { src:'images/aw-charge-cable.png' },
+    ],
     steps:[
       { text:'サイドボタンを押しても画面に何も表示されない場合や、充電ケーブルのアイコンが表示される場合は、最低でも30分以上は充電し続けてください。' },
       { text:'起動、ペアリングに必要な充電が蓄積されると、接続手順を案内するアニメーションが表示されます。' },
@@ -365,19 +383,20 @@ const NODES = {
     ],
   },
 
-  /* 原稿の元資料はイラスト前提の書き方（「→ の方向」「赤い図形を押し込みながら」）だったため、
-     図を使わずに通じるよう、方向は言葉で、赤い図形は「バンドリリースボタン」に置き換えている。 */
+  /* イラストが用意できたため、原稿どおりの書き方（矢印とボタンを文中に置く形）に戻している。
+     {arrow} {btn} は StepList が小さな図形に置き換えるしるし。 */
   'a.aw.band': {
     type:'answer',
     eyebrow:'所要時間 約3分',
     title:'バンドの着脱が行えない',
     lead:'バンドの取り付け・取り外しは、力を加えず、ゆっくりとスライドさせるのが基本です。',
+    image:'images/band-replace.jpg',
     steps:[
-      { text:'バンドを取り付けるときは力を加えず、ゆっくりと横方向にスライドしてください。' },
+      { text:'バンドを取り付けるときは力を加えず、ゆっくりと {arrow} の方向にスライドしてください。' },
       { text:'バンドを取り付けることができないときは、もう一度正しい向きかを確認してください。' },
-      { text:'取り外すときは本体の裏面にあるバンドリリースボタンを押し込みながら、力を加えず、ゆっくりと横方向にスライドしてください。' },
-      { text:'取り外すことができないときはバンドリリースボタンが奥まで沈み込んでいるかを確認してください。' },
-      { text:'その向きで着脱ができない場合は、反対方向から同じ方法で再度試してください。' },
+      { text:'取り外すときは {btn} を押し込みながら力を加えず、ゆっくりと {arrow} の方向にスライドしてください。' },
+      { text:'取り外すことができないときは {btn} が奥まで沈み込んでいるかを確認してください。' },
+      { text:'イラストの向きで着脱ができない場合は、反対方向から同じ方法で再度試してください。' },
     ],
   },
 };
@@ -387,21 +406,18 @@ const NODES = {
    kind:'tap'    … LED ランプを3回連続でダブルタップ
    kind:'button' … 背面の設定ボタンを15秒押し続ける
 --------------------------------------------------- */
-function RESET(kind){
+function RESET(kind, pic){
   const op = (kind === 'button')
     ? '充電ケースの蓋を開けたまま、充電ケース背面にある「設定ボタン」を15秒ほど押し続けてください。オレンジ色に点滅し「プップップ」と音が鳴ったら、設定ボタンから指を離して充電ケースの蓋を閉じてください。'
     : '充電ケースの蓋を開けたまま、充電ケース正面の LED ランプを3回連続でダブルタップしてください。オレンジ色に点滅し「プップップ」と音が鳴ったら、充電ケースの蓋を閉じてください。';
   const opRetry = (kind === 'button')
     ? 'その状態で、充電ケース背面にある「設定ボタン」を15秒ほど押し続けてください。'
     : 'その状態で、ダブルタップを1回行ってください。';
-  const title = (kind === 'button')
-    ? 'AirPods Pro 第2世代をリセットする'
-    : 'AirPods をリセットする';
-
   return {
     type:'answer',
     eyebrow:'所要時間 約5分',
-    title:title,
+    /* 見出しは3ページ共通。機種名は選択肢のラベル（＝パンくず）で分かるため入れない */
+    title:'AirPods をリセットする',
     lead:'AirPods 本体をリセットします。手順1〜4で登録を解除し、手順5から本体をリセットします。',
     steps:[
       { text:'AirPods の両耳を充電ケースに収納し、蓋を閉めて30秒待ちます。' },
@@ -409,9 +425,11 @@ function RESET(kind){
         nav:['設定','Bluetooth'] },
       { text:'自分のデバイス一覧から AirPods の「i マーク」をタップし、「このデバイスの登録を解除」をタップしてください。' },
       { text:'自分のデバイス一覧から AirPods が削除されたことを確認したら、充電ケースの蓋を開けてください。' },
+      /* pic … SHOW_IMAGES の影響を受けない手順内画像。機種ごとの充電ケースを示す。
+         既存の image / images は原稿準備中の手順画像で、SHOW_IMAGES で一括非表示のまま残す。 */
       (kind === 'button')
-        ? { text:op, image:'images/reset-button.png', reset:true }
-        : { text:op, reset:true, images:[
+        ? { text:op, pic:pic, image:'images/reset-button.png', reset:true }
+        : { text:op, pic:pic, reset:true, images:[
             { src:'images/reset-tap.png',   caption:'縦長タイプ' },
             { src:'images/reset-tap-2.png', caption:'横長タイプ' },
           ] },
@@ -484,7 +502,7 @@ function deriveTrail(segs){
      L … 結合コードで経路部と履歴部を区切る文字
      X … makeCode の `KEYS[s.id] || 'X'` フォールバック用。
           正規のキーにすると KEYS の登録漏れが検出できなくなる
-   次に使える文字：W Y Z / 6 7 8 9
+   次に使える文字：Y Z / 6 7 8 9
 --------------------------------------------------------- */
 const KEYS = {
   'ap.menu'      : '1',
@@ -510,6 +528,7 @@ const KEYS = {
   'a.aw.batt.bolt':'S',
   'a.aw.batt.none':'T',
   'aw.other'     : 'V',
+  'a.rs.pro3'    : 'W',
 };const KEY_TO_ID = Object.keys(KEYS).reduce(function(m,id){ m[KEYS[id]] = id; return m; }, {});
 
 /* フロー改訂番号。文言や手順を大きく変えたときだけ上げる。
