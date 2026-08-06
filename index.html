@@ -481,15 +481,16 @@ function Form({ node, code, onBack, onRestart, onGoto, onFinalChange }){
 
   const OTHER = 'その他';
   const NOTYET = 'まだ試していない';
-  const TRIED_OPTIONS = [
+  /* 「試されたこと」の選択肢は製品ごとに異なるため、flow.js のノード（node.tried）から受け取る。
+     指定の無いノード向けに AirPods 用を既定値として残している。
+     「その他」「まだ試していない」は製品を問わず常に末尾に付ける。 */
+  const TRIED_OPTIONS = (node.tried || [
     'AirPods の OS バージョンアップデート',
     'AirPods の接続解除／再接続',
     'AirPods のリセット（初期化を伴う再ペアリング）',
     'iPhone（ペアリング端末）の OS バージョンアップデート',
     'iPhone（ペアリング端末）の再起動',
-    OTHER,
-    NOTYET,
-  ];
+  ]).concat([OTHER, NOTYET]);
   const toggleTried = (label) => {
     setTried(prev => prev.includes(label) ? prev.filter(x=>x!==label) : prev.concat([label]));
   };
@@ -539,13 +540,13 @@ function Form({ node, code, onBack, onRestart, onGoto, onFinalChange }){
           <div className="fld">
             <label className="flabel">不具合の具体的な症状<span className="req">必須</span></label>
             <textarea className="ftext" rows="3" value={symptom} onChange={e=>setSymptom(e.target.value)}
-              placeholder="例：装着時にノイズが聴こえる。通話で使用した際、相手に声が届いていない。など" />
+              placeholder={node.phSymptom || '例：装着時にノイズが聴こえる。通話で使用した際、相手に声が届いていない。など'} />
           </div>
 
           <div className="fld">
             <label className="flabel">不具合の発生する条件<span className="req">必須</span></label>
             <textarea className="ftext" rows="3" value={condition} onChange={e=>setCondition(e.target.value)}
-              placeholder="例：外部音取込み機能をONにした時。室内では問題ないが、屋外で通話をした時だけ声を拾わない。など" />
+              placeholder={node.phCondition || '例：外部音取込み機能をONにした時。室内では問題ないが、屋外で通話をした時だけ声を拾わない。など'} />
           </div>
 
           <div className="fld">
@@ -560,7 +561,8 @@ function Form({ node, code, onBack, onRestart, onGoto, onFinalChange }){
                   {opt === OTHER && hasOther &&
                     <textarea className="ftext" rows="2" value={triedOther} onChange={e=>setTriedOther(e.target.value)}
                       placeholder="試された内容をご入力ください（必須）" />}
-                  {opt === NOTYET && hasNotYet &&
+                  {/* 手順ページを持つ製品（resetLink あり）のときだけ誘導ボタンを出す */}
+                  {opt === NOTYET && hasNotYet && node.resetLink &&
                     <button className="linkbtn" onClick={()=>onGoto(node.resetLink)}>
                       リセット・OS アップデートの手順を見る →
                     </button>}
