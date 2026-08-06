@@ -65,6 +65,13 @@
   }
   .opt-ic.warn{background:#f5a623;}
   .opt-ic.alert{background:#e0322c;}
+  /* 製品選択の画像。丸アイコン（.opt-ic）と同じく絶対配置し、左パディングで場所を空ける。
+     縦長・横長どちらの画像も 64px の枠に収めるため object-fit:contain を使う。 */
+  .opt.has-img{padding-left:104px;}
+  .opt-img{
+    position:absolute;left:20px;top:50%;transform:translateY(-50%);
+    width:64px;height:64px;object-fit:contain;
+  }
 
   .eyebrow{font-size:12.5px;font-weight:600;color:var(--accent);letter-spacing:.04em;margin:0 0 8px;}
   .lead{font-size:16px;color:var(--sub);margin:0 0 28px;}
@@ -319,8 +326,11 @@ function Question({ node, onSelect, onGoto, onBack, canBack }){
       {node.steps && <StepList steps={node.steps} onGoto={onGoto} />}
       <div className="options">
         {node.options.map((o,i)=>(
-          <button key={i} className={'opt' + (node.product ? ' product' : '') + (o.icon ? ' has-icon' : '')} onClick={()=>onSelect(o,i)}>
+          <button key={i} className={'opt' + (node.product ? ' product' : '') + (o.icon ? ' has-icon' : '') + (o.image ? ' has-img' : '')} onClick={()=>onSelect(o,i)}>
             {o.icon && <span className={'opt-ic ' + o.icon} aria-hidden="true">!</span>}
+            {/* 製品画像。隣の label が製品名を読み上げるため alt は空にして装飾扱いにする。
+                手順画像用の SHOW_IMAGES とは無関係で、常に表示する。 */}
+            {o.image && <img className="opt-img" src={o.image} alt="" />}
             <span className="label">{o.label}</span>
             {o.sub && <span className="sub">{o.sub}</span>}
           </button>
