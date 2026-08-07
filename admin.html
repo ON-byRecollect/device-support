@@ -12,8 +12,7 @@
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
     -webkit-font-smoothing:antialiased;}
   .wrap{max-width:620px;margin:0 auto;padding:26px 20px 80px;}
-  h1{font-size:22px;font-weight:600;margin:0 0 4px;}
-  .sub{color:var(--sub);font-size:14px;margin:0 0 26px;}
+  h1{font-size:22px;font-weight:600;margin:0 0 26px;}
   .field{display:flex;gap:8px;}
   input{
     flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:19px;letter-spacing:.08em;
@@ -39,13 +38,11 @@
   .final .t{font-size:16px;font-weight:600;margin:0 0 4px;}
   .final a{color:var(--accent);font-size:14px;text-decoration:none;}
   .back{color:var(--ng);font-size:12px;font-weight:600;margin-left:6px;}
-  .foot{margin-top:34px;padding-top:20px;border-top:1px solid var(--line);color:var(--sub);font-size:13px;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>コード確認</h1>
-  <p class="sub">購入者から届いたコードを貼り付けると、選んだ経路と全行程（戻り・寄り道を含む）を確認できます。購入者側の画面では1つのコードに見えますが、ここでエラーコードと訪問履歴に分解して表示します。（旧形式の TS- / TSH- コードもそのまま入力できます。）</p>
 
   <div class="field">
     <input id="code" placeholder="TS-112D-U" autocomplete="off" autocapitalize="characters" spellcheck="false">
@@ -53,11 +50,6 @@
   </div>
 
   <div class="out" id="out"></div>
-
-  <p class="foot">
-    このページは検索エンジンに登録されない設定にしていますが、URL を知っていれば誰でも開けます。
-    表示されるのは分岐の内容だけで、購入者を特定できる情報は含まれません。
-  </p>
 </div>
 
 <script src="flow.js"></script>
