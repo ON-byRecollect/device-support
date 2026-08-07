@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>管理コンソール</title>
 <style>
-  :root{--bg:#fff;--ink:#1d1d1f;--sub:#6e6e73;--fill:#f5f5f7;--accent:#0071e3;}
+  :root{--bg:#fff;--ink:#1d1d1f;--sub:#6e6e73;--line:#e5e5ea;--fill:#f5f5f7;--accent:#0071e3;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6;
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;-webkit-font-smoothing:antialiased;}
@@ -15,15 +15,24 @@
   .brand{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.05em;margin:0 0 6px;}
   h1{font-size:25px;font-weight:600;letter-spacing:-.02em;margin:0;}
 
+  /* コード確認。入力窓から下の見た目は code-check.js が持っている */
+  .check{margin:0 0 26px;}
+  .check .ttl{font-size:17px;font-weight:600;margin:0 0 12px;}
+
   .grid{display:flex;flex-direction:column;gap:12px;}
-  a.card{display:block;text-decoration:none;color:inherit;background:var(--fill);border:1px solid transparent;
+  .card{display:block;text-decoration:none;color:inherit;background:var(--fill);border:1px solid transparent;
     border-radius:16px;padding:20px 52px 20px 20px;position:relative;transition:background .15s,transform .1s;}
   a.card:hover{background:#ececf0;}
   a.card:active{transform:scale(.99);}
+  /* 矢印は「押すとページが開く」カードにだけ出す */
   a.card::after{content:"";position:absolute;right:22px;top:50%;width:8px;height:8px;margin-top:-5px;
     border-right:2px solid #b0b0b8;border-top:2px solid #b0b0b8;transform:rotate(45deg);}
   .card .ttl{display:block;font-size:17px;font-weight:600;}
-  .card .desc{display:block;font-size:13.5px;color:var(--sub);margin:5px 0 0;}
+  /* 操作が2つあるカード。<a> の中にボタンは置けないので、横に並べる */
+  .card.twoact{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:20px;}
+  .card.twoact a{color:inherit;text-decoration:none;}
+  .copybtn{font-family:inherit;font-size:13px;cursor:pointer;background:#fff;color:var(--accent);
+    border:1px solid var(--line);border-radius:999px;padding:8px 14px;white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -33,20 +42,43 @@
     <h1>管理コンソール</h1>
   </header>
 
+  <div class="check">
+    <p class="ttl">コード確認</p>
+    <div id="cc"></div>
+  </div>
+
   <div class="grid">
     <a class="card" href="return-admin.html">
       <span class="ttl">返送ページを作成する</span>
-      <span class="desc">メッセージとバーコードを入力し、購入者ごとの暗号化ファイルとリンクを作成します。</span>
     </a>
-    <a class="card" href="admin.html">
-      <span class="ttl">エラーコードを確認する</span>
-      <span class="desc">購入者から届いたコードを入力し、たどった経路を確認します。</span>
-    </a>
-    <a class="card" href="./" target="_blank" rel="noopener">
-      <span class="ttl">ヘルプページを開く</span>
-      <span class="desc">購入者が見るトラブルシューティング本体。表示の確認用（別タブで開きます）。</span>
-    </a>
+    <div class="card twoact">
+      <a class="ttl" href="./" target="_blank" rel="noopener">ヘルプページを開く</a>
+      <button type="button" class="copybtn" id="copyTop">リンクをコピー</button>
+    </div>
   </div>
 </div>
+
+<!-- 入力窓・確認ボタン・結果の見た目と処理は code-check.js にまとめてある。
+     admin.html でも同じものを使うので、こちらだけ書き換えないこと。 -->
+<script src="flow.js"></script>
+<script src="code-check.js"></script>
+<script>
+mountCodeCheck(document.getElementById('cc'));
+
+/* 購入者に渡す公開トップページの URL。このページ自身の URL からファイル名を落として作る。
+   例: …/my-delivery-tracker/console-xxxx.html → …/my-delivery-tracker/
+   管理コンソールのファイル名を含めないこと（共有した相手に知られてしまうため）。 */
+(function(){
+  var btn = document.getElementById('copyTop');
+  btn.addEventListener('click', function(){
+    var top = location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '');
+    if (!navigator.clipboard) return;
+    navigator.clipboard.writeText(top).then(function(){
+      btn.textContent = 'コピーしました';
+      setTimeout(function(){ btn.textContent = 'リンクをコピー'; }, 1500);
+    }).catch(function(){});
+  });
+})();
+</script>
 </body>
 </html>

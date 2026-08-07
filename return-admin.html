@@ -44,13 +44,6 @@
   <h1>返品ページ作成</h1>
 
   <fieldset>
-    <legend>返送用バーコード</legend>
-    <label>画像を選択<span class="hint">（この購入者専用の配送バーコード。画像は暗号化され、単体で置かれることはありません）</span></label>
-    <input type="file" id="barcode" accept="image/*">
-    <div class="preview" id="preview"></div>
-  </fieldset>
-
-  <fieldset>
     <legend>荷物のサイズ</legend>
     <label>外寸の3辺合計<span class="hint">（返品ページの手順2に入る数字です）</span></label>
     <select id="size">
@@ -59,6 +52,13 @@
       <option value="100">100cm 以内</option>
       <option value="120">120cm 以内</option>
     </select>
+  </fieldset>
+
+  <fieldset>
+    <legend>返送用バーコード</legend>
+    <label>画像を選択<span class="hint">（この購入者専用の配送バーコード。画像は暗号化され、単体で置かれることはありません）</span></label>
+    <input type="file" id="barcode" accept="image/*">
+    <div class="preview" id="preview"></div>
   </fieldset>
 
   <fieldset>
