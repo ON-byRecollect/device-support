@@ -57,27 +57,26 @@
   }
   .opt.product{padding:22px 46px 22px 20px;background:#fff;border-color:var(--line);}
   .opt.product .label{font-size:19px;font-weight:600;}
-  .opt.has-icon{padding-left:56px;}    /* 18 + 24 + 14 */
-  /* アイコンは入れ物ごと絶対配置する。2つのときは縦に積むので必要な幅は1つのときと同じ */
-  .opt-ics{position:absolute;left:18px;top:50%;transform:translateY(-50%);
-    display:flex;flex-direction:column;gap:6px;}
+  /* 状態を示すアイコンは文字の左ではなく、文字の開始位置の上の段に置く。
+     左に置くとアイコンの有無で文字の開始位置がずれるため、上に積んで頭をそろえる。
+     アイコンのある選択肢だけ、そのぶんカードの高さが増える。 */
+  .opt-ics{display:flex;gap:6px;margin:0 0 8px;}
   .opt-ic{
     width:24px;height:24px;border-radius:50%;color:#fff;font-weight:700;font-size:15px;
     display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;
   }
   .opt-ic.warn{background:#f5a623;}
   .opt-ic.alert{background:#e0322c;}
-  /* 選択肢に添える画像。丸アイコン（.opt-ic）と同じく絶対配置し、左パディングで場所を空ける。
-     縦長・横長どちらの画像も枠に収めるため object-fit:contain を使う。
-     通常の選択肢では、警告の丸アイコン（24px）と左位置をそろえた小さめの扱い。 */
-  .opt.has-img{padding-left:56px;}
-  .opt-img{
-    position:absolute;left:18px;top:50%;transform:translateY(-50%);
-    width:28px;height:28px;object-fit:contain;
-  }
-  /* 製品選択（トップページ）の画像はひと回り大きく。見出し 19px に対して控えめな 44px */
+  /* 選択肢に添える画像。丸アイコン（.opt-ic）と同じく文字の上の段に置く。
+     縦長・横長どちらの画像も枠に収めるため object-fit:contain を使う。 */
+  .opt-img{display:block;width:28px;height:28px;object-fit:contain;margin:0 0 8px;}
+  /* 製品選択（トップページ）だけは例外で、大きな写真を文字の左に置く従来のレイアウト。
+     選択肢が2つとも画像を持つため、左に置いても文字の開始位置はずれない。 */
   .opt.product.has-img{padding-left:78px;}   /* 20 + 44 + 14 */
-  .opt.product .opt-img{left:20px;width:44px;height:44px;}
+  .opt.product .opt-img{
+    position:absolute;left:20px;top:50%;transform:translateY(-50%);
+    width:44px;height:44px;margin:0;
+  }
 
   /* ノード直下の画像。枠線・角丸は付けない（絵の中に枠が描かれているものがあるため） */
   .nodefig{display:block;width:100%;height:auto;margin:0 0 26px;}
@@ -399,9 +398,11 @@ function Question({ node, onSelect, onGoto, onBack, canBack }){
       <div className="options">
         {node.options.map((o,i)=>{
           const icons = o.icon ? (Array.isArray(o.icon) ? o.icon : [o.icon]) : [];
+          /* has-img は製品選択の大きな写真だけレイアウトを変えるための目印。
+             アイコンは文字の上に積むだけで場所を空ける必要がないため、専用のクラスは持たせない */
           return (
           <button key={i} className={'opt' + (node.product ? ' product' : '')
-              + (icons.length ? ' has-icon' : '') + (o.image ? ' has-img' : '')}
+              + (o.image ? ' has-img' : '')}
               onClick={()=>onSelect(o,i)}>
             {icons.length > 0 &&
               <span className="opt-ics" aria-hidden="true">
