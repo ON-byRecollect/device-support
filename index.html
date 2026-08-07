@@ -67,16 +67,22 @@
   }
   .opt-ic.warn{background:#f5a623;}
   .opt-ic.alert{background:#e0322c;}
-  /* 製品選択の画像。丸アイコン（.opt-ic）と同じく絶対配置し、左パディングで場所を空ける。
-     縦長・横長どちらの画像も 64px の枠に収めるため object-fit:contain を使う。 */
-  .opt.has-img{padding-left:104px;}
+  /* 選択肢に添える画像。丸アイコン（.opt-ic）と同じく絶対配置し、左パディングで場所を空ける。
+     縦長・横長どちらの画像も枠に収めるため object-fit:contain を使う。
+     通常の選択肢では、警告の丸アイコン（24px）と左位置をそろえた小さめの扱い。 */
+  .opt.has-img{padding-left:56px;}
   .opt-img{
-    position:absolute;left:20px;top:50%;transform:translateY(-50%);
-    width:64px;height:64px;object-fit:contain;
+    position:absolute;left:18px;top:50%;transform:translateY(-50%);
+    width:28px;height:28px;object-fit:contain;
   }
+  /* 製品選択（トップページ）の画像はひと回り大きく。見出し 19px に対して控えめな 44px */
+  .opt.product.has-img{padding-left:78px;}   /* 20 + 44 + 14 */
+  .opt.product .opt-img{left:20px;width:44px;height:44px;}
 
   /* ノード直下の画像。枠線・角丸は付けない（絵の中に枠が描かれているものがあるため） */
   .nodefig{display:block;width:100%;height:auto;margin:0 0 26px;}
+  /* 幅いっぱいだと大きすぎる絵を控えめに。割合指定なのでどの画面幅でも同じ比率で縮む */
+  .nodefig.narrow{width:75%;}
   /* 画面上のアイコン等、小さく見せる画像。1枚でも横いっぱいに伸ばさない */
   .nodefigs{display:flex;gap:14px;align-items:flex-start;margin:0 0 26px;}
   .nodefigs img{flex:0 1 180px;min-width:0;max-width:180px;height:auto;}
@@ -319,10 +325,12 @@ function Trail({ path, onJump }){
 }
 
 /* ノード直下の画像。手順ページ・質問ページのどちらでも、本文と選択肢（手順）の間に出る。
-   image … 1枚を本文幅いっぱいに。images … 画面上のアイコン等を小さく横並びに。
+   image … 1枚を本文幅いっぱいに（imageNarrow を立てると 75% に抑える）。
+   images … 画面上のアイコン等を小さく横並びに。
    steps[].image（Figure 経由）と違い SHOW_IMAGES の影響を受けず常に表示される。 */
 function NodeFigure({ node }){
-  if (node.image) return <img className="nodefig" src={node.image} alt={node.imageAlt || ''} />;
+  if (node.image) return <img className={'nodefig' + (node.imageNarrow ? ' narrow' : '')}
+                              src={node.image} alt={node.imageAlt || ''} />;
   if (node.images && node.images.length) {
     return (
       <div className="nodefigs">

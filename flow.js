@@ -67,8 +67,9 @@ const NODES = {
     options:[
       { label:'AirPods の設定が完了していません', sub:'一部の機能が使用できません', icon:'warn', next:'a.setup' },
       { label:'AirPods の不一致', sub:'一部のパーツが見つかりません', icon:'alert', next:'ap.mismatch' },
-      /* icon は配列でも指定できる。上2つのアイコンを両方並べて「両方とも」を視覚的に示す */
-      { label:'両方とも表示される', sub:'いずれの表示が同時、もしくは入れ違いで出ている', icon:['warn','alert'], next:'ap.mismatch' },
+      /* 上2つのアイコンを並べると個別の警告と紛らわしいため、アイコンは付けない
+         （下の「いずれのエラーも表示されない」と同じ見た目にそろえる） */
+      { label:'両方とも表示される', sub:'いずれの表示が同時、もしくは入れ違いで出ている', next:'ap.mismatch' },
       { label:'いずれのエラーも表示されない', sub:'エラー表示がない', next:'a.noerror' },
     ],
   },
@@ -79,9 +80,11 @@ const NODES = {
     type:'question',
     title:'ペアリング時の状況を選んでください',
     hint:'AirPods を iPhone にペアリングした際の状況を把握することで、適切な解決策をご案内いたします。',
-    /* image … ノード直下の画像。本文幅いっぱいに出る。
-       steps[].image（Figure 経由）と違い SHOW_IMAGES の影響を受けず常に表示される。 */
+    /* image … ノード直下の画像。steps[].image（Figure 経由）と違い
+       SHOW_IMAGES の影響を受けず常に表示される。
+       imageNarrow … 幅いっぱいだと大きすぎるので、本文幅の75%に抑える */
     image:'images/dialog-owner-warning.png',
+    imageNarrow:true,
     options:[
       { label:'表示された', next:'a.owner' },
       { label:'表示されていない', next:'a.mismatch2' },
@@ -117,9 +120,12 @@ const NODES = {
     steps:[
       { pic:['images/ss-settings-top.png', 'images/ss-settings-general.png'], text:'一部の AirPods の「探す」機能は、ペアリングしている iPhone のソフトウェアが最新バージョンのときのみ動作します。最新バージョンの iOS がインストールされていることを確認してください。', image:'images/setup-incomplete-detail.png', caption:'「探す」アプリに表示される設定未完了',
         nav:['設定','一般','ソフトウェアアップデート'] },
-      { pic:['images/ss-findmy-devices-warn.png', 'images/ss-findmy-airpods-warn.jpg'], text:'ペアリングしている iPhone の「探す」アプリの設定が、正しく完了しているかを確認してください。' },
-      { pic:['images/ss-settings-top.png', 'images/ss-apple-account.png', 'images/ss-signin-security.png', 'images/ss-two-factor.png'], text:'Apple Account の2ファクタ認証が有効になっているかを確認してください。', image:'images/two-factor.png', caption:'設定 → アカウント名 → サインインとセキュリティ → 2ファクタ認証' },
-      { pic:['images/ss-settings-top.png', 'images/ss-apple-account.png', 'images/ss-icloud.png', 'images/ss-keychain-on.png'], text:'iCloud キーチェーンが有効になっているかを確認してください。', image:'images/icloud-keychain.png', caption:'iCloud → パスワード → パスワードとキーチェーン' },
+      { pic:['images/ss-findmy-devices-warn.png', 'images/ss-findmy-airpods.png'], text:'ペアリングしている iPhone の「探す」アプリの設定が、正しく完了しているかを確認してください。',
+        nav:['探す','デバイスを探す','AirPods'] },
+      { pic:['images/ss-settings-top.png', 'images/ss-apple-account.png', 'images/ss-signin-security.png', 'images/ss-two-factor.png'], text:'Apple Account の2ファクタ認証が有効になっているかを確認してください。', image:'images/two-factor.png', caption:'設定 → アカウント名 → サインインとセキュリティ → 2ファクタ認証',
+        nav:['設定','アカウント名','サインインとセキュリティ','2ファクタ認証'] },
+      { pic:['images/ss-settings-top.png', 'images/ss-apple-account.png', 'images/ss-icloud.png', 'images/ss-keychain-on.png'], text:'iCloud キーチェーンが有効になっているかを確認してください。', image:'images/icloud-keychain.png', caption:'iCloud → パスワード → パスワードとキーチェーン',
+        nav:['設定','アカウント名','iCloud','パスワード'] },
       { text:'1〜4 の設定が正しく完了していることを確認し、接続している AirPods の本体を両耳とも充電ケースへ収納し、蓋を閉じた状態で有線ケーブルによる充電を行ってください。' },
       { text:'ペアリングしている iPhone を、AirPods から 1m 以内の場所に置いて、数分待機してください。' },
       { text:'再度、AirPods の充電ケースの蓋を開けたまま、ペアリングしている iPhone で「探す」アプリを開いて、症状が改善しているかを確認してください。',
@@ -152,24 +158,26 @@ const NODES = {
         nav:['設定','Bluetooth'] },
       { pic:'images/ss-bluetooth.png', text:'自分のデバイス一覧に表示されている、ペアリング済みの AirPods の {info} をタップしてください。' },
       { pic:'images/ss-airpods-info-unpair.png', text:'AirPods のページ最下部にある「このデバイスの登録を解除」をタップしてください。', image:'images/airpods-info.png', caption:'AirPods 情報ページ最下部の「このデバイスの登録を解除」' },
-      { text:'Bluetooth の自分のデバイス一覧から、ペアリング済みの AirPods が削除されていることを確認してください。' },
       { pic:'images/ss-findmy-devices.png', text:'ペアリングしている iPhone で「探す」アプリを開いて、「デバイスを探す」の一覧からペアリング済みの AirPods が削除されていることを確認してください。', image:'images/findmy-devices-list.png', caption:'「デバイスを探す」の一覧',
         nav:['探す','デバイスを探す'] },
       { pic:'images/ss-settings-faceid-row.png', text:'設定アプリを開き、「Face ID とパスコード」をタップしてください。', image:'images/faceid-passcode-list.png', caption:'設定 → Face ID とパスコード',
         nav:['設定','Face ID とパスコード'] },
-      { pic:['images/ss-faceid-top.png', 'images/ss-faceid-bottom.png'], text:'「盗難デバイスの保護」をタップしてください。' },
+      { pic:['images/ss-faceid-top.png', 'images/ss-faceid-bottom.png'], text:'「盗難デバイスの保護」をタップしてください。',
+        nav:['Face ID とパスコード','盗難デバイスの保護'] },
       { pic:'images/ss-theft-off.png', text:'盗難デバイスの保護がオンになっている場合は、この設定をオフにしてください。', image:'images/theft-protection-on.png', caption:'盗難デバイスの保護（オンの状態）' },
       { pic:'images/ss-settings-top.png', text:'設定アプリのトップ画面に戻り、ページ最上部に表示されるご自身のアカウント名をタップしてください。' },
       { pic:'images/ss-apple-account.png', text:'Apple Account ページの「探す」をタップしてください。',
         nav:['設定','アカウント名','探す'] },
-      { pic:['images/ss-find-settings.png', 'images/ss-find-iphone-off.png'], text:'「iPhone を探す」をタップし、オンになっている場合はオフにしてください。', image:'images/find-iphone-off.png', caption:'「iPhone を探す」をオフにした状態' },
+      { pic:['images/ss-find-settings.png', 'images/ss-find-iphone-off.png'], text:'「iPhone を探す」をタップし、オンになっている場合はオフにしてください。', image:'images/find-iphone-off.png', caption:'「iPhone を探す」をオフにした状態',
+        nav:['探す','iPhone を探す'] },
       { pic:['images/ss-apple-account.png', 'images/ss-icloud.png'], text:'Apple Account ページへ戻り、iCloud をタップしてください。',
         nav:['設定','アカウント名','iCloud'] },
       { pic:'images/ss-keychain-off.png', text:'「パスワード」をタップし、「パスワードとキーチェーン」の「この iPhone を同期」がオンになっている場合は、オフにしてください。', image:'images/icloud-keychain.png', caption:'iCloud → パスワード → パスワードとキーチェーン',
         nav:['iCloud','パスワード'] },
-      { text:'1〜14 の設定を保持したまま、iPhone を再起動させてください。', image:'images/power-off.png', caption:'スライドで電源オフ' },
+      { text:'1〜13 の設定を保持したまま、iPhone を再起動させてください。', image:'images/power-off.png', caption:'スライドで電源オフ' },
       { text:'iPhone を再起動したら、設定アプリを開いてください。' },
-      { pic:['images/ss-settings-top.png', 'images/ss-apple-account.png'], text:'ページ最上部に表示されるご自身のアカウント名をタップしてください。' },
+      { pic:['images/ss-settings-top.png', 'images/ss-apple-account.png'], text:'ページ最上部に表示されるご自身のアカウント名をタップしてください。',
+        nav:['設定','アカウント名'] },
       { text:'Apple Account ページの「探す」をタップしてください。',
         nav:['設定','アカウント名','探す'] },
       { pic:'images/ss-find-iphone-on.png', text:'「iPhone を探す」をタップしてオンにしてください。「探すネットワーク」がオフのままの場合は、オンにしてください。', image:'images/find-iphone-all-on.png', caption:'「iPhone を探す」「探すネットワーク」をオン' },
@@ -184,13 +192,14 @@ const NODES = {
       { pic:['images/ss-settings-top.png', 'images/ss-bluetooth.png'], text:'Bluetooth をタップし、自分のデバイス一覧に AirPods が表示されていることを確認してください。', image:'images/bluetooth-airpods.png', caption:'設定 → Bluetooth',
         nav:['設定','Bluetooth'] },
       { text:'自分のデバイス一覧に表示されている、ペアリング済みの AirPods の {info} をタップしてください。' },
-      { pic:['images/ss-airpods-top.png', 'images/ss-airpods-battery-row.png'], text:'AirPods の設定画面の中ほどにある「バッテリー」をタップしてください。', image:'images/airpods-battery.png', caption:'AirPods → バッテリー（充電の最適化）' },
+      { pic:['images/ss-airpods-top.png', 'images/ss-airpods-battery-row.png'], text:'AirPods の設定画面の中ほどにある「バッテリー」をタップしてください。', image:'images/airpods-battery.png', caption:'AirPods → バッテリー（充電の最適化）',
+        nav:['AirPods','バッテリー'] },
       { pic:'images/ss-airpods-battery.png', text:'バッテリー充電の最適化がオフになっている場合は、オンに変更してください。' },
       { pic:'images/ss-airpods-info.png', text:'ページを一つ戻り、AirPods ページの最下部にある情報から「バージョン」をタップしてください。', image:'images/airpods-info.png', caption:'AirPods 情報 → バージョン', image:'images/airpods-info.png', caption:'AirPods 情報 → バージョン' },
       { text:'バージョンページに表示されているファームウェアが最新であることを確認してください。',
         after:'「ファームウェアの詳細はこちら」から、デバイスごとの最新ファームウェアバージョンを確認できます。バージョンが最新ではない場合は、「AirPods のファームウェアをアップデートする」を実行してください。',
         linkTo:'a.firmware', linkLabel:'AirPods のファームウェアをアップデートする' },
-      { text:'1〜30 の操作を実行して、症状が改善されたかを確認してください。' },
+      { text:'1〜29 の操作を実行して、症状が改善されたかを確認してください。' },
     ],
     note:'<strong>症状が改善されない場合</strong><br>デバイスや AirPods の物理的な故障、もしくは AirPods の内部ソフトウェアに何らかの不具合が発生している可能性があります。<br>一部の AirPods では、特定の Apple Account にペアリングした場合のみこの現象が発生することが報告されています。<br>身近な方の力を借りられる場合は、ご自身とは別の Apple Account に AirPods をペアリングし、同じ症状が出るかを確認してください。',
   },
@@ -213,7 +222,8 @@ const NODES = {
       { pic:['images/ss-settings-top.png', 'images/ss-bluetooth.png'], text:'iPhone の設定アプリを開き、Bluetooth をタップして、自分のデバイス一覧に AirPods が表示されていることを確認してください。', image:'images/bluetooth-airpods.png', caption:'設定 → Bluetooth',
         nav:['設定','Bluetooth'] },
       { text:'自分のデバイス一覧に表示されている、ペアリング済みの AirPods の {info} をタップしてください。' },
-      { pic:['images/ss-airpods-top.png', 'images/ss-airpods-battery-row.png', 'images/ss-airpods-info.png'], text:'AirPods ページの最下部にある情報から「バージョン」をタップしてください。' },
+      { pic:['images/ss-airpods-top.png', 'images/ss-airpods-findmy-off.png', 'images/ss-airpods-info.png'], text:'AirPods ページの最下部にある情報から「バージョン」をタップしてください。',
+        nav:['AirPods','情報','バージョン'] },
       { text:'バージョンページに表示されているファームウェアが最新版になっていれば、完了です。' },
     ],
     note:'<strong>アップデートが完了しない場合</strong><br>手順1から再度やり直してください。',
@@ -226,19 +236,22 @@ const NODES = {
     hint:'モデルごとの適切な手順をご案内いたします。',
     options:[
       { label:'AirPods 第4世代', sub:'アクティブノイズキャンセリング非搭載モデル', next:'a.rs.tap' },
-      { label:'AirPods 第4世代', sub:'アクティブノイズキャンセリング搭載モデル', next:'a.rs.tap' },
+      { label:'AirPods 第4世代', sub:'アクティブノイズキャンセリング搭載モデル', next:'a.rs.tap.anc' },
       { label:'AirPods Pro 第2世代', next:'a.rs.button' },
       { label:'AirPods Pro 第3世代', next:'a.rs.pro3' },
     ],
   },
 
-  /* リセット手順の3ページ。本文はすべて RESET() から作られ、違うのは
+  /* リセット手順の4ページ。本文はすべて RESET() から作られ、違うのは
      操作方法（kind）と手順5に出す充電ケースの画像だけ。
-     **3ページとも見出しが「AirPods をリセットする」で同じなので、
-     編集するときはタイトル文字列ではなく必ずこの ID で指定すること。** */
-  'a.rs.tap':    RESET('tap',    'images/airpods4-case-led.png'),        // AirPods 第4世代
-  'a.rs.pro3':   RESET('tap',    'images/airpods-pro3-case-led.png'),    // AirPods Pro 第3世代
-  'a.rs.button': RESET('button', 'images/airpods-pro2-case-button.png'), // AirPods Pro 第2世代
+     **4ページとも見出しが「AirPods をリセットする」で同じなので、
+     編集するときはタイトル文字列ではなく必ずこの ID で指定すること。**
+     第4世代は kind だけが違う2ページ。'a.rs.tap' が非搭載モデルなのは、
+     ページを分ける前のコード（KEY 'G'）の意味を変えないため。 */
+  'a.rs.tap':     RESET('tap.mute', 'images/airpods4-case-led.png'),      // 第4世代（ノイキャン非搭載）
+  'a.rs.tap.anc': RESET('tap',      'images/airpods4-case-led.png'),      // 第4世代（ノイキャン搭載）
+  'a.rs.pro3':    RESET('tap',      'images/airpods-pro3-case-led.png'),  // AirPods Pro 第3世代
+  'a.rs.button':  RESET('button',   'images/airpods-pro2-case-button.png'), // AirPods Pro 第2世代
 
   /* ---------- 探すアプリからリセットする（共通・末端の受け皿） ---------- */
   'a.findmy_reset': {
@@ -308,9 +321,11 @@ const NODES = {
     type:'question',
     title:'画面の表示内容を選んでください',
     hint:'状態アイコンを把握することで、適切な解決策をご案内いたします。',
+    /* image … 選択肢の文字の前に出す小さな画像。製品選択（start）と同じ仕組み。
+       画面に出るアイコンそのものを載せて、文字だけより見分けやすくする。 */
     options:[
-      { label:'赤い稲妻アイコンが表示される',       next:'a.aw.batt.bolt' },
-      { label:'充電ケーブルのアイコンが表示される', next:'a.aw.batt.none' },
+      { label:'赤い稲妻アイコンが表示される',       image:'images/aw-icon-bolt.png',  next:'a.aw.batt.bolt' },
+      { label:'充電ケーブルのアイコンが表示される', image:'images/aw-icon-cable.png', next:'a.aw.batt.none' },
       { label:'何も表示されない',                  next:'a.aw.batt.none' },
     ],
   },
@@ -403,16 +418,26 @@ const NODES = {
 
 /* ---------- リセット手順のテンプレート ----------
    本体リセット操作（手順5）だけが機種で異なるため、共通化する。
-   kind:'tap'    … LED ランプを3回連続でダブルタップ
-   kind:'button' … 背面の設定ボタンを15秒押し続ける
+   kind:'tap'      … LED ランプを3回連続でダブルタップ
+   kind:'tap.mute' … 同上。ただしスピーカー非搭載モデル用で、通知音の記述を省く
+   kind:'button'   … 背面の設定ボタンを15秒押し続ける
 --------------------------------------------------- */
 function RESET(kind, pic){
+  /* ノイズキャンセリング非搭載モデルはスピーカーを内蔵しておらず、
+     「プップップ」「ピコン」といった通知音が鳴らないため文言から外す */
+  const mute = (kind === 'tap.mute');
   const op = (kind === 'button')
     ? '充電ケースの蓋を開けたまま、充電ケース背面にある「設定ボタン」を15秒ほど押し続けてください。オレンジ色に点滅し「プップップ」と音が鳴ったら、設定ボタンから指を離して充電ケースの蓋を閉じてください。'
-    : '充電ケースの蓋を開けたまま、充電ケース正面の LED ランプを3回連続でダブルタップしてください。オレンジ色に点滅し「プップップ」と音が鳴ったら、充電ケースの蓋を閉じてください。';
+    : mute
+      ? '充電ケースの蓋を開けたまま、充電ケース正面の LED ランプを3回連続でダブルタップしてください。オレンジ色に点滅したら、充電ケースの蓋を閉じてください。'
+      : '充電ケースの蓋を開けたまま、充電ケース正面の LED ランプを3回連続でダブルタップしてください。オレンジ色に点滅し「プップップ」と音が鳴ったら、充電ケースの蓋を閉じてください。';
   const opRetry = (kind === 'button')
     ? 'その状態で、充電ケース背面にある「設定ボタン」を15秒ほど押し続けてください。'
     : 'その状態で、ダブルタップを1回行ってください。';
+  const vName = mute ? 'オレンジ点滅のままになる場合' : 'オレンジ点滅のまま、エラー音が鳴る場合';
+  const vHead = mute
+    ? '蓋を開けてもオレンジ色に点滅したままの場合（緑やオレンジが点灯したままの場合）は、'
+    : '蓋を開けてもオレンジ色に点滅したまま「ピコン」とエラー音が鳴る場合（緑やオレンジが点灯したままの場合）は、';
   return {
     type:'answer',
     eyebrow:'所要時間 約5分',
@@ -423,7 +448,8 @@ function RESET(kind, pic){
       { text:'AirPods の両耳を充電ケースに収納し、蓋を閉めて30秒待ちます。' },
       { text:'接続している iPhone で設定アプリを開き、Bluetooth をタップします。',
         nav:['設定','Bluetooth'] },
-      { pic:['images/ss-settings-top.png', 'images/ss-bluetooth.png'], text:'自分のデバイス一覧から AirPods の {info} をタップし、「このデバイスの登録を解除」をタップしてください。' },
+      { pic:['images/ss-settings-top.png', 'images/ss-bluetooth.png'], text:'自分のデバイス一覧から AirPods の {info} をタップし、「このデバイスの登録を解除」をタップしてください。',
+        nav:['設定','Bluetooth','AirPods'] },
       { text:'自分のデバイス一覧から AirPods が削除されたことを確認したら、充電ケースの蓋を開けてください。' },
       /* pic … SHOW_IMAGES の影響を受けない手順内画像。機種ごとの充電ケースを示す。
          既存の image / images は原稿準備中の手順画像で、SHOW_IMAGES で一括非表示のまま残す。 */
@@ -439,7 +465,7 @@ function RESET(kind, pic){
       { text:'接続していた AirPods が「デバイスを探す」の一覧から削除されていれば、リセットは完了です。' },
     ],
     variants:[
-      { name:'オレンジ点滅のまま、エラー音が鳴る場合', text:'蓋を開けてもオレンジ色に点滅したまま「ピコン」とエラー音が鳴る場合（緑やオレンジが点灯したままの場合）は、'+opRetry+'30秒ほど待機すると、白い点滅に変わり接続できるようになります。' },
+      { name:vName, text:vHead+opRetry+'30秒ほど待機すると、白い点滅に変わり接続できるようになります。' },
       { name:'それでも白い点滅に変わらない場合', text:'蓋を閉じて30秒ほど待機し、再び蓋を開けて、同じリセット操作をもう一度行ってください。30秒ほど待機すると、白い点滅に変わります。' },
     ],
     note:'<strong>「デバイスを探す」から消えない場合</strong><br>更新には数分かかることがあります。<br>時間が経っても表示が残る場合は「探すアプリからリセットする」を実行してください。<br><br><strong>本体のリセットがうまくいかない場合</strong><br>手順5から再度やり直してください。<br>改善しない場合は、iPhone にペアリングを直したうえで、もう一度この手順を実行してください。',
@@ -502,7 +528,7 @@ function deriveTrail(segs){
      L … 結合コードで経路部と履歴部を区切る文字
      X … makeCode の `KEYS[s.id] || 'X'` フォールバック用。
           正規のキーにすると KEYS の登録漏れが検出できなくなる
-   次に使える文字：Y Z / 6 7 8 9
+   次に使える文字：Z / 6 7 8 9
 --------------------------------------------------------- */
 const KEYS = {
   'ap.menu'      : '1',
@@ -529,6 +555,9 @@ const KEYS = {
   'a.aw.batt.none':'T',
   'aw.other'     : 'V',
   'a.rs.pro3'    : 'W',
+  /* 第4世代をノイキャン搭載／非搭載に分けたときの新設ノード。
+     'a.rs.tap'（'G'）は非搭載側として残したので、搭載側に新しい文字を割り当てている。 */
+  'a.rs.tap.anc' : 'Y',
 };const KEY_TO_ID = Object.keys(KEYS).reduce(function(m,id){ m[KEYS[id]] = id; return m; }, {});
 
 /* フロー改訂番号。文言や手順を大きく変えたときだけ上げる。
