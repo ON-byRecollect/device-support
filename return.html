@@ -32,7 +32,6 @@
   /* 復号後本文 */
   .content{margin-top:6px;}
   .section{margin:0 0 30px;}
-  .section .body{font-size:15.5px;}
   ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;}
   ol.steps>li{counter-increment:s;position:relative;padding:0 0 20px 40px;font-size:15.5px;}
   ol.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;
@@ -155,9 +154,11 @@
           + '<li>' + br('最短での配達を希望される場合は、日にち指定「なし」時間指定「午前中」とレジスタッフへお伝えください。') + '</li>'
           + '</ol></div>';
 
-    html += '<div class="section"><div class="body">'
+    /* 手順のあとの補足。「やること」ではなく知っておいてほしい内容なので、
+       見出し下の補足と同じ .notes に載せて、手順だけが本文の大きさで浮き上がるようにする */
+    html += '<p class="notes">'
           + br('発送手続き完了後、お荷物情報が自動で共有されます。発送通知や追跡番号のご連絡は不要です。返品手続きが完了するまでは、店舗で発行される発送伝票の控えを大切に保管してください。')
-          + '</div></div>';
+          + '</p>';
 
     html += '</div>';
     document.getElementById('app').innerHTML = html;
