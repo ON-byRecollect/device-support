@@ -213,7 +213,7 @@ const NODES = {
     steps:[
       { pic:['images/ss-settings-top.webp', 'images/ss-settings-general.webp'], text:'iPhone の設定アプリを開き、「一般」から「ソフトウェアアップデート」をタップしてください。ソフトウェアが最新ではない場合は、アップデートを行ってください。', image:'images/settings-general.png', caption:'設定 → 一般 → ソフトウェアアップデート',
         nav:['設定','一般','ソフトウェアアップデート'] },
-      { text:'iPhone の iOS が最新版であることを確認し、Wi-Fi に接続してください。' },
+      { pic:'images/ss-ios-uptodate.webp', text:'iPhone の iOS が最新版であることを確認し、Wi-Fi に接続してください。' },
       { text:'接続している AirPods の本体を両耳とも充電ケースに収納し、有線ケーブルで充電してください。' },
       { text:'AirPods の充電ケースの蓋を閉じたまま、ペアリングしている iPhone の Bluetooth の通信範囲内に置いておいてください。' },
       { text:'この状態で、ファームウェアがアップデートされるのを待機してください。',
