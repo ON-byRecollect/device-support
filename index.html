@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<!-- 購入者にリンクをお伝えして開いてもらうページなので、検索結果には出さない。
+     robots.txt で締め出す形は採らない。読みに来てもらえないとこの指定を伝えられず、
+     URL だけが検索結果に残ることがあるため。 -->
+<meta name="robots" content="noindex, nofollow">
 <title>Apple製品 トラブルシューティング</title>
 <meta name="description" content="質問に答えるだけで、AirPods や Apple Watch の不具合の対処法をご案内します。">
 <style>
