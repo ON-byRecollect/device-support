@@ -8,6 +8,14 @@
      URL だけが検索結果に残ることがあるため。 -->
 <meta name="robots" content="noindex, nofollow">
 <title>Apple製品 トラブルシューティング</title>
+<!-- タブに出るアイコンと、ホーム画面に置いたときのアイコン。
+     apple-touch-icon が無いと、iOS はホーム画面にページの縮小画像を置いてしまう。
+     apple-mobile-web-app-title は、ホーム画面でアイコンの下に出る名前。
+     指定しないとページのタイトルが使われ、長いものは途中で切れる。 -->
+<link rel="icon" type="image/png" sizes="32x32" href="images/icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
+<link rel="apple-touch-icon" href="images/icon-180.png">
+<meta name="apple-mobile-web-app-title" content="サポート">
 <meta name="description" content="質問に答えるだけで、AirPods や Apple Watch の不具合の対処法をご案内します。">
 <style>
   :root{
