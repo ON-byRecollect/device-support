@@ -35,7 +35,6 @@
   .eyebrow{font-size:12.5px;font-weight:600;color:var(--accent);letter-spacing:.04em;margin:0 0 8px;}
   .section h2{font-size:18px;font-weight:600;margin:0 0 12px;}
   .section .body{font-size:15.5px;white-space:pre-wrap;}
-  .callout{border-left:3px solid var(--warn);background:#fdf6f1;border-radius:0 10px 10px 0;padding:14px 16px;margin:20px 0;font-size:14.5px;}
   ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;}
   ol.steps>li{counter-increment:s;position:relative;padding:0 0 20px 40px;font-size:15.5px;}
   ol.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;
@@ -44,11 +43,12 @@
 
   .barcode{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;text-align:center;}
   .barcode img{max-width:100%;height:auto;border-radius:8px;}
-  /* 伝票の赤字のうち弱いほう。警告の枠（.callout）が2つ並ぶと competing になるため文字色だけで示す */
-  .attn{color:var(--warn);font-size:14px;margin:14px 0 0;}
-  .save{margin-top:14px;font-size:13px;color:var(--sub);}
-  /* 伝票末尾のグレーの補足。ページ自体の注意書き（.foot）と線が2本並ばないよう罫線は持たせない */
+  /* バーコードが読めなかったときの案内。枠で囲むほどではないので文字色だけで示す */
+  .attn{color:var(--accent);font-size:14px;margin:14px 0 0;}
+  /* グレーの補足。ページ自体の注意書き（.foot）と線が2本並ばないよう罫線は持たせない */
   .notes{color:var(--sub);font-size:13px;margin:0;}
+  /* 見出しの直下に置くほうは、手順との間隔を空ける */
+  .notes.top{margin:0 0 26px;}
 
   .foot{margin-top:34px;padding-top:20px;border-top:1px solid var(--line);color:var(--sub);font-size:12.5px;}
   .spin{display:inline-block;width:15px;height:15px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;}
@@ -121,12 +121,24 @@
   function renderContent(data){
     var size = data.size || '60';
 
-    var html = '<h1>匿名配送サービス伝票</h1><div class="content">';
+    var html = '<h1>返品の手順</h1>';
+
+    /* 購入者が最初に気にする「お金がかかるのか」「個人情報を出すのか」への答えを、
+       手順に入る前に置く */
+    html += '<p class="notes top">'
+          + '匿名配送はヤマト運輸の公式サービスです。指定拠点以外からの発送はできません。<br><br>'
+          + '購入者様の個人情報をご入力いただく必要はありません。また、配送料や手数料の請求はありません。'
+          + '</p>';
+
+    html += '<div class="content">';
 
     html += '<div class="section"><ol class="steps">'
-          + '<li>ご自宅にある緩衝材や梱包材をご用意ください。</li>'
-          + '<li>外寸の3辺合計を' + esc(size) + 'cm以内に収めてください。</li>'
-          + '<li>日時指定を選択せずに発送を行なってください。</li>'
+          + '<li>輸送時の衝撃を緩和するため、緩衝材や梱包材をご用意ください。</li>'
+          + '<li>梱包時の外寸サイズを3辺合計' + esc(size) + 'センチ以内に収めてください。</li>'
+          + '<li>お近くのセブン-イレブンにお荷物を持ち込んでください。</li>'
+          + '<li>レジスタッフにこのページに表示されているバーコードをご提示ください。</li>'
+          + '<li>レジスタッフから渡される発送伝票を貼付してください。</li>'
+          + '<li>日時指定を選択せずに発送を行ってください。</li>'
           + '</ol></div>';
 
     html += '<div class="section"><div class="body">'
@@ -134,22 +146,17 @@
           + '追跡番号等のご連絡は不要でございます。'
           + '</div></div>';
 
-    html += '<div class="callout">ご依頼主様に、配送料や手数料の請求はございません。</div>';
-
     html += '<div class="section"><h2>セブン-イレブン</h2>'
           + '<div class="body">レジスタッフへ下記バーコードをご提示ください。</div>';
     if (data.barcode) {
       html += '<div class="barcode" style="margin-top:14px">'
             + '<img src="' + data.barcode + '" alt="返送用バーコード"></div>';
     }
-    html += '<p class="attn">※バーコードが読み取れない場合は、番号を入力してください。</p>'
-          + '<p class="save">スクリーンショットを保存し、発送時にご提示ください。</p></div>';
+    html += '<p class="attn">※バーコードが読み取れない場合は、番号を入力してください。</p></div>';
 
-    /* 伝票の末尾にあるグレーの補足。ページ自体の注意書き（.foot）とは別物なので、
+    /* 末尾のグレーの補足。ページ自体の注意書き（.foot）とは別物なので、
        区切り線を持たない .notes にして2本の線が並ばないようにする */
     html += '<p class="notes">'
-          + '匿名配送は、ヤマト運輸の公式サービスです。<br>'
-          + '指定拠点以外からの発送は行うことができません。<br><br>'
           + '発送手続き完了後は、店舗で発行される発送伝票を挿入し当伝票は破棄してください。'
           + '</p>';
 
