@@ -48,8 +48,11 @@
 
   .barcode{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;text-align:center;}
   .barcode img{max-width:100%;height:auto;border-radius:8px;}
-  .barcode .cap{font-size:13px;color:var(--sub);margin:14px 0 0;}
+  /* 伝票の赤字のうち弱いほう。警告の枠（.callout）が2つ並ぶと competing になるため文字色だけで示す */
+  .attn{color:var(--warn);font-size:14px;margin:14px 0 0;}
   .save{margin-top:14px;font-size:13px;color:var(--sub);}
+  /* 伝票末尾のグレーの補足。ページ自体の注意書き（.foot）と線が2本並ばないよう罫線は持たせない */
+  .notes{color:var(--sub);font-size:13px;margin:0;}
 
   .foot{margin-top:34px;padding-top:20px;border-top:1px solid var(--line);color:var(--sub);font-size:12.5px;}
   .spin{display:inline-block;width:15px;height:15px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;}
@@ -119,34 +122,44 @@
 
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
+  /* 案内の文面はここに固定で持つ。購入者ごとに変わるのはバーコード画像と
+     手順2のサイズだけなので、暗号化ファイル側には文面を入れていない。
+     文言を直すときはこの関数だけを編集すればよく、発行済みのファイルはそのまま使える。 */
   function renderContent(data){
-    var html = '<h1>' + esc(data.title || '返品のご案内') + '</h1>';
-    if (data.intro) html += '<p class="lead">' + esc(data.intro) + '</p>';
+    var size = data.size || '60';
 
-    html += '<div class="content">';
+    var html = '<h1>匿名配送サービス伝票</h1><div class="content">';
 
-    // 共通メッセージ（固定文面）
-    if (data.common) {
-      html += '<div class="section"><p class="eyebrow">ご確認ください</p>'
-            + '<div class="body">' + esc(data.common) + '</div></div>';
-    }
-    // 返送手順
-    if (data.steps && data.steps.length) {
-      html += '<div class="section"><h2>返送の手順</h2><ol class="steps">';
-      data.steps.forEach(function(s){ html += '<li>' + esc(s) + '</li>'; });
-      html += '</ol></div>';
-    }
-    // 注意事項
-    if (data.caution) {
-      html += '<div class="callout">' + esc(data.caution) + '</div>';
-    }
-    // 個別バーコード
+    html += '<div class="section"><ol class="steps">'
+          + '<li>ご自宅にある緩衝材や梱包材をご用意ください。</li>'
+          + '<li>外寸の3辺合計を' + esc(size) + 'cm以内に収めてください。</li>'
+          + '<li>日時指定を選択せずに発送を行なってください。</li>'
+          + '</ol></div>';
+
+    html += '<div class="section"><div class="body">'
+          + '手続き完了後、お荷物情報がお届け先へ送信されます。\n'
+          + '追跡番号等のご連絡は不要でございます。'
+          + '</div></div>';
+
+    html += '<div class="callout">ご依頼主様に、配送料や手数料の請求はございません。</div>';
+
+    html += '<div class="section"><h2>セブン-イレブン</h2>'
+          + '<div class="body">レジスタッフへ下記バーコードをご提示ください。</div>';
     if (data.barcode) {
-      html += '<div class="section"><h2>返送用バーコード</h2><div class="barcode">'
-            + '<img src="' + data.barcode + '" alt="返送用バーコード">'
-            + (data.barcodeCaption ? '<p class="cap">' + esc(data.barcodeCaption) + '</p>' : '')
-            + '</div><p class="save">スクリーンショットを保存し、発送時にご提示ください。</p></div>';
+      html += '<div class="barcode" style="margin-top:14px">'
+            + '<img src="' + data.barcode + '" alt="返送用バーコード"></div>';
     }
+    html += '<p class="attn">※バーコードが読み取れない場合は、番号を入力してください。</p>'
+          + '<p class="save">スクリーンショットを保存し、発送時にご提示ください。</p></div>';
+
+    /* 伝票の末尾にあるグレーの補足。ページ自体の注意書き（.foot）とは別物なので、
+       区切り線を持たない .notes にして2本の線が並ばないようにする */
+    html += '<p class="notes">'
+          + '匿名配送は、ヤマト運輸の公式サービスです。<br>'
+          + '指定拠点以外からの発送は行うことができません。<br><br>'
+          + '発送手続き完了後は、店舗で発行される発送伝票を挿入し当伝票は破棄してください。'
+          + '</p>';
+
     html += '</div>';
     document.getElementById('app').innerHTML = html;
   }

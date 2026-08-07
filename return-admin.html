@@ -6,23 +6,20 @@
 <meta name="robots" content="noindex, nofollow">
 <title>返品ページ作成（管理者用）</title>
 <style>
-  :root{--ink:#1d1d1f;--sub:#6e6e73;--line:#e5e5ea;--fill:#f5f5f7;--accent:#0071e3;--ok:#1f8b4c;--warn:#c7500f;}
+  :root{--ink:#1d1d1f;--sub:#6e6e73;--line:#e5e5ea;--fill:#f5f5f7;--accent:#0071e3;--ok:#1f8b4c;}
   *{box-sizing:border-box;}
   body{margin:0;background:#fff;color:var(--ink);line-height:1.6;
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;-webkit-font-smoothing:antialiased;}
   .wrap{max-width:680px;margin:0 auto;padding:26px 20px 90px;}
-  h1{font-size:22px;font-weight:600;margin:0 0 4px;}
-  .sub{color:var(--sub);font-size:14px;margin:0 0 8px;}
-  .warn{background:#fdf6f1;border-left:3px solid var(--warn);border-radius:0 10px 10px 0;padding:12px 15px;font-size:13.5px;margin:0 0 26px;}
+  h1{font-size:22px;font-weight:600;margin:0 0 26px;}
   fieldset{border:1px solid var(--line);border-radius:14px;padding:18px;margin:0 0 18px;}
   legend{font-size:13px;font-weight:600;color:var(--accent);padding:0 8px;}
   label{display:block;font-size:13.5px;font-weight:600;margin:14px 0 6px;}
   label:first-of-type{margin-top:4px;}
   .hint{font-size:12.5px;color:var(--sub);font-weight:400;margin:0 0 6px;}
-  input[type=text],textarea{width:100%;font-family:inherit;font-size:15px;padding:11px 13px;border:1px solid var(--line);
+  input[type=text],select{width:100%;font-family:inherit;font-size:15px;padding:11px 13px;border:1px solid var(--line);
     border-radius:10px;background:#fff;color:var(--ink);}
-  input:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
-  textarea{resize:vertical;min-height:80px;line-height:1.6;}
+  input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;}
   .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
   button{font-family:inherit;font-size:15px;cursor:pointer;border:0;border-radius:10px;padding:12px 20px;}
@@ -45,35 +42,23 @@
 <body>
 <div class="wrap">
   <h1>返品ページ作成</h1>
-  <p class="sub">管理者用。入力内容をパスコードで暗号化し、購入者に渡すファイルとリンクを作成します。</p>
-  <div class="warn">このページはブラウザ内だけで処理し、入力内容やパスコードはどこにも送信されません。作成後、出力ファイルを <span class="mono">return/</span> に置いてください。</div>
 
   <fieldset>
-    <legend>案内の内容</legend>
-
-    <label>ページ見出し</label>
-    <input type="text" id="title" value="返品のご案内">
-
-    <label>冒頭のあいさつ<span class="hint">（任意）</span></label>
-    <textarea id="intro" placeholder="この度はご不便をおかけしました。返送の手順をご案内します。"></textarea>
-
-    <label>共通メッセージ<span class="hint">（全員に同じ固定文面。注意事項など）</span></label>
-    <textarea id="common" placeholder="・返送は商品到着後7日以内にお願いします。&#10;・付属品を含めてご返送ください。"></textarea>
-
-    <label>返送の手順<span class="hint">（1行に1ステップ。空行は無視されます）</span></label>
-    <textarea id="steps" placeholder="下記のバーコードを印刷、またはスマホに表示してください。&#10;コンビニのレジで発送手続きをしてください。&#10;控えを受け取り、追跡番号を取引メッセージでお知らせください。"></textarea>
-
-    <label>強調したい注意事項<span class="hint">（任意。オレンジの枠で目立たせます）</span></label>
-    <textarea id="caution" placeholder="バーコードの有効期限は発行から14日間です。"></textarea>
-  </fieldset>
-
-  <fieldset>
-    <legend>個別のバーコード画像</legend>
+    <legend>返送用バーコード</legend>
     <label>画像を選択<span class="hint">（この購入者専用の配送バーコード。画像は暗号化され、単体で置かれることはありません）</span></label>
     <input type="file" id="barcode" accept="image/*">
     <div class="preview" id="preview"></div>
-    <label>バーコードの説明<span class="hint">（任意）</span></label>
-    <input type="text" id="barcodeCaption" placeholder="ヤマト運輸 / 着払い伝票">
+  </fieldset>
+
+  <fieldset>
+    <legend>荷物のサイズ</legend>
+    <label>外寸の3辺合計<span class="hint">（返品ページの手順2に入る数字です）</span></label>
+    <select id="size">
+      <option value="60" selected>60cm 以内</option>
+      <option value="80">80cm 以内</option>
+      <option value="100">100cm 以内</option>
+      <option value="120">120cm 以内</option>
+    </select>
   </fieldset>
 
   <fieldset>
@@ -153,19 +138,13 @@
   var lastBox=null, lastKey='', lastFname='';
 
   $('make').addEventListener('click', async function(){
+    if (!barcodeDataUrl){ alert('返送用バーコードの画像を選択してください。'); return; }
     var pass=$('pass').value.trim();
     if (!pass){ alert('パスコードを入力するか、自動生成してください。'); return; }
 
-    var stepsArr = $('steps').value.split('\n').map(function(s){return s.trim();}).filter(Boolean);
-    var data = {
-      title: $('title').value.trim() || '返品のご案内',
-      intro: $('intro').value.trim(),
-      common: $('common').value.trim(),
-      steps: stepsArr,
-      caution: $('caution').value.trim(),
-      barcode: barcodeDataUrl,
-      barcodeCaption: $('barcodeCaption').value.trim()
-    };
+    /* 案内文は return.html 側に固定で持たせている。ここで渡すのは購入者ごとに変わる分だけ。
+       文面を直したくなったときに、発行済みのファイルを作り直さずに済む。 */
+    var data = { v:2, size: $('size').value, barcode: barcodeDataUrl };
 
     $('make').disabled = true; $('make').textContent = '暗号化中…';
     try {
