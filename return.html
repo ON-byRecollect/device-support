@@ -40,8 +40,10 @@
 
   .barcode{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;text-align:center;}
   .barcode img{max-width:100%;height:auto;border-radius:8px;}
-  /* バーコードが読めなかったときの案内。枠で囲むほどではないので文字色だけで示す */
-  .attn{color:var(--accent);font-size:14px;margin:14px 0 0;}
+  /* バーコードが読めなかったときの案内。枠で囲むほどではないので文字色だけで示す。
+     色はエラー文（.msg.err）と同じ --warn。青（--accent）は「表示する」ボタンや
+     入力欄の枠など押せるものに使っているので、押せない注意書きには使わない。 */
+  .attn{color:var(--warn);font-size:14px;margin:14px 0 0;}
   /* 見出しの下のグレーの補足。ページ自体の注意書き（.foot）と線が2本並ばないよう罫線は持たせない */
   .notes{color:var(--sub);font-size:13px;margin:0 0 26px;}
 
