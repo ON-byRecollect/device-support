@@ -58,9 +58,9 @@
   .opt.product{padding:22px 46px 22px 20px;background:#fff;border-color:var(--line);}
   .opt.product .label{font-size:19px;font-weight:600;}
   .opt.has-icon{padding-left:56px;}    /* 18 + 24 + 14 */
-  .opt.has-icon2{padding-left:86px;}   /* 18 + 24 + 6 + 24 + 14（アイコン2つ） */
-  /* アイコンは入れ物ごと絶対配置し、中を横並びにする。1つのときの見た目は従来どおり */
-  .opt-ics{position:absolute;left:18px;top:50%;transform:translateY(-50%);display:flex;gap:6px;}
+  /* アイコンは入れ物ごと絶対配置する。2つのときは縦に積むので必要な幅は1つのときと同じ */
+  .opt-ics{position:absolute;left:18px;top:50%;transform:translateY(-50%);
+    display:flex;flex-direction:column;gap:6px;}
   .opt-ic{
     width:24px;height:24px;border-radius:50%;color:#fff;font-weight:700;font-size:15px;
     display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;
@@ -81,6 +81,10 @@
   .nodefigs{display:flex;gap:14px;align-items:flex-start;margin:0 0 26px;}
   .nodefigs img{flex:0 1 180px;min-width:0;max-width:180px;height:auto;}
   ol.steps .nodefigs{margin:14px 0 0;}
+  /* 操作画面のスクリーンショットは縦長なので、アイコン用の180px上限とは別枠。
+     本文幅を2列で分け合い、3枚以上は折り返して段組みにする。 */
+  .nodefigs.shots{flex-wrap:wrap;}
+  .nodefigs.shots img{flex:0 1 calc(50% - 7px);max-width:calc(50% - 7px);}
 
   /* 手順が1つだけのページは番号バッジを出さず、そのぶん左を詰める */
   ol.steps.single > li{padding-left:0;}
@@ -94,6 +98,11 @@
   /* 本文中のバンドリリースボタン */
   .ic-btn{display:inline-block;width:24px;height:10px;border-radius:999px;
     background:#e0322c;vertical-align:middle;margin:0 2px;}
+  /* 本文中の「i マーク」。設定アプリの ⓘ に合わせて青い丸枠に i */
+  .ic-info{display:inline-block;width:18px;height:18px;border-radius:50%;
+    border:1.5px solid var(--accent);color:var(--accent);
+    font-size:12px;font-weight:600;line-height:15px;text-align:center;
+    vertical-align:middle;margin:0 2px;font-style:normal;}
 
   .eyebrow{font-size:12.5px;font-weight:600;color:var(--accent);letter-spacing:.04em;margin:0 0 8px;}
   .lead{font-size:16px;color:var(--sub);margin:0 0 28px;}
@@ -327,9 +336,10 @@ function NodeFigure({ node }){
 /* 手順の本文に置いた {arrow} {btn} を小さな図形に置き換える。
    データ側は素のテキストのままにしておきたいので HTML の埋め込みは使わない。 */
 function withMarks(text){
-  return String(text).split(/(\{arrow\}|\{btn\})/).map(function(part,i){
+  return String(text).split(/(\{arrow\}|\{btn\}|\{info\})/).map(function(part,i){
     if (part === '{arrow}') return <span key={i} className="ic-arrow" role="img" aria-label="矢印" />;
     if (part === '{btn}')   return <span key={i} className="ic-btn" role="img" aria-label="バンドリリースボタン" />;
+    if (part === '{info}')  return <span key={i} className="ic-info" role="img" aria-label="i マーク">i</span>;
     return part;
   });
 }
@@ -351,8 +361,11 @@ function StepList({ steps, onGoto }){
               ))}
             </div>
           )}
-          {/* pic は SHOW_IMAGES の影響を受けない手順内画像 */}
-          {s.pic && <div className="nodefigs"><img src={s.pic} alt="" /></div>}
+          {/* pic は SHOW_IMAGES の影響を受けない手順内画像。1枚でも複数枚でも受け取る */}
+          {s.pic && (Array.isArray(s.pic) ? s.pic : [s.pic]).length > 0 &&
+            <div className="nodefigs shots">
+              {(Array.isArray(s.pic) ? s.pic : [s.pic]).map((p,j)=><img key={j} src={p} alt="" />)}
+            </div>}
           <Figure src={s.image} caption={s.caption} images={s.images} />
           {s.after && <p className="quiet">{s.after}</p>}
           {s.linkTo && (
@@ -380,8 +393,8 @@ function Question({ node, onSelect, onGoto, onBack, canBack }){
           const icons = o.icon ? (Array.isArray(o.icon) ? o.icon : [o.icon]) : [];
           return (
           <button key={i} className={'opt' + (node.product ? ' product' : '')
-              + (icons.length ? ' has-icon' : '') + (icons.length > 1 ? ' has-icon2' : '')
-              + (o.image ? ' has-img' : '')} onClick={()=>onSelect(o,i)}>
+              + (icons.length ? ' has-icon' : '') + (o.image ? ' has-img' : '')}
+              onClick={()=>onSelect(o,i)}>
             {icons.length > 0 &&
               <span className="opt-ics" aria-hidden="true">
                 {icons.map((ic,j)=><span key={j} className={'opt-ic ' + ic}>!</span>)}
