@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>返品のご案内</title>
+<title>返品の手順</title>
 <style>
   :root{--bg:#fff;--ink:#1d1d1f;--sub:#6e6e73;--line:#e5e5ea;--fill:#f5f5f7;--accent:#0071e3;--warn:#c7500f;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -171,7 +171,13 @@
     setMsg('確認しています ', ''); msgEl.innerHTML = '確認しています <span class="spin"></span>';
     try {
       var box = await loadBox();
-      var json = await decrypt(box, pass);
+      /* 入力欄は見た目だけを大文字にしているため（text-transform）、小文字のパスコードを
+         貼り付けると画面は大文字なのに開けない。自動で大文字にする指定は手打ちにしか効かず、
+         貼り付けは素通りする。入力のままで駄目なら大文字でもう一度試す。
+         大文字に決め打ちしないのは、作成側で小文字のパスコードを手入力できるため。 */
+      var json;
+      try { json = await decrypt(box, pass); }
+      catch (e) { json = await decrypt(box, pass.toUpperCase()); }
       var data = JSON.parse(json);
       setMsg('', '');
       renderContent(data);
@@ -182,7 +188,8 @@
       } else if (e.message === 'NOT_FOUND') {
         setMsg('ご案内が見つかりませんでした。リンクをご確認ください。', 'err');
       } else {
-        setMsg('パスコードが正しくないか、内容を読み取れませんでした。', 'err');
+        msgEl.className = 'msg err';
+        msgEl.innerHTML = br('パスコードが正しくありません。ハイフンを含めた英数字をそのまま貼り付けてください。');
       }
     }
   }
