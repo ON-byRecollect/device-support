@@ -38,8 +38,13 @@
     background:var(--ink);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;}
   ol.steps>li:not(:last-child)::after{content:"";position:absolute;left:12.5px;top:32px;bottom:6px;width:1px;background:var(--line);}
 
-  .barcode{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;text-align:center;}
-  .barcode img{max-width:100%;height:auto;border-radius:8px;}
+  /* バーコードは店員に見せて読み取ってもらうものなので、できるだけ大きく出す。
+     枠線と内側の余白を持たせない（その分がバーコードの幅になる）。
+     上の余白は手順どうしの間隔（20px）と同じにして、手順の文にくっつかないようにする。
+     背景の白は、バーコード画像に透明部分があったときの保険。 */
+  .barcode{background:#fff;text-align:center;margin:20px 0 0;}
+  /* 角を丸めない。枠が無い状態で丸めると一番外側のバーが欠ける */
+  .barcode img{max-width:100%;height:auto;}
   /* バーコードが読めなかったときの案内。枠で囲むほどではないので文字色だけで示す。
      色はエラー文（.msg.err）と同じ --warn。青（--accent）は「表示する」ボタンや
      入力欄の枠など押せるものに使っているので、押せない注意書きには使わない。 */
@@ -142,7 +147,7 @@
        li の左余白（40px）にそのまま収まり、手順をつなぐ縦線も途切れない。 */
     var barcodeBlock = '';
     if (data.barcode) {
-      barcodeBlock += '<div class="barcode" style="margin-top:14px">'
+      barcodeBlock += '<div class="barcode">'
                     + '<img src="' + data.barcode + '" alt="返送用バーコード"></div>';
     }
     barcodeBlock += '<p class="attn">' + br('※バーコードが読み取れない場合は、番号を入力してください。') + '</p>';
