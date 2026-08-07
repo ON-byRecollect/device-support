@@ -66,7 +66,8 @@
 mountCodeCheck(document.getElementById('cc'));
 
 /* 購入者に渡す公開トップページの URL。このページ自身の URL からファイル名を落として作る。
-   例: …/my-delivery-tracker/console-xxxx.html → …/my-delivery-tracker/
+   例: …/リポジトリ名/console-xxxx.html → …/リポジトリ名/
+   リポジトリ名は書かない（名前を変えたときにここだけ古くなるため）。
    管理コンソールのファイル名を含めないこと（共有した相手に知られてしまうため）。 */
 (function(){
   var btn = document.getElementById('copyTop');
