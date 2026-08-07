@@ -11,16 +11,12 @@
   body{margin:0;background:var(--bg);color:var(--ink);line-height:1.7;
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;-webkit-font-smoothing:antialiased;}
   .wrap{max-width:620px;margin:0 auto;padding:30px 20px calc(60px + env(safe-area-inset-bottom));}
-  header{padding:6px 0 24px;}
-  .brand{font-size:15px;font-weight:600;margin:0;}
-  .brand span{color:var(--sub);font-weight:400;}
-  h1{font-size:26px;font-weight:600;letter-spacing:-.02em;margin:0 0 8px;}
+  h1{font-size:26px;font-weight:600;letter-spacing:-.02em;margin:6px 0 8px;}
   .lead{color:var(--sub);font-size:15px;margin:0 0 26px;}
 
   /* パスコード入力 */
   .lock{background:var(--fill);border-radius:16px;padding:26px 22px;}
-  .lock label{display:block;font-size:14px;font-weight:600;margin:0 0 10px;}
-  .lock .desc{font-size:13.5px;color:var(--sub);margin:0 0 16px;}
+  .lock label{display:block;font-size:14px;font-weight:600;margin:0 0 16px;}
   .lock .field{display:flex;gap:8px;}
   .lock input{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:18px;
     letter-spacing:.1em;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);
@@ -61,15 +57,12 @@
 </head>
 <body>
 <div class="wrap">
-  <header><p class="brand">返品のご案内 <span>／ ご購入ありがとうございました</span></p></header>
-
   <div id="app">
     <h1>返品のご案内</h1>
-    <p class="lead">担当者よりお伝えしたパスコードを入力してください。ご案内の内容と、返送用のバーコードが表示されます。</p>
+    <p class="lead">取引メッセージでお伝えしたパスコードを入力してください。<br>返品の手順と、返送用のバーコードが表示されます。</p>
 
     <div class="lock">
       <label for="pass">パスコード</label>
-      <p class="desc">取引メッセージでお送りしたパスコードを、そのまま入力してください。</p>
       <div class="field">
         <input id="pass" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text">
         <button id="go">表示する</button>
@@ -79,7 +72,7 @@
   </div>
 
   <p class="foot">
-    このページは検索エンジンに登録されない設定です。表示された内容には返送に必要な情報が含まれます。第三者と共有しないでください。
+    表示される内容には、返送に必要な情報が含まれます。第三者と共有しないでください。
   </p>
 </div>
 
