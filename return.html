@@ -66,7 +66,7 @@
     <div class="lock">
       <label for="pass">パスコード</label>
       <div class="field">
-        <input id="pass" placeholder="XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text">
+        <input id="pass" placeholder="XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text">
         <button id="go">表示する</button>
       </div>
       <p class="msg" id="msg"></p>
@@ -81,8 +81,12 @@
 
 <script>
 (function(){
-  var params = new URLSearchParams(location.search);
-  var key = (location.hash || '').replace(/^#\/?/, '') || params.get('k') || '';
+  /* 鍵は URL の「#」より後ろだけから読む。
+     「#」の後ろはサーバーへ送られないが、「?k=」の形はクエリとして送られ、
+     移動先ページの参照元情報などに残る余地があるため受け付けない。
+     返送ページ作成側は常に「return.html#鍵」の形でリンクを作っており、
+     「?k=」形式のリンクは一度も発行していないので、既存リンクへの影響はない。 */
+  var key = (location.hash || '').replace(/^#\/?/, '');
   var passInput = document.getElementById('pass');
   var goBtn = document.getElementById('go');
   var msgEl = document.getElementById('msg');

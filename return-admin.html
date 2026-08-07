@@ -65,7 +65,7 @@
     <legend>パスコード</legend>
     <label>購入者に伝えるパスコード<span class="hint">（このパスコードがないと内容は読めません。取引メッセージで本人にだけ伝えてください）</span></label>
     <div class="row">
-      <input type="text" id="pass" class="mono" placeholder="XXXX-XXXX">
+      <input type="text" id="pass" class="mono" placeholder="XXXX-XXXX-XXXX">
       <button type="button" class="ghost" id="genPass">自動生成</button>
     </div>
   </fieldset>
@@ -108,12 +108,24 @@
     r.readAsDataURL(file);
   });
 
-  // パスコードの自動生成（紛らわしい文字を除外、XXXX-XXXX 形式）
+  /* パスコードの自動生成（紛らわしい文字を除外、XXXX-XXXX-XXXX 形式）
+
+     長さは12文字。31種類の文字なので 31^12 ＝ 約7.9京通り（約60ビット）。
+     8文字（約40ビット）では、暗号文が公開のまま残る以上、時間をかければ
+     総当たりで開けられる恐れがあった。長さは暗号文の形式に含まれないので、
+     8文字で作った既存のファイルもこれまでどおり開ける。
+
+     255までの乱数をそのまま31で割った余りにすると、256が31で割り切れない分だけ
+     最初の8文字が出やすくなる。248（31×8）以上は捨てて偏りを無くす。 */
   $('genPass').addEventListener('click', function(){
-    var A='ABCDEFGHJKMNPQRSTUVWXYZ23456789', s='';
-    var buf=new Uint8Array(8); crypto.getRandomValues(buf);
-    for (var i=0;i<8;i++){ s+=A[buf[i]%A.length]; if(i===3) s+='-'; }
-    $('pass').value = s;
+    var A='ABCDEFGHJKMNPQRSTUVWXYZ23456789', out=[];
+    while (out.length < 12) {
+      var buf=new Uint8Array(16); crypto.getRandomValues(buf);
+      for (var i=0;i<buf.length && out.length<12;i++){
+        if (buf[i] < 248) out.push(A[buf[i] % A.length]);
+      }
+    }
+    $('pass').value = out.slice(0,4).join('') + '-' + out.slice(4,8).join('') + '-' + out.slice(8).join('');
   });
 
   // 鍵名（URLに載る推測不可能なランダム名）
