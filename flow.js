@@ -22,7 +22,7 @@ const NODES = {
     hint:'モデルごとに詳しくご案内いたします。',
     product:true,
     options:[
-      { label:'AirPods', next:'ap.menu', image:'images/product-airpods.png' },
+      { label:'AirPods', next:'ap.menu', image:'images/product-airpods.webp' },
       { label:'Apple Watch', next:'aw.menu', image:'images/product-apple-watch.png' },
     ],
   },
@@ -83,7 +83,7 @@ const NODES = {
     /* image … ノード直下の画像。steps[].image（Figure 経由）と違い
        SHOW_IMAGES の影響を受けず常に表示される。
        imageNarrow … 幅いっぱいだと大きすぎるので、本文幅の75%に抑える */
-    image:'images/dialog-owner-warning.png',
+    image:'images/dialog-owner-warning.webp',
     imageNarrow:true,
     options:[
       { label:'表示された', next:'a.owner' },
@@ -118,11 +118,11 @@ const NODES = {
     title:'AirPods の設定が完了していません',
     lead:'この警告が表示されている場合は、設定が正しく完了できていない可能性があります。',
     steps:[
-      { pic:['images/ss-settings-top.png', 'images/ss-settings-general.png'], text:'一部の AirPods の「探す」機能は、ペアリングしている iPhone のソフトウェアが最新バージョンのときのみ動作します。最新バージョンの iOS がインストールされていることを確認してください。', image:'images/setup-incomplete-detail.png', caption:'「探す」アプリに表示される設定未完了',
+      { pic:['images/ss-settings-top.webp', 'images/ss-settings-general.webp'], text:'一部の AirPods の「探す」機能は、ペアリングしている iPhone のソフトウェアが最新バージョンのときのみ動作します。最新バージョンの iOS がインストールされていることを確認してください。', image:'images/setup-incomplete-detail.png', caption:'「探す」アプリに表示される設定未完了',
         nav:['設定','一般','ソフトウェアアップデート'] },
-      { pic:['images/ss-settings-top.png', 'images/ss-apple-account.png', 'images/ss-signin-security.png', 'images/ss-two-factor.png'], text:'Apple Account の2ファクタ認証が有効になっているかを確認してください。', image:'images/two-factor.png', caption:'設定 → アカウント名 → サインインとセキュリティ → 2ファクタ認証',
+      { pic:['images/ss-settings-top.webp', 'images/ss-apple-account.webp', 'images/ss-signin-security.webp', 'images/ss-two-factor.webp'], text:'Apple Account の2ファクタ認証が有効になっているかを確認してください。', image:'images/two-factor.png', caption:'設定 → アカウント名 → サインインとセキュリティ → 2ファクタ認証',
         nav:['設定','アカウント名','サインインとセキュリティ','2ファクタ認証'] },
-      { pic:['images/ss-settings-top.png', 'images/ss-apple-account.png', 'images/ss-icloud.png', 'images/ss-keychain-on.png'], text:'iCloud キーチェーンが有効になっているかを確認してください。', image:'images/icloud-keychain.png', caption:'iCloud → パスワード → パスワードとキーチェーン',
+      { pic:['images/ss-settings-top.webp', 'images/ss-apple-account.webp', 'images/ss-icloud.webp', 'images/ss-keychain-on.webp'], text:'iCloud キーチェーンが有効になっているかを確認してください。', image:'images/icloud-keychain.png', caption:'iCloud → パスワード → パスワードとキーチェーン',
         nav:['設定','アカウント名','iCloud','パスワード'] },
       { text:'1〜3 の設定が正しく完了していることを確認し、接続している AirPods の本体を両耳とも充電ケースへ収納し、蓋を閉じた状態で有線ケーブルによる充電を行ってください。' },
       { text:'ペアリングしている iPhone を、AirPods から 1m 以内の場所に置いて、数分待機してください。' },
@@ -152,50 +152,50 @@ const NODES = {
     lead:'AirPods の設定が完了できない原因として、Apple Account や「探す」ネットワーク、iPhone 側の接続エラーが考えられます。以下の手順に従って実行してください。',
     steps:[
       { text:'AirPods の本体を両耳とも充電ケースへ収納し、充電ケースの蓋を閉じてください。' },
-      { pic:'images/ss-settings-top.png', text:'ペアリングしている iPhone で設定アプリを開き、Bluetooth をタップしてください。', image:'images/bluetooth-airpods.png', caption:'設定 → Bluetooth（自分のデバイス一覧）',
+      { pic:'images/ss-settings-top.webp', text:'ペアリングしている iPhone で設定アプリを開き、Bluetooth をタップしてください。', image:'images/bluetooth-airpods.png', caption:'設定 → Bluetooth（自分のデバイス一覧）',
         nav:['設定','Bluetooth'] },
-      { pic:'images/ss-bluetooth.png', text:'自分のデバイス一覧に表示されている、ペアリング済みの AirPods の {info} をタップしてください。' },
-      { pic:'images/ss-airpods-info-unpair.png', text:'AirPods のページ最下部にある「このデバイスの登録を解除」をタップしてください。', image:'images/airpods-info.png', caption:'AirPods 情報ページ最下部の「このデバイスの登録を解除」' },
+      { pic:'images/ss-bluetooth.webp', text:'自分のデバイス一覧に表示されている、ペアリング済みの AirPods の {info} をタップしてください。' },
+      { pic:'images/ss-airpods-info-unpair.webp', text:'AirPods のページ最下部にある「このデバイスの登録を解除」をタップしてください。', image:'images/airpods-info.png', caption:'AirPods 情報ページ最下部の「このデバイスの登録を解除」' },
       /* 「削除されていること」を示す手順なので、一覧から AirPods が消えた画像を使う。
          同じ「デバイスを探す」でも a.findmy_reset 手順2 は AirPods をこの後タップするため別の画像。 */
-      { pic:'images/ss-findmy-devices-removed.png', text:'ペアリングしている iPhone で「探す」アプリを開いて、「デバイスを探す」の一覧からペアリング済みの AirPods が削除されていることを確認してください。', image:'images/findmy-devices-list.png', caption:'「デバイスを探す」の一覧',
+      { pic:'images/ss-findmy-devices-removed.webp', text:'ペアリングしている iPhone で「探す」アプリを開いて、「デバイスを探す」の一覧からペアリング済みの AirPods が削除されていることを確認してください。', image:'images/findmy-devices-list.png', caption:'「デバイスを探す」の一覧',
         nav:['探す','デバイスを探す'] },
-      { pic:'images/ss-settings-faceid-row.png', text:'設定アプリを開き、「Face ID とパスコード」をタップしてください。', image:'images/faceid-passcode-list.png', caption:'設定 → Face ID とパスコード',
+      { pic:'images/ss-settings-faceid-row.webp', text:'設定アプリを開き、「Face ID とパスコード」をタップしてください。', image:'images/faceid-passcode-list.png', caption:'設定 → Face ID とパスコード',
         nav:['設定','Face ID とパスコード'] },
-      { pic:'images/ss-faceid.png', text:'「盗難デバイスの保護」をタップしてください。',
+      { pic:'images/ss-faceid.webp', text:'「盗難デバイスの保護」をタップしてください。',
         nav:['Face ID とパスコード','盗難デバイスの保護'] },
-      { pic:'images/ss-theft-off.png', text:'盗難デバイスの保護がオンになっている場合は、この設定をオフにしてください。', image:'images/theft-protection-on.png', caption:'盗難デバイスの保護（オンの状態）' },
-      { pic:'images/ss-settings-top.png', text:'設定アプリのトップ画面に戻り、ページ最上部に表示されるご自身のアカウント名をタップしてください。' },
-      { pic:'images/ss-apple-account.png', text:'Apple Account ページの「探す」をタップしてください。',
+      { pic:'images/ss-theft-off.webp', text:'盗難デバイスの保護がオンになっている場合は、この設定をオフにしてください。', image:'images/theft-protection-on.png', caption:'盗難デバイスの保護（オンの状態）' },
+      { pic:'images/ss-settings-top.webp', text:'設定アプリのトップ画面に戻り、ページ最上部に表示されるご自身のアカウント名をタップしてください。' },
+      { pic:'images/ss-apple-account.webp', text:'Apple Account ページの「探す」をタップしてください。',
         nav:['設定','アカウント名','探す'] },
-      { pic:['images/ss-find-settings.png', 'images/ss-find-iphone-off.png'], text:'「iPhone を探す」をタップし、オンになっている場合はオフにしてください。', image:'images/find-iphone-off.png', caption:'「iPhone を探す」をオフにした状態',
+      { pic:['images/ss-find-settings.webp', 'images/ss-find-iphone-off.webp'], text:'「iPhone を探す」をタップし、オンになっている場合はオフにしてください。', image:'images/find-iphone-off.png', caption:'「iPhone を探す」をオフにした状態',
         nav:['探す','iPhone を探す'] },
-      { pic:['images/ss-apple-account.png', 'images/ss-icloud.png'], text:'Apple Account ページへ戻り、iCloud をタップしてください。',
+      { pic:['images/ss-apple-account.webp', 'images/ss-icloud.webp'], text:'Apple Account ページへ戻り、iCloud をタップしてください。',
         nav:['設定','アカウント名','iCloud'] },
-      { pic:'images/ss-keychain-off.png', text:'「パスワード」をタップし、「パスワードとキーチェーン」の「この iPhone を同期」がオンになっている場合は、オフにしてください。', image:'images/icloud-keychain.png', caption:'iCloud → パスワード → パスワードとキーチェーン',
+      { pic:'images/ss-keychain-off.webp', text:'「パスワード」をタップし、「パスワードとキーチェーン」の「この iPhone を同期」がオンになっている場合は、オフにしてください。', image:'images/icloud-keychain.png', caption:'iCloud → パスワード → パスワードとキーチェーン',
         nav:['iCloud','パスワード'] },
       { text:'1〜13 の設定を保持したまま、iPhone を再起動させてください。', image:'images/power-off.png', caption:'スライドで電源オフ' },
       { text:'iPhone を再起動したら、設定アプリを開いてください。' },
-      { pic:'images/ss-settings-top.png', text:'ページ最上部に表示されるご自身のアカウント名をタップしてください。',
+      { pic:'images/ss-settings-top.webp', text:'ページ最上部に表示されるご自身のアカウント名をタップしてください。',
         nav:['設定','アカウント名'] },
-      { pic:'images/ss-apple-account.png', text:'Apple Account ページの「探す」をタップしてください。',
+      { pic:'images/ss-apple-account.webp', text:'Apple Account ページの「探す」をタップしてください。',
         nav:['設定','アカウント名','探す'] },
-      { pic:'images/ss-find-iphone-on.png', text:'「iPhone を探す」をタップしてオンにしてください。「探すネットワーク」がオフのままの場合は、オンにしてください。', image:'images/find-iphone-all-on.png', caption:'「iPhone を探す」「探すネットワーク」をオン' },
-      { pic:['images/ss-apple-account.png', 'images/ss-icloud.png'], text:'Apple Account ページへ戻り、iCloud をタップしてください。',
+      { pic:'images/ss-find-iphone-on.webp', text:'「iPhone を探す」をタップしてオンにしてください。「探すネットワーク」がオフのままの場合は、オンにしてください。', image:'images/find-iphone-all-on.png', caption:'「iPhone を探す」「探すネットワーク」をオン' },
+      { pic:['images/ss-apple-account.webp', 'images/ss-icloud.webp'], text:'Apple Account ページへ戻り、iCloud をタップしてください。',
         nav:['設定','アカウント名','iCloud'] },
-      { pic:'images/ss-keychain-on.png', text:'「パスワード」をタップして、「パスワードとキーチェーン」の「この iPhone を同期」をオンにしてください。',
+      { pic:'images/ss-keychain-on.webp', text:'「パスワード」をタップして、「パスワードとキーチェーン」の「この iPhone を同期」をオンにしてください。',
         nav:['iCloud','パスワード'] },
       { text:'お使いの機種のリセット方法の手順（本体リセット以降）を実行し、AirPods 本体のリセットを完了させてください。',
         linkTo:'ap.gen', linkLabel:'機種を選んでリセット手順を見る' },
       { text:'再び AirPods と iPhone をペアリングしてください。' },
       { text:'設定アプリを開いてください。' },
-      { pic:['images/ss-settings-top.png', 'images/ss-bluetooth.png'], text:'Bluetooth をタップし、自分のデバイス一覧に AirPods が表示されていることを確認してください。', image:'images/bluetooth-airpods.png', caption:'設定 → Bluetooth',
+      { pic:['images/ss-settings-top.webp', 'images/ss-bluetooth.webp'], text:'Bluetooth をタップし、自分のデバイス一覧に AirPods が表示されていることを確認してください。', image:'images/bluetooth-airpods.png', caption:'設定 → Bluetooth',
         nav:['設定','Bluetooth'] },
       { text:'自分のデバイス一覧に表示されている、ペアリング済みの AirPods の {info} をタップしてください。' },
-      { pic:'images/ss-airpods.png', text:'AirPods の設定画面の中ほどにある「バッテリー」をタップしてください。', image:'images/airpods-battery.png', caption:'AirPods → バッテリー（充電の最適化）',
+      { pic:'images/ss-airpods.webp', text:'AirPods の設定画面の中ほどにある「バッテリー」をタップしてください。', image:'images/airpods-battery.png', caption:'AirPods → バッテリー（充電の最適化）',
         nav:['AirPods','バッテリー'] },
-      { pic:'images/ss-airpods-battery.png', text:'バッテリー充電の最適化がオフになっている場合は、オンに変更してください。' },
-      { pic:'images/ss-airpods-info.png', text:'ページを一つ戻り、AirPods ページの最下部にある情報から「バージョン」をタップしてください。', image:'images/airpods-info.png', caption:'AirPods 情報 → バージョン', image:'images/airpods-info.png', caption:'AirPods 情報 → バージョン' },
+      { pic:'images/ss-airpods-battery.webp', text:'バッテリー充電の最適化がオフになっている場合は、オンに変更してください。' },
+      { pic:'images/ss-airpods-info.webp', text:'ページを一つ戻り、AirPods ページの最下部にある情報から「バージョン」をタップしてください。', image:'images/airpods-info.png', caption:'AirPods 情報 → バージョン', image:'images/airpods-info.png', caption:'AirPods 情報 → バージョン' },
       { text:'バージョンページに表示されているファームウェアが最新であることを確認してください。',
         after:'「ファームウェアの詳細はこちら」から、デバイスごとの最新ファームウェアバージョンを確認できます。バージョンが最新ではない場合は、「AirPods のファームウェアをアップデートする」を実行してください。',
         linkTo:'a.firmware', linkLabel:'AirPods のファームウェアをアップデートする' },
@@ -211,7 +211,7 @@ const NODES = {
     title:'AirPods のファームウェアをアップデートする',
     lead:'ファームウェアは、AirPods を iPhone に接続した状態で自動的に更新されます。',
     steps:[
-      { pic:['images/ss-settings-top.png', 'images/ss-settings-general.png'], text:'iPhone の設定アプリを開き、「一般」から「ソフトウェアアップデート」をタップしてください。ソフトウェアが最新ではない場合は、アップデートを行ってください。', image:'images/settings-general.png', caption:'設定 → 一般 → ソフトウェアアップデート',
+      { pic:['images/ss-settings-top.webp', 'images/ss-settings-general.webp'], text:'iPhone の設定アプリを開き、「一般」から「ソフトウェアアップデート」をタップしてください。ソフトウェアが最新ではない場合は、アップデートを行ってください。', image:'images/settings-general.png', caption:'設定 → 一般 → ソフトウェアアップデート',
         nav:['設定','一般','ソフトウェアアップデート'] },
       { text:'iPhone の iOS が最新版であることを確認し、Wi-Fi に接続してください。' },
       { text:'接続している AirPods の本体を両耳とも充電ケースに収納し、有線ケーブルで充電してください。' },
@@ -219,10 +219,10 @@ const NODES = {
       { text:'この状態で、ファームウェアがアップデートされるのを待機してください。',
         after:'アップデートには30分以上かかる場合があります。' },
       { text:'AirPods の充電ケースの蓋を開け、ペアリングしている iPhone と接続した状態にしてください。' },
-      { pic:['images/ss-settings-top.png', 'images/ss-bluetooth.png'], text:'iPhone の設定アプリを開き、Bluetooth をタップして、自分のデバイス一覧に AirPods が表示されていることを確認してください。', image:'images/bluetooth-airpods.png', caption:'設定 → Bluetooth',
+      { pic:['images/ss-settings-top.webp', 'images/ss-bluetooth.webp'], text:'iPhone の設定アプリを開き、Bluetooth をタップして、自分のデバイス一覧に AirPods が表示されていることを確認してください。', image:'images/bluetooth-airpods.png', caption:'設定 → Bluetooth',
         nav:['設定','Bluetooth'] },
       { text:'自分のデバイス一覧に表示されている、ペアリング済みの AirPods の {info} をタップしてください。' },
-      { pic:'images/ss-airpods-version.png', text:'AirPods ページの最下部にある情報から「バージョン」をタップしてください。',
+      { pic:'images/ss-airpods-version.webp', text:'AirPods ページの最下部にある情報から「バージョン」をタップしてください。',
         nav:['AirPods','情報','バージョン'] },
       { text:'バージョンページに表示されているファームウェアが最新版になっていれば、完了です。' },
     ],
@@ -248,10 +248,10 @@ const NODES = {
      編集するときはタイトル文字列ではなく必ずこの ID で指定すること。**
      第4世代は kind だけが違う2ページ。'a.rs.tap' が非搭載モデルなのは、
      ページを分ける前のコード（KEY 'G'）の意味を変えないため。 */
-  'a.rs.tap':     RESET('tap.mute', 'images/airpods4-case-led.png'),      // 第4世代（ノイキャン非搭載）
-  'a.rs.tap.anc': RESET('tap',      'images/airpods4-case-led.png'),      // 第4世代（ノイキャン搭載）
-  'a.rs.pro3':    RESET('tap',      'images/airpods-pro3-case-led.png'),  // AirPods Pro 第3世代
-  'a.rs.button':  RESET('button',   'images/airpods-pro2-case-button.png'), // AirPods Pro 第2世代
+  'a.rs.tap':     RESET('tap.mute', 'images/airpods4-case-led.webp'),      // 第4世代（ノイキャン非搭載）
+  'a.rs.tap.anc': RESET('tap',      'images/airpods4-case-led.webp'),      // 第4世代（ノイキャン搭載）
+  'a.rs.pro3':    RESET('tap',      'images/airpods-pro3-case-led.webp'),  // AirPods Pro 第3世代
+  'a.rs.button':  RESET('button',   'images/airpods-pro2-case-button.webp'), // AirPods Pro 第2世代
 
   /* ---------- 探すアプリからリセットする（共通・末端の受け皿） ---------- */
   'a.findmy_reset': {
@@ -261,10 +261,10 @@ const NODES = {
     lead:'本体リセットだけでは「デバイスを探す」から削除されない場合に、この手順で解除します。',
     steps:[
       { text:'接続している AirPods（もしくは、解除済みだが連携が残っている AirPods）の本体を両耳とも充電ケースへ収納し、充電ケースの蓋を開けてください。' },
-      { pic:'images/ss-findmy-devices.png', text:'充電ケースの蓋を開けたまま、「探す」アプリを開いてください。',
+      { pic:'images/ss-findmy-devices.webp', text:'充電ケースの蓋を開けたまま、「探す」アプリを開いてください。',
         nav:['探す','デバイスを探す'] },
-      { pic:'images/ss-findmy-airpods.png', text:'「デバイスを探す」の一覧から、削除したい AirPods のアイコンをタップしてください。', image:'images/findmy-map-airpods.png', caption:'「デバイスを探す」→ AirPods' },
-      { text:'「解除」をタップしてください。次の画面でも「解除」をタップしてください。', pic:'images/ss-findmy-airpods-remove.png', image:'images/airpods-remove-findmy.png', caption:'AirPods → 解除' },
+      { pic:'images/ss-findmy-airpods.webp', text:'「デバイスを探す」の一覧から、削除したい AirPods のアイコンをタップしてください。', image:'images/findmy-map-airpods.png', caption:'「デバイスを探す」→ AirPods' },
+      { text:'「解除」をタップしてください。次の画面でも「解除」をタップしてください。', pic:'images/ss-findmy-airpods-remove.webp', image:'images/airpods-remove-findmy.png', caption:'AirPods → 解除' },
       { text:'充電ケースの蓋を閉じて30秒ほど待機すると、「デバイスを探す」の一覧から AirPods が削除されます。' },
     ],
     note:'<strong>一覧から消えない場合</strong><br>「デバイスを探す」の更新には数分かかることがあります。<br>時間が経っても表示が残る場合は、「探す」アプリを終了したあと iPhone を再起動してください。<br>それでも改善しない場合は、iPhone にペアリングを直して最初からやり直し、なお解消しなければ、お使いの機種のリセット方法を再度実行してください。',
@@ -324,8 +324,8 @@ const NODES = {
     /* image … 選択肢の文字の前に出す小さな画像。製品選択（start）と同じ仕組み。
        画面に出るアイコンそのものを載せて、文字だけより見分けやすくする。 */
     options:[
-      { label:'赤い稲妻アイコンが表示される',       image:'images/aw-icon-bolt.png',  next:'a.aw.batt.bolt' },
-      { label:'充電ケーブルのアイコンが表示される', image:'images/aw-icon-cable.png', next:'a.aw.batt.none' },
+      { label:'赤い稲妻アイコンが表示される',       image:'images/aw-icon-bolt.webp',  next:'a.aw.batt.bolt' },
+      { label:'充電ケーブルのアイコンが表示される', image:'images/aw-icon-cable.webp', next:'a.aw.batt.none' },
       { label:'何も表示されない',                  next:'a.aw.batt.none' },
     ],
   },
@@ -448,7 +448,7 @@ function RESET(kind, pic){
       { text:'AirPods の両耳を充電ケースに収納し、蓋を閉めて30秒待ちます。' },
       { text:'接続している iPhone で設定アプリを開き、Bluetooth をタップします。',
         nav:['設定','Bluetooth'] },
-      { pic:['images/ss-settings-top.png', 'images/ss-bluetooth.png'], text:'自分のデバイス一覧から AirPods の {info} をタップし、「このデバイスの登録を解除」をタップしてください。',
+      { pic:['images/ss-settings-top.webp', 'images/ss-bluetooth.webp'], text:'自分のデバイス一覧から AirPods の {info} をタップし、「このデバイスの登録を解除」をタップしてください。',
         nav:['設定','Bluetooth','AirPods'] },
       { text:'自分のデバイス一覧から AirPods が削除されたことを確認したら、充電ケースの蓋を開けてください。' },
       /* pic … SHOW_IMAGES の影響を受けない手順内画像。機種ごとの充電ケースを示す。
@@ -461,7 +461,7 @@ function RESET(kind, pic){
           ] },
       { text:'30秒ほど待機して再び蓋を開けると、LED ランプが白く点滅し、接続できる状態になります。' },
       /* 次の手順8で「一覧から削除されていれば完了」と続くため、AirPods が消えた一覧を出す */
-      { pic:'images/ss-findmy-devices-removed.png', text:'接続していた iPhone で「探す」アプリを開いてください。',
+      { pic:'images/ss-findmy-devices-removed.webp', text:'接続していた iPhone で「探す」アプリを開いてください。',
         nav:['探す','デバイスを探す'] },
       { text:'接続していた AirPods が「デバイスを探す」の一覧から削除されていれば、リセットは完了です。' },
     ],
