@@ -164,7 +164,11 @@
       var key = randKey();
       lastBox = box; lastKey = key; lastFname = key + '.json';
 
-      var base = location.href.replace(/return-admin\.html.*$/, '').replace(/[?#].*$/,'');
+      /* 購入者に渡すリンク。このページ自身の URL からファイル名を落として作る。
+         自分のファイル名を書かないこと。書くと、名前を変えたときにここが壊れて
+         誤ったリンクを購入者へ渡してしまう（管理コンソールと同じ書き方）。
+         鍵は「#」の後ろに置く。クエリと違いサーバーへ送られないため。 */
+      var base = location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '');
       var url = base + 'return.html#' + key;
 
       $('outFname').textContent = 'return/' + lastFname;
