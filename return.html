@@ -32,9 +32,7 @@
   /* 復号後本文 */
   .content{margin-top:6px;}
   .section{margin:0 0 30px;}
-  .eyebrow{font-size:12.5px;font-weight:600;color:var(--accent);letter-spacing:.04em;margin:0 0 8px;}
-  .section h2{font-size:18px;font-weight:600;margin:0 0 12px;}
-  .section .body{font-size:15.5px;white-space:pre-wrap;}
+  .section .body{font-size:15.5px;}
   ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;}
   ol.steps>li{counter-increment:s;position:relative;padding:0 0 20px 40px;font-size:15.5px;}
   ol.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;
@@ -45,10 +43,8 @@
   .barcode img{max-width:100%;height:auto;border-radius:8px;}
   /* バーコードが読めなかったときの案内。枠で囲むほどではないので文字色だけで示す */
   .attn{color:var(--accent);font-size:14px;margin:14px 0 0;}
-  /* グレーの補足。ページ自体の注意書き（.foot）と線が2本並ばないよう罫線は持たせない */
-  .notes{color:var(--sub);font-size:13px;margin:0;}
-  /* 見出しの直下に置くほうは、手順との間隔を空ける */
-  .notes.top{margin:0 0 26px;}
+  /* 見出しの下のグレーの補足。ページ自体の注意書き（.foot）と線が2本並ばないよう罫線は持たせない */
+  .notes{color:var(--sub);font-size:13px;margin:0 0 26px;}
 
   .foot{margin-top:34px;padding-top:20px;border-top:1px solid var(--line);color:var(--sub);font-size:12.5px;}
   .spin{display:inline-block;width:15px;height:15px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;}
@@ -71,8 +67,9 @@
     </div>
   </div>
 
+  <!-- このページの決まりで、文が「。」で切れたら改行する（本文側は br() が自動で入れる） -->
   <p class="foot">
-    表示される内容には、返送に必要な情報が含まれます。第三者と共有しないでください。
+    表示される内容には、返送に必要な情報が含まれます。<br>第三者と共有しないでください。
   </p>
 </div>
 
@@ -115,6 +112,12 @@
 
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
 
+  /* このページの決まり: 文が「。」で切れたら改行する。
+     末尾の「。」のあとには入れない（余分な空行を作らないため）。
+     本文に手で <br> を書かず、ここで機械的に入れるので、
+     あとから文を足しても改行の決まりが自動で効く。 */
+  function br(s){ return esc(s).replace(/。(?!$)/g, '。<br>'); }
+
   /* 案内の文面はここに固定で持つ。購入者ごとに変わるのはバーコード画像と
      手順2のサイズだけなので、暗号化ファイル側には文面を入れていない。
      文言を直すときはこの関数だけを編集すればよく、発行済みのファイルはそのまま使える。 */
@@ -125,40 +128,34 @@
 
     /* 購入者が最初に気にする「お金がかかるのか」「個人情報を出すのか」への答えを、
        手順に入る前に置く */
-    html += '<p class="notes top">'
-          + '匿名配送はヤマト運輸の公式サービスです。指定拠点以外からの発送はできません。<br><br>'
-          + '購入者様の個人情報をご入力いただく必要はありません。また、配送料や手数料の請求はありません。'
+    html += '<p class="notes">'
+          + br('匿名配送はヤマト運輸の公式サービスです。セブンイレブンからの発送にのみ対応しています。その他のコンビニや、集荷による発送には対応していません。')
+          + '<br><br>'
+          + br('購入者様の個人情報をご入力いただく必要はありません。また、配送料や手数料の請求はありません。')
           + '</p>';
 
     html += '<div class="content">';
 
     html += '<div class="section"><ol class="steps">'
-          + '<li>輸送時の衝撃を緩和するため、緩衝材や梱包材をご用意ください。</li>'
-          + '<li>梱包時の外寸サイズを3辺合計' + esc(size) + 'センチ以内に収めてください。</li>'
-          + '<li>お近くのセブン-イレブンにお荷物を持ち込んでください。</li>'
-          + '<li>レジスタッフにこのページに表示されているバーコードをご提示ください。</li>'
-          + '<li>レジスタッフから渡される発送伝票を貼付してください。</li>'
-          + '<li>日時指定を選択せずに発送を行ってください。</li>'
+          + '<li>' + br('輸送時の破損を防ぐため、緩衝材や梱包材をご用意ください。') + '</li>'
+          + '<li>' + br('梱包時の外寸サイズを3辺合計' + size + 'センチ以内に収めてください。') + '</li>'
+          + '<li>' + br('お近くのセブン-イレブンにお荷物を持ち込んでください。') + '</li>'
+          + '<li>' + br('レジスタッフにこのページに表示されているバーコードをご提示ください。') + '</li>'
+          + '<li>' + br('レジスタッフから渡される発送伝票を貼付してください。') + '</li>'
+          + '<li>' + br('日時指定を選択せずに発送を行ってください。') + '</li>'
           + '</ol></div>';
 
     html += '<div class="section"><div class="body">'
-          + '手続き完了後、お荷物情報がお届け先へ送信されます。\n'
-          + '追跡番号等のご連絡は不要でございます。'
+          + br('発送手続き完了後、お荷物情報が自動で共有されます。発送通知や追跡番号のご連絡は不要です。店舗で発行される発送伝票の控えは、お荷物が配達完了されるまで保管してください。')
           + '</div></div>';
 
-    html += '<div class="section"><h2>セブン-イレブン</h2>'
-          + '<div class="body">レジスタッフへ下記バーコードをご提示ください。</div>';
+    html += '<div class="section">'
+          + '<div class="body">' + br('レジスタッフへ下記バーコードをご提示ください。') + '</div>';
     if (data.barcode) {
       html += '<div class="barcode" style="margin-top:14px">'
             + '<img src="' + data.barcode + '" alt="返送用バーコード"></div>';
     }
-    html += '<p class="attn">※バーコードが読み取れない場合は、番号を入力してください。</p></div>';
-
-    /* 末尾のグレーの補足。ページ自体の注意書き（.foot）とは別物なので、
-       区切り線を持たない .notes にして2本の線が並ばないようにする */
-    html += '<p class="notes">'
-          + '発送手続き完了後は、店舗で発行される発送伝票を挿入し当伝票は破棄してください。'
-          + '</p>';
+    html += '<p class="attn">' + br('※バーコードが読み取れない場合は、番号を入力してください。') + '</p></div>';
 
     html += '</div>';
     document.getElementById('app').innerHTML = html;
