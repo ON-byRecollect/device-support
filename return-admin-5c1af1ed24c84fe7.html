@@ -52,6 +52,12 @@
   <h1>返品ページ作成</h1>
 
   <fieldset>
+    <legend>出品ID</legend>
+    <label>出品ID<span class="hint">（このIDがファイル名・購入者リンクになります。半角英数字と -（ハイフン）・_（アンダースコア）のみ）</span></label>
+    <input type="text" id="listingId" class="mono" placeholder="例：m12345678901" autocomplete="off" autocapitalize="off" spellcheck="false">
+  </fieldset>
+
+  <fieldset>
     <legend>荷物のサイズ</legend>
     <label>外寸の3辺合計<span class="hint">（返品ページの手順2に入る数字です）</span></label>
     <select id="size">
@@ -136,12 +142,6 @@
     $('pass').value = out.slice(0,4).join('') + '-' + out.slice(4,8).join('') + '-' + out.slice(8).join('');
   });
 
-  // 鍵名（URLに載る推測不可能なランダム名）
-  function randKey(){
-    var buf=new Uint8Array(10); crypto.getRandomValues(buf);
-    return Array.from(buf).map(function(b){return ('0'+b.toString(16)).slice(-2);}).join('');
-  }
-
   function bytesToB64(bytes){ var bin=''; bytes.forEach(function(b){bin+=String.fromCharCode(b);}); return btoa(bin); }
 
   async function encrypt(plain, pass){
@@ -158,6 +158,9 @@
   var lastBox=null, lastKey='', lastFname='';
 
   $('make').addEventListener('click', async function(){
+    var listingId = $('listingId').value.trim();
+    if (!listingId){ alert('出品IDを入力してください。'); return; }
+    if (!/^[A-Za-z0-9_-]+$/.test(listingId)){ alert('出品IDは半角英数字と -（ハイフン）・_（アンダースコア）のみ使用できます。'); return; }
     if (!barcodeDataUrl){ alert('返送用バーコードの画像を選択してください。'); return; }
     var pass=$('pass').value.trim();
     if (!pass){ alert('パスコードを入力するか、自動生成してください。'); return; }
@@ -169,7 +172,10 @@
     $('make').disabled = true; $('make').textContent = '暗号化中…';
     try {
       var box = await encrypt(JSON.stringify(data), pass);
-      var key = randKey();
+      /* 鍵名（ファイル名・購入者リンクに載る）は、入力された出品IDをそのまま使う。
+         出品IDは出品者・購入者のみが知るため、ランダム生成と実質的なリスクは変わらず、
+         ファイルが増えたときにデータを探しやすくなる。 */
+      var key = listingId;
       lastBox = box; lastKey = key; lastFname = key + '.json';
 
       /* 購入者に渡すリンク。このページ自身の URL からファイル名を落として作る。
