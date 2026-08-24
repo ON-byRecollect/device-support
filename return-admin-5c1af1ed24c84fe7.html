@@ -53,13 +53,11 @@
 
   <fieldset>
     <legend>出品ID</legend>
-    <label>出品ID<span class="hint">（このIDがファイル名・購入者リンクになります。半角英数字と -（ハイフン）・_（アンダースコア）のみ）</span></label>
     <input type="text" id="listingId" class="mono" placeholder="例：m12345678901" autocomplete="off" autocapitalize="off" spellcheck="false">
   </fieldset>
 
   <fieldset>
     <legend>荷物のサイズ</legend>
-    <label>外寸の3辺合計<span class="hint">（返品ページの手順2に入る数字です）</span></label>
     <select id="size">
       <option value="60" selected>60cm 以内</option>
       <option value="80">80cm 以内</option>
@@ -70,14 +68,12 @@
 
   <fieldset>
     <legend>返送用バーコード</legend>
-    <label>画像を選択<span class="hint">（この購入者専用の配送バーコード。画像は暗号化され、単体で置かれることはありません）</span></label>
     <input type="file" id="barcode" accept="image/*">
     <div class="preview" id="preview"></div>
   </fieldset>
 
   <fieldset>
     <legend>パスコード</legend>
-    <label>購入者に伝えるパスコード<span class="hint">（このパスコードがないと内容は読めません。取引メッセージで本人にだけ伝えてください）</span></label>
     <div class="row">
       <input type="text" id="pass" class="mono" placeholder="XXXX-XXXX-XXXX">
       <button type="button" class="ghost" id="genPass">自動生成</button>
