@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>返品の手順</title>
 <!-- タブに出るアイコンと、ホーム画面に置いたときのアイコン。
@@ -16,7 +16,10 @@
 <style>
   :root{--bg:#fff;--ink:#1d1d1f;--sub:#6e6e73;--line:#e5e5ea;--fill:#f5f5f7;--accent:#0071e3;--warn:#c7500f;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.7;
+  /* ダブルタップによる意図しない拡大を防ぐ（スクロールは従来どおり可能）。
+     フォーカス時の自動ズーム対策として入力欄の font-size は 16px 以上（18px）を維持している。 */
+  html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  body{margin:0;background:var(--bg);color:var(--ink);line-height:1.7;touch-action:manipulation;
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;-webkit-font-smoothing:antialiased;}
   .wrap{max-width:620px;margin:0 auto;padding:30px 20px calc(60px + env(safe-area-inset-bottom));}
   h1{font-size:26px;font-weight:600;letter-spacing:-.02em;margin:6px 0 8px;}
